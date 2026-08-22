@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ProteinTargetStepper } from '@/features/nutrition/ProteinTargetStepper'
+import { ProteinTargetEditor } from '@/features/nutrition/ProteinTargetEditor'
+import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
+import { useWeight } from '@/features/weight/useWeight'
+import { MAX_WEIGHT_KG, MIN_WEIGHT_KG } from '@/lib/nutrition'
 import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/fr'
@@ -14,8 +17,9 @@ const TOTAL_STEPS = 3
  */
 export function OnboardingScreen() {
   const [step, setStep] = useState(0)
-  const proteinTarget = useSettingsStore((state) => state.settings.proteinTargetGrams)
-  const setProteinTarget = useSettingsStore((state) => state.setProteinTarget)
+  const [weightInput, setWeightInput] = useState('')
+  const target = useProteinTarget()
+  const weight = useWeight()
   const habits = useSettingsStore((state) => state.habits)
   const updateHabit = useSettingsStore((state) => state.updateHabit)
   const archiveHabit = useSettingsStore((state) => state.archiveHabit)
@@ -63,11 +67,32 @@ export function OnboardingScreen() {
         {step === 1 ? (
           <section>
             <h1 className="text-3xl font-semibold leading-tight tracking-tight">
-              {t.onboarding.protein.title}
+              {t.onboarding.weight.title}
             </h1>
-            <p className="mt-3 text-muted-foreground">{t.onboarding.protein.body}</p>
+            <p className="mt-3 text-muted-foreground">{t.onboarding.weight.body}</p>
+
+            <div className="mt-6 flex items-center gap-2">
+              <input
+                type="text"
+                inputMode="decimal"
+                aria-label={t.onboarding.weight.title}
+                value={weightInput}
+                onChange={(event) => setWeightInput(event.target.value)}
+                onBlur={() => {
+                  const kg = Number(weightInput.replace(',', '.'))
+                  if (Number.isFinite(kg) && kg >= MIN_WEIGHT_KG && kg <= MAX_WEIGHT_KG) {
+                    void weight.log(kg)
+                  }
+                }}
+                placeholder="80,5"
+                className="tnum min-h-[56px] flex-1 rounded-lg border border-border bg-card px-4 text-2xl font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <span className="text-lg text-muted-foreground">kg</span>
+            </div>
+
             <div className="mt-8">
-              <ProteinTargetStepper value={proteinTarget} onChange={setProteinTarget} />
+              <p className="mb-2 text-center text-sm font-medium">{t.onboarding.protein.title}</p>
+              <ProteinTargetEditor target={target} />
             </div>
           </section>
         ) : null}

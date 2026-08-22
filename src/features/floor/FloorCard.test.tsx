@@ -11,6 +11,7 @@ const habits: FloorHabitDefinition[] = [
     targetRepsOrAction: '5 pompes',
     category: 'workout',
     kind: 'floor',
+    completionMode: 'toggle',
     order: 0,
     createdAt: '2026-08-22T08:00:00.000Z',
     updatedAt: '2026-08-22T08:00:00.000Z',
@@ -22,6 +23,7 @@ const habits: FloorHabitDefinition[] = [
     targetRepsOrAction: '1 shaker',
     category: 'nutrition',
     kind: 'floor',
+    completionMode: 'toggle',
     order: 1,
     createdAt: '2026-08-22T08:00:00.000Z',
     updatedAt: '2026-08-22T08:00:00.000Z',
@@ -51,7 +53,7 @@ describe('FloorCard', () => {
     await user.click(screen.getByRole('button', { name: /5 pompes/ }))
 
     expect(onToggle).toHaveBeenCalledTimes(1)
-    expect(onToggle).toHaveBeenCalledWith('a')
+    expect(onToggle).toHaveBeenCalledWith(habits[0])
   })
 
   it('exposes completion state to assistive tech', () => {

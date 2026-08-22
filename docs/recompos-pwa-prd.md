@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.1 — cadrage validé |
+| Version | 1.2 — poids et cible dérivée |
 | Date | 2026-08-22 |
-| Statut | Lot 0 livré — lots 1 à 4 à venir |
-| Remplace | `recompos-pwa-prd.md` v1.0 (brouillon initial) |
+| Statut | Lot 0 livré, module Poids ajouté — lots 1 à 4 à venir |
+| Remplace | v1.1 (cadrage initial), elle-même issue du brouillon v1.0 |
 
 ---
 
@@ -42,6 +42,10 @@ une décision d'implémentation.
 | 8 | Onboarding | Mini-onboarding 3 écrans | ~30 secondes au premier lancement, jamais réaffiché |
 | 9 | Graphiques | Recharts | Courbes et barres thémées dark, ~100 Ko gzip acceptés |
 | 10 | Livraison | GitHub Pages + Actions, Vitest + Testing Library, lint et typecheck en CI | Déploiement auto sur push `main`, base path Vite à configurer |
+| 11 | Cible de protéines | Dérivée du poids : 1,8 g/kg, arrondi à 5 g | La cible n'est plus un nombre à inventer ; elle suit le corps |
+| 12 | Override manuel | Toute modification à la main fige la cible | Une nouvelle pesée ne réécrit jamais un chiffre choisi par l'utilisateur ; retour à l'auto en un tap |
+| 13 | Suivi du poids | Pesée hebdomadaire suggérée, moyenne glissante sur 4 points | L'app n'affiche jamais la pesée brute comme un résultat |
+| 14 | Plancher nutrition | « 1 portion de protéines zéro-cuisson », choisie dans le catalogue | Le plancher apporte de vrais grammes au total du jour, au prix d'un tap de plus |
 
 ---
 
@@ -130,7 +134,11 @@ Chaque lot est autonome, testé, déployé, et utilisable seul. Aucun lot ne cas
 **Plancher quotidien non négociable**
 
 Le plancher est un ensemble de 1 à 5 items minimaux, définis à l'onboarding et modifiables ensuite.
-Défauts : `5 pompes`, `1 shaker de protéines`.
+Défauts : `5 pompes`, `1 portion de protéines zéro-cuisson`.
+
+La portion n'est pas une simple case à cocher : la valider ouvre le catalogue zéro-cuisson et le choix
+est ajouté au total de protéines du jour. Décocher l'habitude retire ces grammes. Un plancher qui se
+coche sans rien apporter nutritionnellement serait un mensonge poli.
 
 - Affiché en haut du Dashboard, toujours au-dessus de la ligne de flottaison.
 - Validation en 1 tap par item, plus un bouton « Tout valider ».
@@ -169,10 +177,32 @@ score30 = jours avec plancher validé sur les 30 derniers jours / min(30, jours 
 
 ### 6.2 Module Nutrition (lot 2)
 
+**Cible quotidienne dérivée du poids**
+
+La cible n'est pas un nombre que l'utilisateur doit inventer : elle se calcule.
+
+```
+cible = arrondi_5(poids_lissé × 1,8 g/kg), borné à [80, 250] g
+```
+
+- Le poids lissé est la moyenne des 4 dernières pesées, pas la dernière. Une pesée isolée varie d'un
+  kilo sur l'eau seule, ce qui ferait bouger la cible sans raison physiologique.
+- L'arrondi à 5 g évite une fausse précision sur une entrée déjà lissée.
+- 1,8 g/kg est le milieu de la fourchette de recomposition : assez haut pour protéger le muscle en
+  déficit, assez bas pour rester atteignable un mauvais jour.
+- **Sans aucune pesée**, une cible provisoire de 150 g s'affiche, explicitement signalée comme telle.
+
+**Override manuel figé**
+
+Modifier la cible à la main la bascule en mode `manual` et la fige. Une pesée ultérieure ne la
+déplace plus jamais — l'app ne change pas un chiffre que l'utilisateur a posé. Les réglages affichent
+en permanence ce que le calcul donnerait, et un bouton « revenir au calcul automatique » rend la main
+à la formule en un tap.
+
 **Compteur protéines 1-tap**
 
 - Boutons rapides : `+20 g`, `+30 g`, `+40 g`, `Autre` (bottom sheet avec pavé numérique).
-- Anneau de progression vers la cible quotidienne (défaut 150 g, réglable 80–250 g).
+- Anneau de progression vers la cible du jour.
 - Chaque ajout crée un `ProteinLog` horodaté et typé (`shake`, `zero_cook`, `takeout`, `meal`).
 - Le type source est optionnel : par défaut `meal`, modifiable après coup dans la liste du jour.
 - Annulation du dernier ajout disponible pendant 10 secondes (toast avec « Annuler »).
@@ -224,7 +254,19 @@ du champ, avec une suggestion calculée :
 Compte à rebours 60 s / 90 s / personnalisé, signal sonore court et vibration en fin. Continue de
 tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas sur `setInterval` seul).
 
-### 6.4 Module Tendances (lot 4)
+### 6.4 Module Poids (livré avec le lot 0bis)
+
+- **Pesée suggérée, jamais imposée** : une carte discrète apparaît sur le dashboard quand la dernière
+  pesée date de 7 jours ou plus, et disparaît sinon. Aucune notification, aucun rappel insistant.
+- **Une entrée par jour logique** : une seconde pesée le même jour corrige la première au lieu de
+  s'ajouter.
+- **Moyenne glissante sur 4 points** affichée à la place du chiffre brut, avec la tendance en kg
+  entre la fenêtre courante et la précédente.
+- **Le poids ne pilote rien d'autre que la cible de protéines.** Il n'apparaît pas comme un objectif,
+  il n'y a pas de poids cible, et aucun écran ne le présente comme une mesure de réussite — le PRD
+  reste centré sur la recomposition (§3.3).
+
+### 6.5 Module Tendances (lot 4)
 
 - **Index de force** : progression du volume (reps × séries, pondéré par la charge quand renseignée)
   sur les mouvements de base, fenêtre 3 à 12 mois, courbe Recharts.
@@ -311,6 +353,7 @@ export interface FloorHabitDefinition {
   targetRepsOrAction: string;               // « 10 squats »
   category: 'workout' | 'nutrition' | 'mobility';
   kind: 'floor' | 'stack';                  // plancher non négociable vs habitude empilée
+  completionMode: 'toggle' | 'protein_portion'; // portion = choisir la source et loguer ses grammes
   order: number;
   archivedAt?: IsoDateTime;                 // jamais supprimée, pour ne pas trouer l'historique
   createdAt: IsoDateTime;
@@ -412,7 +455,8 @@ export interface ZeroCookItem {
 export interface AppSettings {
   schemaVersion: number;
   installedAt: IsoDateTime;                 // base du dénominateur de consistance et du « Jour N »
-  proteinTargetGrams: number;
+  proteinTargetMode: 'auto' | 'manual';     // auto = dérivé du poids lissé
+  manualProteinTargetGrams?: number;        // seulement en mode manual, figé
   locale: 'fr';
   onboardingCompletedAt?: IsoDateTime;
   restTimerDefaultSeconds: 60 | 90;
@@ -437,7 +481,9 @@ export interface ExportBundle {
 }
 ```
 
-**Migrations** : `schemaVersion` est incrémenté à chaque changement de forme. Dexie porte les migrations
+**Migrations** : `schemaVersion` est incrémenté à chaque changement de forme. La v2 déplace la cible de
+protéines d'un nombre brut vers un calcul, et convertit l'ancien plancher « 1 shaker » en portion
+réelle ; une valeur saisie en v1 survit comme override manuel, parce que c'était une décision humaine. Dexie porte les migrations
 de base ; l'import refuse un bundle de version supérieure à celle du code et migre celles inférieures.
 
 ---
@@ -507,6 +553,8 @@ Priorité à la logique pure, qui concentre les vrais risques de bug :
 - `lib/date.ts` — journée logique à 03h59 et 04h01, changements d'heure, passage de mois.
 - `lib/overload.ts` — les trois règles de difficulté, le franchissement du haut de fourchette, la
   bascule sur la progression suivante.
+- `lib/nutrition.ts` — formule de cible, bornes, lissage du poids, amortissement d'un pic hydrique.
+- Migration v1 → v2 — override conservé, plancher converti, habitudes existantes préservées.
 - Agrégation des protéines — somme, annulation, réécriture de `DailyLog.totalProteinGrams`.
 - Export/import — aller-retour sans perte, refus d'un `schemaVersion` supérieur.
 
@@ -617,7 +665,7 @@ Explicitement exclu, pour éviter la dérive :
 | Type | Titre | Ancre |
 |---|---|---|
 | Plancher | 5 pompes | — |
-| Plancher | 1 shaker de protéines | — |
+| Plancher | 1 portion de protéines zéro-cuisson | — |
 | Empilée | 10 squats à vide | Pendant que le café coule |
 | Empilée | 1 série de pompes max | Avant d'ouvrir le laptop |
 | Empilée | 2 min de gainage | Douche du soir |

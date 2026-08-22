@@ -27,8 +27,37 @@ export const fr = {
     stackSubtitle: 'Accrochées à un moment qui existe déjà.',
     proteinTitle: 'Protéines',
     proteinOf: (current: number, target: number) => `${current} g sur ${target} g`,
+    weighInDue: 'Pesée de la semaine',
+    weighInDueHint: "Quand tu veux. L'app ne regarde que la tendance, jamais le chiffre du jour.",
     startWorkout: 'Séance 20 min',
     comingInLot: 'Arrive au prochain lot.',
+  },
+  nutrition: {
+    pickPortion: 'Quelle source de protéines ?',
+    pickPortionHint: 'Le choix est ajouté au total du jour.',
+    targetFromWeight: (weightKg: number, perKg: number) =>
+      `Calculé sur ${weightKg} kg × ${String(perKg).replace('.', ',')} g/kg`,
+    targetManual: 'Cible ajustée à la main',
+    targetNoWeight: 'Cible provisoire — ajoute ton poids pour la calculer',
+    addedGrams: (grams: number) => `+${grams} g ajoutés`,
+    source: {
+      shake: 'Shaker',
+      zero_cook: 'Zéro-cuisson',
+      takeout: 'Livraison',
+      meal: 'Repas',
+    },
+  },
+  weight: {
+    title: 'Poids',
+    smoothedHint: 'Moyenne des dernières pesées, pas le chiffre du jour.',
+    emptyHint: 'Une pesée suffit pour calculer ta cible de protéines.',
+    logCta: 'Enregistrer une pesée',
+    logTitle: 'Ton poids',
+    logHint: 'À jeun de préférence, mais la régularité compte plus que le moment.',
+    lastEntry: (date: string, kg: number) => `Dernière pesée : ${date}, ${kg} kg`,
+    saved: (kg: number) => `${kg} kg enregistrés`,
+    history: 'Historique',
+    empty: 'Aucune pesée enregistrée.',
   },
   consistency: {
     rolling7: '7 jours',
@@ -57,6 +86,10 @@ export const fr = {
       title: 'Pas de deadline. Pas de série à ne pas casser.',
       body: "Une semaine ratée ne remet rien à zéro. L'app mesure un pourcentage glissant, pas une performance.",
     },
+    weight: {
+      title: 'Ton poids',
+      body: "Il sert à calculer ta cible de protéines, et rien d'autre. L'app suit la tendance, jamais le chiffre du jour.",
+    },
     protein: {
       title: 'Ta cible de protéines',
       body: 'Modifiable à tout moment dans les réglages.',
@@ -70,6 +103,12 @@ export const fr = {
   settings: {
     title: 'Réglages',
     proteinTarget: 'Cible de protéines',
+    proteinAuto: 'Calculée sur ton poids',
+    proteinManual: 'Ajustée à la main',
+    proteinAutoValue: (grams: number) => `Le calcul donnerait ${grams} g`,
+    proteinBackToAuto: 'Revenir au calcul automatique',
+    proteinEditHint: 'Modifier la cible la fige : une nouvelle pesée ne la changera plus.',
+    weight: 'Poids',
     habits: 'Habitudes',
     habitsCount: (floor: number, stack: number) =>
       `${floor} au plancher, ${stack} empilée${stack > 1 ? 's' : ''}`,

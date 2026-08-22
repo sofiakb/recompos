@@ -9,13 +9,17 @@ export const DEFAULT_HABITS: HabitSeed[] = [
     targetRepsOrAction: '5 pompes',
     category: 'workout',
     kind: 'floor',
+    completionMode: 'toggle',
     order: 0,
   },
   {
-    title: '1 shaker de protéines',
-    targetRepsOrAction: '1 shaker',
+    // A real food portion rather than a shaker: the floor should move the protein
+    // total, and picking the source logs its grams (PRD §6.3).
+    title: '1 portion de protéines zéro-cuisson',
+    targetRepsOrAction: 'au choix dans le catalogue',
     category: 'nutrition',
     kind: 'floor',
+    completionMode: 'protein_portion',
     order: 1,
   },
   {
@@ -24,6 +28,7 @@ export const DEFAULT_HABITS: HabitSeed[] = [
     targetRepsOrAction: '10 squats',
     category: 'workout',
     kind: 'stack',
+    completionMode: 'toggle',
     order: 2,
   },
   {
@@ -32,6 +37,7 @@ export const DEFAULT_HABITS: HabitSeed[] = [
     targetRepsOrAction: 'pompes max',
     category: 'workout',
     kind: 'stack',
+    completionMode: 'toggle',
     order: 3,
   },
   {
@@ -40,6 +46,7 @@ export const DEFAULT_HABITS: HabitSeed[] = [
     targetRepsOrAction: '2 min',
     category: 'mobility',
     kind: 'stack',
+    completionMode: 'toggle',
     order: 4,
   },
 ]
@@ -247,4 +254,5 @@ export const DEFAULT_ZERO_COOK: ZeroCookItem[] = [
   },
 ]
 
-export const DEFAULT_PROTEIN_TARGET_GRAMS = 150
+/** Used only until a first weigh-in makes the computed target available. */
+export const FALLBACK_PROTEIN_TARGET_GRAMS = 150

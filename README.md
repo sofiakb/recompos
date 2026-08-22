@@ -5,19 +5,24 @@ surcharge progressive. Hors ligne, sans compte, sans serveur — tout reste sur 
 
 Le cahier des charges complet est dans [`docs/recompos-pwa-prd.md`](docs/recompos-pwa-prd.md).
 
-## État : lot 0 (squelette navigable)
+## État : lot 0 + module Poids
 
 Livré :
 
 - Les 4 onglets routés — Aujourd'hui, Séances, Nutrition, Tendances — plus l'écran Réglages.
 - Le plancher du jour et les habitudes empilées : validation en 1 tap, persistée.
 - Le score de consistance élastique sur 7 et 30 jours, et le jalon « Jour N ».
+- **Suivi du poids** : pesée suggérée chaque semaine, moyenne glissante sur 4 points, historique.
+- **Cible de protéines dérivée du poids** (1,8 g/kg), ajustable à la main — l'ajustement fige alors la
+  cible jusqu'à un retour explicite au calcul automatique.
+- **Plancher nutrition réel** : valider « 1 portion de protéines zéro-cuisson » demande laquelle et
+  ajoute ses grammes au total du jour.
 - Mini-onboarding 3 écrans, affiché une seule fois.
 - PWA installable, fonctionnelle hors ligne, avec bandeau de mise à jour non intrusif.
 - Base Dexie créée et pré-remplie (exercices, cheat sheet livraison, catalogue zéro-cuisson).
 
-À venir, un lot à la fois : compteur de protéines (lot 2), tracker de séances et surcharge progressive
-(lot 3), tendances, photos et export/import (lot 4).
+À venir, un lot à la fois : compteur de protéines complet et cheat sheet livraison (lot 2), tracker de
+séances et surcharge progressive (lot 3), tendances, photos et export/import (lot 4).
 
 ## Démarrer
 
@@ -86,6 +91,8 @@ mesures, photos.
   qui précède. `DAY_ROLLOVER_HOUR` dans `src/lib/date.ts` est la seule source de vérité.
 - **La consistance n'est pas une série** : c'est un pourcentage glissant dont le dénominateur est borné
   par le nombre de jours depuis l'installation. Rien ne se remet jamais à zéro.
+- **La cible de protéines suit le poids, sauf si tu la touches** : `auto` recalcule à chaque pesée,
+  `manual` fige le nombre que tu as choisi. L'app ne déplace jamais une valeur que tu as posée.
 
 ## Déploiement
 

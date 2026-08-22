@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/sheet'
 import { useUiStore } from '@/stores/uiStore'
 import { useFloor } from '@/features/floor/useFloor'
+import { useProtein } from '@/features/nutrition/useProtein'
 import { t } from '@/i18n/fr'
 
 /**
@@ -20,11 +21,26 @@ export function QuickActionFab() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { completeFloor, floorCompleted } = useFloor()
+  const protein = useProtein()
+
+  const QUICK_PROTEIN_GRAMS = 30
 
   const onValidateFloor = async () => {
-    await completeFloor()
+    const pending = await completeFloor()
     setOpen(false)
+    // A portion-based floor habit still needs its source picked on Today.
+    if (pending.length > 0) {
+      navigate('/')
+      showToast(t.nutrition.pickPortion)
+      return
+    }
     showToast(t.today.floorDone)
+  }
+
+  const onAddProtein = async () => {
+    await protein.add(QUICK_PROTEIN_GRAMS, 'meal')
+    setOpen(false)
+    showToast(t.nutrition.addedGrams(QUICK_PROTEIN_GRAMS))
   }
 
   const later = (to: string) => {
@@ -64,7 +80,7 @@ export function QuickActionFab() {
             block
             variant="secondary"
             className="justify-start"
-            onClick={() => later('/nutrition')}
+            onClick={onAddProtein}
           >
             <CirclePlus size={20} aria-hidden />
             {t.quickAction.addProtein}

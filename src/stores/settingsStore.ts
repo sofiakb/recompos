@@ -6,10 +6,16 @@
  */
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { DEFAULT_HABITS, DEFAULT_PROTEIN_TARGET_GRAMS } from '@/db/seed'
+import { DEFAULT_HABITS } from '@/db/seed'
 import { createId } from '@/lib/utils'
 import { toLogicalDate } from '@/lib/date'
-import { SCHEMA_VERSION, type AppSettings, type FloorHabitDefinition } from '@/types/models'
+import { clampProteinTargetGrams } from '@/lib/nutrition'
+import {
+  SCHEMA_VERSION,
+  type AppSettings,
+  type FloorHabitDefinition,
+  type ProteinTargetMode,
+} from '@/types/models'
 
 export const STORAGE_KEY = 'recompos:settings'
 
@@ -27,7 +33,7 @@ function initialSettings(): AppSettings {
   return {
     schemaVersion: SCHEMA_VERSION,
     installedAt: new Date().toISOString(),
-    proteinTargetGrams: DEFAULT_PROTEIN_TARGET_GRAMS,
+    proteinTargetMode: 'auto',
     locale: 'fr',
     restTimerDefaultSeconds: 60,
     hapticsEnabled: true,
@@ -38,7 +44,10 @@ function initialSettings(): AppSettings {
 interface SettingsState {
   settings: AppSettings
   habits: FloorHabitDefinition[]
-  setProteinTarget: (grams: number) => void
+  /** Freezes the target on a human-chosen number until auto is asked for again. */
+  setManualProteinTarget: (grams: number) => void
+  /** Hands the target back to the weight-derived calculation. */
+  resetProteinTargetToAuto: () => void
   setRestTimerSeconds: (seconds: 60 | 90) => void
   toggleHaptics: (enabled: boolean) => void
   toggleSound: (enabled: boolean) => void
@@ -46,7 +55,6 @@ interface SettingsState {
   addHabit: (habit: Omit<FloorHabitDefinition, 'id' | 'createdAt' | 'updatedAt' | 'order'>) => void
   updateHabit: (id: string, patch: Partial<FloorHabitDefinition>) => void
   archiveHabit: (id: string) => void
-  /** Day key the install is anchored on, for the consistency denominator. */
   installedOnDate: () => string
 }
 
@@ -56,9 +64,22 @@ export const useSettingsStore = create<SettingsState>()(
       settings: initialSettings(),
       habits: seedHabits(),
 
-      setProteinTarget: (grams) =>
+      setManualProteinTarget: (grams) =>
         set((state) => ({
-          settings: { ...state.settings, proteinTargetGrams: Math.round(grams) },
+          settings: {
+            ...state.settings,
+            proteinTargetMode: 'manual',
+            manualProteinTargetGrams: clampProteinTargetGrams(grams),
+          },
+        })),
+
+      resetProteinTargetToAuto: () =>
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            proteinTargetMode: 'auto',
+            manualProteinTargetGrams: undefined,
+          },
         })),
 
       setRestTimerSeconds: (seconds) =>
@@ -114,9 +135,54 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: STORAGE_KEY,
       version: SCHEMA_VERSION,
+      migrate: (persisted, fromVersion) => migrateSettings(persisted, fromVersion),
     },
   ),
 )
+
+type PersistedShape = { settings: AppSettings; habits: FloorHabitDefinition[] }
+
+/**
+ * v1 → v2: the protein target moved from a bare number to a weight-derived
+ * calculation, and the floor's protein habit became a real food portion.
+ *
+ * A number the user typed in v1 was a human decision, so it survives as a manual
+ * override rather than being silently replaced by the computed value.
+ */
+export function migrateSettings(persisted: unknown, fromVersion: number): PersistedShape {
+  const state = persisted as PersistedShape & {
+    settings: AppSettings & { proteinTargetGrams?: number }
+  }
+
+  if (fromVersion >= SCHEMA_VERSION) return state
+
+  const { proteinTargetGrams, ...settings } = state.settings
+
+  return {
+    settings: {
+      ...settings,
+      schemaVersion: SCHEMA_VERSION,
+      proteinTargetMode: proteinTargetGrams ? 'manual' : 'auto',
+      ...(proteinTargetGrams
+        ? { manualProteinTargetGrams: clampProteinTargetGrams(proteinTargetGrams) }
+        : {}),
+    },
+    habits: state.habits.map((habit) => {
+      const isLegacyShake =
+        habit.category === 'nutrition' && /shaker/i.test(habit.title) && habit.kind === 'floor'
+      if (isLegacyShake) {
+        return {
+          ...habit,
+          title: '1 portion de protéines zéro-cuisson',
+          targetRepsOrAction: 'au choix dans le catalogue',
+          completionMode: 'protein_portion' as const,
+          updatedAt: new Date().toISOString(),
+        }
+      }
+      return { ...habit, completionMode: habit.completionMode ?? ('toggle' as const) }
+    }),
+  }
+}
 
 /** Active (non-archived) habits of a kind, in display order. */
 export function selectHabits(habits: FloorHabitDefinition[], kind: 'floor' | 'stack') {
@@ -124,3 +190,5 @@ export function selectHabits(habits: FloorHabitDefinition[], kind: 'floor' | 'st
     .filter((habit) => !habit.archivedAt && habit.kind === kind)
     .sort((a, b) => a.order - b.order)
 }
+
+export type { ProteinTargetMode }
