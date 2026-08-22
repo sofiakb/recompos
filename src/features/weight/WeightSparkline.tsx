@@ -5,8 +5,8 @@ interface WeightSparklineProps {
 }
 
 /**
- * Hand-drawn SVG rather than Recharts: the trends module (lot 4) brings the
- * charting library, and a 12-point line does not justify 100 kB before then.
+ * Hand-drawn SVG rather than Recharts: the trends module brings the charting
+ * library, and a 12-point line does not justify 100 kB before then.
  */
 export function WeightSparkline({ values, className }: WeightSparklineProps) {
   if (values.length < 2) return null
