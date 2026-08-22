@@ -20,6 +20,14 @@ export const UNDO_TOAST_MS = 10_000
 interface UiState {
   quickActionOpen: boolean
   setQuickActionOpen: (open: boolean) => void
+  /**
+   * Set by the quick-action sheet so the workouts screen opens its set logger on
+   * arrival. A flag rather than router state: it survives the tab being already
+   * mounted, which router state does not.
+   */
+  microSetRequested: boolean
+  requestMicroSet: () => void
+  clearMicroSet: () => void
   toast: Toast | null
   showToast: (message: string, action?: ToastAction, durationMs?: number) => void
   dismissToast: () => void
@@ -30,6 +38,9 @@ let toastId = 0
 export const useUiStore = create<UiState>((set) => ({
   quickActionOpen: false,
   setQuickActionOpen: (open) => set({ quickActionOpen: open }),
+  microSetRequested: false,
+  requestMicroSet: () => set({ microSetRequested: true, quickActionOpen: false }),
+  clearMicroSet: () => set({ microSetRequested: false }),
   toast: null,
   showToast: (message, action, durationMs) =>
     set({

@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RecompDb } from '@/db/dexie'
-import { isWeighInDue, logWeight, recentWeights } from '@/db/repositories/measurementRepository'
+import {
+  isWeighInDue,
+  logWaist,
+  logWeight,
+  recentWaists,
+  recentWeights,
+} from '@/db/repositories/measurementRepository'
+import { MIN_WAIST_CM } from '@/lib/nutrition'
 
 const TODAY = '2026-08-22'
 
@@ -83,5 +90,38 @@ describe('isWeighInDue', () => {
 
   it('is due once the interval is reached', () => {
     expect(isWeighInDue('2026-08-15', 7, TODAY)).toBe(true)
+  })
+})
+
+describe('logWaist', () => {
+  it('shares the day’s row with the weight instead of adding a second one', async () => {
+    await logWeight(79, '2026-08-22', db)
+    await logWaist(88, '2026-08-22', db)
+
+    const rows = await db.measurements.toArray()
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ weightKg: 79, waistCm: 88 })
+  })
+
+  it('does not wipe a waist already recorded that day when the weight is logged', async () => {
+    await logWaist(88, '2026-08-22', db)
+    await logWeight(79, '2026-08-22', db)
+    expect((await db.measurements.toArray())[0]).toMatchObject({ weightKg: 79, waistCm: 88 })
+  })
+
+  it('clamps an implausible waist rather than storing it', async () => {
+    const measurement = await logWaist(5, '2026-08-22', db)
+    expect(measurement.waistCm).toBe(MIN_WAIST_CM)
+  })
+
+  it('lists only the days a waist was recorded, newest first', async () => {
+    await logWeight(79, '2026-08-20', db)
+    await logWaist(88, '2026-08-21', db)
+    await logWaist(87, '2026-08-22', db)
+
+    expect((await recentWaists(10, db)).map((row) => row.date)).toEqual([
+      '2026-08-22',
+      '2026-08-21',
+    ])
   })
 })

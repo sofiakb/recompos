@@ -4,6 +4,8 @@ import {
   completeHabits,
   completedFloorDates,
   completedHabitIds,
+  completionDatesForHabit,
+  habitHistory,
   refreshDailyLog,
   toggleHabit,
 } from '@/db/repositories/habitRepository'
@@ -99,5 +101,38 @@ describe('seedDatabase', () => {
 
     expect(await db.exercises.count()).toBe(exerciseCount)
     expect((await db.takeoutOptions.get('burger'))?.pick).toBe('Modifié par l’utilisateur')
+  })
+})
+
+describe('habitHistory', () => {
+  it('counts every completion but only windows the dates', async () => {
+    await db.habitCompletions.bulkAdd([
+      { id: '1', habitId: FLOOR[0], date: '2026-08-20', completedAt: '2026-08-20T08:00:00.000Z' },
+      { id: '2', habitId: FLOOR[0], date: '2026-08-21', completedAt: '2026-08-21T08:00:00.000Z' },
+      { id: '3', habitId: FLOOR[0], date: '2026-01-04', completedAt: '2026-01-04T08:00:00.000Z' },
+      { id: '4', habitId: FLOOR[1], date: '2026-08-21', completedAt: '2026-08-21T08:00:00.000Z' },
+    ])
+
+    const history = await habitHistory(FLOOR[0], 30, TODAY, db)
+    expect(history.total).toBe(3)
+    expect(history.dates).toEqual(new Set(['2026-08-20', '2026-08-21']))
+    expect(history.firstDate).toBe('2026-01-04')
+    expect(history.lastDate).toBe('2026-08-21')
+  })
+
+  it('reports a habit that was never validated', async () => {
+    const history = await habitHistory(FLOOR[0], 30, TODAY, db)
+    expect(history).toEqual({ total: 0, dates: new Set(), firstDate: null, lastDate: null })
+  })
+
+  it('never mixes one habit\u2019s completions into another\u2019s', async () => {
+    await db.habitCompletions.add({
+      id: '1',
+      habitId: FLOOR[1],
+      date: '2026-08-21',
+      completedAt: '2026-08-21T08:00:00.000Z',
+    })
+    expect(await completionDatesForHabit(FLOOR[0], 30, TODAY, db)).toEqual(new Set())
+    expect(await completionDatesForHabit(FLOOR[1], 30, TODAY, db)).toEqual(new Set(['2026-08-21']))
   })
 })

@@ -11,6 +11,7 @@ import { addProteinLog, removeProteinLog } from '@/db/repositories/proteinReposi
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { consistencyScore, dayNumber, type ConsistencyScore } from '@/lib/consistency'
 import { lastDays, toLogicalDate } from '@/lib/date'
+import { DAYS_PER_WEEK, HEATMAP_WEEKS } from '@/lib/heatmap'
 import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
 import { haptic } from '@/lib/utils'
 import type { FloorHabitDefinition, ZeroCookItem } from '@/types/models'
@@ -20,10 +21,14 @@ export type ToggleOutcome = 'completed' | 'uncompleted' | 'needs_portion'
 
 export interface FloorState {
   today: string
+  /** First day the app could have been used — the consistency denominator's floor. */
+  installedOn: string
   dayNumber: number
   floorHabits: FloorHabitDefinition[]
   stackHabits: FloorHabitDefinition[]
   completedIds: Set<string>
+  /** Days the whole floor was validated, over the heatmap window. */
+  completedDates: Set<string>
   floorCompleted: boolean
   score7: ConsistencyScore
   score30: ConsistencyScore
@@ -47,10 +52,12 @@ export function useFloor(): FloorState {
   const completedIdsQuery = useLiveQuery(() => completedHabitIds(today), [today], new Set<string>())
   const completedIds = useMemo(() => completedIdsQuery ?? new Set<string>(), [completedIdsQuery])
 
-  const window30 = useMemo(() => lastDays(30, today), [today])
+  // The heatmap needs 12 weeks; the 7- and 30-day scores read from the same rows
+  // rather than firing three overlapping range queries.
+  const historyWindow = useMemo(() => lastDays(HEATMAP_WEEKS * DAYS_PER_WEEK, today), [today])
   const dailyLogs = useLiveQuery(
-    () => db.dailyLogs.where('date').between(window30[0], today, true, true).toArray(),
-    [window30, today],
+    () => db.dailyLogs.where('date').between(historyWindow[0], today, true, true).toArray(),
+    [historyWindow, today],
     [],
   )
 
@@ -123,10 +130,12 @@ export function useFloor(): FloorState {
 
   return {
     today,
+    installedOn,
     dayNumber: dayNumber(installedOn, today),
     floorHabits,
     stackHabits,
     completedIds,
+    completedDates,
     floorCompleted,
     score7: consistencyScore(7, completedDates, installedOn, today),
     score30: consistencyScore(30, completedDates, installedOn, today),

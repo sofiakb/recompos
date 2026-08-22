@@ -55,6 +55,10 @@ interface SettingsState {
   addHabit: (habit: Omit<FloorHabitDefinition, 'id' | 'createdAt' | 'updatedAt' | 'order'>) => void
   updateHabit: (id: string, patch: Partial<FloorHabitDefinition>) => void
   archiveHabit: (id: string) => void
+  /** Brings an archived habit back into today's list, at the end of its group. */
+  restoreHabit: (id: string) => void
+  /** Swaps a habit with its neighbour of the same kind. -1 is up, +1 is down. */
+  moveHabit: (id: string, direction: -1 | 1) => void
   installedOnDate: () => string
 }
 
@@ -130,6 +134,38 @@ export const useSettingsStore = create<SettingsState>()(
           ),
         })),
 
+      restoreHabit: (id) =>
+        set((state) => {
+          const now = new Date().toISOString()
+          const order = state.habits.reduce((max, h) => Math.max(max, h.order), -1) + 1
+          return {
+            habits: state.habits.map((habit) =>
+              habit.id === id ? { ...habit, archivedAt: undefined, order, updatedAt: now } : habit,
+            ),
+          }
+        }),
+
+      // Order is a single sequence across both kinds, so moving within a kind is
+      // a swap with the previous or next *active habit of that kind*, never with
+      // the numerically adjacent one — which may belong to the other list.
+      moveHabit: (id, direction) =>
+        set((state) => {
+          const habit = state.habits.find((h) => h.id === id)
+          if (!habit) return {}
+          const siblings = selectHabits(state.habits, habit.kind)
+          const index = siblings.findIndex((h) => h.id === id)
+          const target = siblings[index + direction]
+          if (!target) return {}
+          const now = new Date().toISOString()
+          return {
+            habits: state.habits.map((h) => {
+              if (h.id === habit.id) return { ...h, order: target.order, updatedAt: now }
+              if (h.id === target.id) return { ...h, order: habit.order, updatedAt: now }
+              return h
+            }),
+          }
+        }),
+
       installedOnDate: () => toLogicalDate(new Date(get().settings.installedAt)),
     }),
     {
@@ -182,6 +218,13 @@ export function migrateSettings(persisted: unknown, fromVersion: number): Persis
       return { ...habit, completionMode: habit.completionMode ?? ('toggle' as const) }
     }),
   }
+}
+
+/** Archived habits, most recently archived first. */
+export function selectArchivedHabits(habits: FloorHabitDefinition[]) {
+  return habits
+    .filter((habit) => habit.archivedAt)
+    .sort((a, b) => (b.archivedAt ?? '').localeCompare(a.archivedAt ?? ''))
 }
 
 /** Active (non-archived) habits of a kind, in display order. */

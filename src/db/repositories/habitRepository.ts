@@ -125,3 +125,46 @@ export async function completedFloorDates(
     .toArray()
   return new Set(logs.filter((log) => log.floorCompleted).map((log) => log.date))
 }
+
+/** Date keys where one habit was completed, over the last `windowDays` days. */
+export async function completionDatesForHabit(
+  habitId: string,
+  windowDays: number,
+  today: IsoDate = toLogicalDate(),
+  database: RecompDb = db,
+): Promise<Set<IsoDate>> {
+  const window = lastDays(windowDays, today)
+  const rows = await database.habitCompletions.where('habitId').equals(habitId).toArray()
+  const first = window[0]
+  const last = window[window.length - 1]
+  return new Set(rows.filter((row) => row.date >= first && row.date <= last).map((row) => row.date))
+}
+
+export interface HabitHistory {
+  /** Completions ever recorded, including days now outside the window. */
+  total: number
+  /** Date keys inside the window, for the heatmap. */
+  dates: Set<IsoDate>
+  /** Oldest completion on record, or null if the habit was never validated. */
+  firstDate: IsoDate | null
+  lastDate: IsoDate | null
+}
+
+export async function habitHistory(
+  habitId: string,
+  windowDays: number,
+  today: IsoDate = toLogicalDate(),
+  database: RecompDb = db,
+): Promise<HabitHistory> {
+  const rows = await database.habitCompletions.where('habitId').equals(habitId).toArray()
+  const sorted = rows.map((row) => row.date).sort()
+  const window = lastDays(windowDays, today)
+  const first = window[0]
+  const last = window[window.length - 1]
+  return {
+    total: rows.length,
+    dates: new Set(sorted.filter((date) => date >= first && date <= last)),
+    firstDate: sorted[0] ?? null,
+    lastDate: sorted[sorted.length - 1] ?? null,
+  }
+}

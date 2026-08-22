@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Dumbbell, Scale } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +12,7 @@ import { ProteinPortionSheet } from '@/features/nutrition/ProteinPortionSheet'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { WeightSheet } from '@/features/weight/WeightSheet'
+import { useWorkouts } from '@/features/workouts/useWorkouts'
 import { useWeight } from '@/features/weight/useWeight'
 import { useUiStore } from '@/stores/uiStore'
 import { formatLongDate } from '@/lib/date'
@@ -22,11 +24,20 @@ export function TodayScreen() {
   const protein = useProtein()
   const target = useProteinTarget()
   const weight = useWeight()
+  const workouts = useWorkouts()
+  const navigate = useNavigate()
   const showToast = useUiStore((state) => state.showToast)
 
   // The habit waiting for its portion to be picked, if any.
   const [portionHabit, setPortionHabit] = useState<FloorHabitDefinition | null>(null)
   const [weighInOpen, setWeighInOpen] = useState(false)
+
+  // Starting from the dashboard means landing on the workouts tab with the clock
+  // already running, not on a screen asking to start again.
+  const onStartWorkout = async () => {
+    if (!workouts.session) await workouts.start('20min_circuit')
+    navigate('/workouts')
+  }
 
   const onToggle = async (habit: FloorHabitDefinition) => {
     const outcome = await floor.toggle(habit)
@@ -93,15 +104,9 @@ export function TodayScreen() {
           onToggle={onToggle}
         />
 
-        <Button
-          size="lg"
-          variant="secondary"
-          block
-          onClick={() => showToast(t.today.comingInLot)}
-          className="mb-2"
-        >
+        <Button size="lg" variant="secondary" block onClick={onStartWorkout} className="mb-2">
           <Dumbbell size={20} aria-hidden />
-          {t.today.startWorkout}
+          {workouts.session ? t.today.resumeWorkout : t.today.startWorkout}
         </Button>
       </div>
 

@@ -13,6 +13,12 @@ export const MAX_PROTEIN_TARGET_GRAMS = 250
 export const MIN_WEIGHT_KG = 35
 export const MAX_WEIGHT_KG = 250
 
+// Body measurements live beside the weight because the protein target derives
+// from them; the waist is here for the same reason the weight is — one place
+// for the numbers the user types about their body.
+export const MIN_WAIST_CM = 40
+export const MAX_WAIST_CM = 200
+
 /** Number of weigh-ins averaged to smooth out day-to-day water noise. */
 export const WEIGHT_SMOOTHING_POINTS = 4
 
@@ -47,6 +53,10 @@ export function smoothedWeightKg(
 
 export function clampWeightKg(kg: number): number {
   return Math.min(MAX_WEIGHT_KG, Math.max(MIN_WEIGHT_KG, Math.round(kg * 10) / 10))
+}
+
+export function clampWaistCm(cm: number): number {
+  return Math.min(MAX_WAIST_CM, Math.max(MIN_WAIST_CM, Math.round(cm * 10) / 10))
 }
 
 export function clampProteinTargetGrams(grams: number): number {

@@ -122,8 +122,16 @@ export type PhotoAngle = 'front' | 'side' | 'back'
 export interface ProgressPhoto {
   id: string
   date: IsoDate
-  /** WebP, 1200 px on the long edge. Never leaves the device. */
-  blob: Blob
+  /**
+   * Encoded image bytes, 1200 px on the long edge. Never leaves the device.
+   *
+   * An ArrayBuffer rather than a Blob: structured clone handles it identically
+   * in every IndexedDB implementation, while Blob support has been uneven
+   * (Safari has shipped bugs, and fake-indexeddb drops it outright).
+   */
+  bytes: ArrayBuffer
+  /** Usually `image/webp`; `image/jpeg` where WebP encoding is unavailable. */
+  mimeType: string
   angle: PhotoAngle
   widthPx: number
   heightPx: number
@@ -182,7 +190,7 @@ export interface ExportBundle {
   measurements: Measurement[]
   takeoutOptions: TakeoutOption[]
   zeroCookItems: ZeroCookItem[]
-  photos?: Array<Omit<ProgressPhoto, 'blob'> & { dataUrl: string }>
+  photos?: Array<Omit<ProgressPhoto, 'bytes'> & { dataUrl: string }>
 }
 
 /** Bumped whenever the shape above changes. Guards Dexie and import. */

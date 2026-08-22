@@ -11,14 +11,15 @@ import { t } from '@/i18n/fr'
  * The three-taps-max guarantee (PRD §3.1): a core action is reachable from any
  * tab without navigating first.
  *
- * The floor and protein actions are wired end to end; logging a set lands with
- * the workouts module and routes to its tab meanwhile, rather than pretending to
- * work.
+ * All three actions are wired end to end: the floor and the protein counter act
+ * in place, and logging a set hands off to the workouts screen with its logger
+ * already open.
  */
 export function QuickActionFab() {
   const open = useUiStore((state) => state.quickActionOpen)
   const setOpen = useUiStore((state) => state.setQuickActionOpen)
   const showToast = useUiStore((state) => state.showToast)
+  const requestMicroSet = useUiStore((state) => state.requestMicroSet)
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { completeFloor, floorCompleted } = useFloor()
@@ -47,10 +48,11 @@ export function QuickActionFab() {
     })
   }
 
-  const later = (to: string) => {
-    setOpen(false)
-    showToast(t.today.comingInLot)
-    navigate(to)
+  const onAddSet = () => {
+    // The workouts screen owns the movement list and the overload suggestion, so
+    // the quick action asks it to open its logger rather than duplicating both.
+    requestMicroSet()
+    navigate('/workouts')
   }
 
   // Settings is a place to configure, not to log: no quick action there.
@@ -89,13 +91,7 @@ export function QuickActionFab() {
             <CirclePlus size={20} aria-hidden />
             {t.quickAction.addProtein}
           </Button>
-          <Button
-            size="lg"
-            block
-            variant="secondary"
-            className="justify-start"
-            onClick={() => later('/workouts')}
-          >
+          <Button size="lg" block variant="secondary" className="justify-start" onClick={onAddSet}>
             <Dumbbell size={20} aria-hidden />
             {t.quickAction.addSet}
           </Button>
