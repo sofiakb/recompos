@@ -4,12 +4,13 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ToggleRow } from '@/components/ui/toggle-row'
+import { HabitManagerCard } from '@/features/habits/HabitManagerCard'
 import { ProteinTargetEditor } from '@/features/nutrition/ProteinTargetEditor'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { WeightCard } from '@/features/weight/WeightCard'
 import { WeightSheet } from '@/features/weight/WeightSheet'
 import { useWeight } from '@/features/weight/useWeight'
-import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
+import { useSettingsStore } from '@/stores/settingsStore'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
 import { SCHEMA_VERSION } from '@/types/models'
 import { t } from '@/i18n/fr'
@@ -53,7 +54,6 @@ function useStorageInfo(): StorageInfo | null {
 
 export function SettingsScreen() {
   const settings = useSettingsStore((state) => state.settings)
-  const habits = useSettingsStore((state) => state.habits)
   const target = useProteinTarget()
   const weight = useWeight()
   const [weighInOpen, setWeighInOpen] = useState(false)
@@ -61,9 +61,6 @@ export function SettingsScreen() {
   const toggleHaptics = useSettingsStore((state) => state.toggleHaptics)
   const toggleSound = useSettingsStore((state) => state.toggleSound)
   const storage = useStorageInfo()
-
-  const floorCount = selectHabits(habits, 'floor').length
-  const stackCount = selectHabits(habits, 'stack').length
 
   return (
     <>
@@ -90,17 +87,7 @@ export function SettingsScreen() {
 
         <WeightCard weight={weight} onLog={() => setWeighInOpen(true)} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.settings.habits}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {t.settings.habitsCount(floorCount, stackCount)}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">{t.today.comingInLot}</p>
-          </CardContent>
-        </Card>
+        <HabitManagerCard />
 
         <Card>
           <CardHeader>
