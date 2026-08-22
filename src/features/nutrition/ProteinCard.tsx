@@ -1,3 +1,5 @@
+import { ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { t } from '@/i18n/fr'
@@ -13,10 +15,18 @@ export function ProteinCard({ protein, target }: ProteinCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t.today.proteinTitle}</CardTitle>
-        <span className="tnum text-sm text-muted-foreground">
-          {t.today.proteinOf(protein.totalGrams, protein.targetGrams)}
-        </span>
+        <Link
+          to="/nutrition"
+          className="flex items-start justify-between gap-2 rounded-md transition-colors active:bg-accent"
+        >
+          <span className="flex flex-col">
+            <CardTitle>{t.today.proteinTitle}</CardTitle>
+            <span className="tnum text-sm text-muted-foreground">
+              {t.today.proteinOf(protein.totalGrams, protein.targetGrams)}
+            </span>
+          </span>
+          <ChevronRight size={20} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
+        </Link>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <Progress

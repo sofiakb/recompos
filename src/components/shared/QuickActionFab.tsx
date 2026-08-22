@@ -11,8 +11,9 @@ import { t } from '@/i18n/fr'
  * The three-taps-max guarantee (PRD §3.1): a core action is reachable from any
  * tab without navigating first.
  *
- * Lot 0 wires the floor action end to end; protein and sets land with their own
- * modules, and route to their tab in the meantime rather than pretending to work.
+ * The floor and protein actions are wired end to end; logging a set lands with
+ * the workouts module and routes to its tab meanwhile, rather than pretending to
+ * work.
  */
 export function QuickActionFab() {
   const open = useUiStore((state) => state.quickActionOpen)
@@ -38,9 +39,12 @@ export function QuickActionFab() {
   }
 
   const onAddProtein = async () => {
-    await protein.add(QUICK_PROTEIN_GRAMS, 'meal')
+    const log = await protein.add(QUICK_PROTEIN_GRAMS, 'meal')
     setOpen(false)
-    showToast(t.nutrition.addedGrams(QUICK_PROTEIN_GRAMS))
+    showToast(t.nutrition.addedGrams(QUICK_PROTEIN_GRAMS), {
+      label: t.nutrition.undo,
+      run: () => protein.remove(log.id),
+    })
   }
 
   const later = (to: string) => {

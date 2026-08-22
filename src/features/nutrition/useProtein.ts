@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { addProteinLog, logsForDate, removeProteinLog } from '@/db/repositories/proteinRepository'
+import {
+  addProteinLog,
+  logsForDate,
+  removeProteinLog,
+  updateProteinLogSource,
+} from '@/db/repositories/proteinRepository'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { toLogicalDate } from '@/lib/date'
 import { haptic } from '@/lib/utils'
@@ -15,6 +20,7 @@ export interface ProteinState {
   percent: number
   add: (grams: number, sourceType: ProteinSource, note?: string) => Promise<ProteinLog>
   remove: (id: string) => Promise<void>
+  setSource: (id: string, sourceType: ProteinSource) => Promise<void>
 }
 
 export function useProtein(): ProteinState {
@@ -39,6 +45,11 @@ export function useProtein(): ProteinState {
     [targetGrams],
   )
 
+  const setSource = useCallback(
+    (id: string, sourceType: ProteinSource) => updateProteinLogSource(id, sourceType),
+    [],
+  )
+
   return {
     today,
     logs,
@@ -48,5 +59,6 @@ export function useProtein(): ProteinState {
     percent: targetGrams === 0 ? 0 : Math.round((totalGrams / targetGrams) * 100),
     add,
     remove,
+    setSource,
   }
 }

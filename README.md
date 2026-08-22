@@ -5,7 +5,7 @@ surcharge progressive. Hors ligne, sans compte, sans serveur — tout reste sur 
 
 Le cahier des charges complet est dans [`docs/recompos-pwa-prd.md`](docs/recompos-pwa-prd.md).
 
-## État : lot 0 + module Poids
+## État : jalons 1 à 3 livrés
 
 Livré :
 
@@ -21,8 +21,8 @@ Livré :
 - PWA installable, fonctionnelle hors ligne, avec bandeau de mise à jour non intrusif.
 - Base Dexie créée et pré-remplie (exercices, cheat sheet livraison, catalogue zéro-cuisson).
 
-À venir, un lot à la fois : compteur de protéines complet et cheat sheet livraison (lot 2), tracker de
-séances et surcharge progressive (lot 3), tendances, photos et export/import (lot 4).
+À venir, un jalon à la fois : habitudes éditables et heatmap de consistance, tracker de séances avec
+surcharge progressive, puis tendances, photos et export/import. Le découpage complet est en §5 du PRD.
 
 ## Démarrer
 
@@ -107,4 +107,4 @@ doit les changer tous les trois.
 
 Aucune requête réseau au runtime, aucun compte, aucune télémétrie. Les données ne quittent jamais
 l'appareil — ce qui veut aussi dire qu'elles disparaissent si le stockage du navigateur est vidé.
-L'export manuel arrive au lot 4.
+L'export manuel arrive avec le module Tendances.

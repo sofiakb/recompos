@@ -60,6 +60,15 @@ export async function addProteinLog(
   return log
 }
 
+/** Re-labels a log's source. Grams are untouched, so no total to recompute. */
+export async function updateProteinLogSource(
+  id: string,
+  sourceType: ProteinSource,
+  database: RecompDb = db,
+): Promise<void> {
+  await database.proteinLogs.update(id, { sourceType })
+}
+
 export async function removeProteinLog(
   id: string,
   targetGrams: number,

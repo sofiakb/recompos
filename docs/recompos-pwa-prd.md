@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.2 — poids et cible dérivée |
+| Version | 1.3 — plan recalé sur le livré |
 | Date | 2026-08-22 |
-| Statut | Lot 0 livré, module Poids ajouté — lots 1 à 4 à venir |
-| Remplace | v1.1 (cadrage initial), elle-même issue du brouillon v1.0 |
+| Statut | Jalons 1 à 3 livrés — jalons 4 à 6 à venir |
+| Remplace | v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -32,7 +32,7 @@ une décision d'implémentation.
 
 | # | Sujet | Décision | Conséquence principale |
 |---|---|---|---|
-| 1 | Périmètre V1 | Squelette navigable d'abord, puis itération module par module | Lot 0 = 4 écrans + navigation + design system + PWA offline avec logique minimale |
+| 1 | Périmètre V1 | Squelette navigable d'abord, puis itération module par module | Jalon 1 = 4 écrans + navigation + design system + PWA offline avec logique minimale |
 | 2 | Stack UI | Tailwind CSS + shadcn/ui | Abandon de Gluestack UI v2 et de la compatibilité React Native. Web pur, bundle léger |
 | 3 | Persistance | Zustand `persist` (localStorage) + Dexie/IndexedDB | localStorage pour réglages et état courant, IndexedDB pour historiques et photos |
 | 4 | Langue | Français d'abord, i18n-ready | Tous les textes dans un module de constantes ; code et identifiants en anglais |
@@ -88,48 +88,50 @@ chargé à la demande.
 
 ---
 
-## 5. Découpage en lots
+## 5. Découpage en jalons
 
-### Lot 0 — Squelette navigable (V1 livrable)
+Le découpage initial en « lots 0 à 4 » a dérivé dès le premier retour utilisateur : le suivi du poids
+n'était prévu nulle part, et il a fallu entamer la nutrition pour que la cible de protéines serve à
+quelque chose. Plutôt que de conserver une numérotation qui ne décrit plus le dépôt, le plan est
+recalé ici sur ce qui est réellement livré, et réordonné par utilité quotidienne.
 
-C'est la décision n°1 : livrer d'abord une coquille complète, installable et déployée, avant toute
-logique métier profonde.
+### Livré
 
-- Projet Vite + React + TS initialisé, ESLint/Prettier/Vitest configurés.
-- Tailwind + shadcn/ui installés, thème dark, tokens de couleur, typographie, espacements.
-- 4 écrans routés avec barre de navigation basse persistante : Dashboard, Séances, Nutrition, Tendances.
-- Écran Réglages accessible depuis le Dashboard.
-- Couche de persistance en place : store Zustand `settings` persisté, base Dexie initialisée avec
-  toutes les tables et migrations v1.
-- Types TypeScript complets (section 8) et données de seed (annexe A).
-- PWA installable : manifeste, icônes 192/512 et maskable, service worker, écran fonctionnel hors ligne.
-- Mini-onboarding 3 écrans.
-- Déploiement GitHub Pages automatique, CI verte.
-- Logique métier minimale : chaque écran affiche des données réelles lues du store, avec au moins une
-  action d'écriture fonctionnelle (valider le plancher du jour).
+**Jalon 1 — Squelette navigable**
+Projet Vite + React + TS, Tailwind et primitives shadcn maison, 4 écrans routés plus Réglages, base
+Dexie et stores Zustand, types complets, données de seed, PWA installable et hors ligne, mini-onboarding
+3 écrans, déploiement GitHub Pages automatique.
 
-**Critère de sortie** : l'app s'installe sur un iPhone, s'ouvre en mode avion, affiche le plancher du
-jour et permet de le valider ; l'état survit à un redémarrage complet.
+**Jalon 2 — Plancher & consistance**
+Plancher du jour et habitudes empilées validables en 1 tap, `floorCompleted` dérivé des complétions,
+score de consistance élastique 7 et 30 jours, jalon cumulatif « Jour N ».
+*Reste ouvert* : création et édition d'habitudes depuis les Réglages, historique et heatmap.
 
-### Lot 1 — Floor & Stack Engine
-Habitudes plancher complètes, ancres de habit stacking, score de consistance élastique, historique.
+**Jalon 3 — Poids & nutrition**
+Suivi du poids (pesée hebdomadaire suggérée, moyenne glissante, historique), cible de protéines dérivée
+du poids avec override figé, plancher nutrition en portion réelle, compteur de protéines complet
+(anneau, ajout rapide, montant libre, annulation), catalogue zéro-cuisson avec inventaire, cheat sheet
+livraison filtrable.
 
-### Lot 2 — Nutrition
-Compteur protéines 1-tap, anneau de progression, cheat sheet livraison, catalogue zéro-cuisson.
+### À venir
 
-### Lot 3 — Séances
+**Jalon 4 — Habitudes éditables**
+Créer, renommer, réordonner et archiver une habitude depuis les Réglages. Historique par habitude.
+Heatmap de consistance sur 12 semaines. C'est le reliquat du jalon 2.
+
+**Jalon 5 — Séances**
 Circuit 20 min, micro-séries (grease the groove), surcharge progressive, timer de repos.
 
-### Lot 4 — Tendances
-Index de force, mesures, coffre photos, matrice de consistance, export/import JSON.
+**Jalon 6 — Tendances & sauvegarde**
+Index de force, tour de taille, coffre photos, courbes Recharts, export/import JSON.
 
-Chaque lot est autonome, testé, déployé, et utilisable seul. Aucun lot ne casse le précédent.
+Chaque jalon est autonome, testé, déployé, et utilisable seul. Aucun jalon ne casse le précédent.
 
 ---
 
 ## 6. Modules fonctionnels
 
-### 6.1 Module Floor & Stack (lot 1)
+### 6.1 Module Floor & Stack (jalons 2 et 4)
 
 **Plancher quotidien non négociable**
 
@@ -175,7 +177,7 @@ score30 = jours avec plancher validé sur les 30 derniers jours / min(30, jours 
 - Jalon cumulatif affiché à côté : « Jour N depuis le début », N = jours écoulés depuis l'installation,
   pas jours consécutifs.
 
-### 6.2 Module Nutrition (lot 2)
+### 6.2 Module Nutrition (jalon 3)
 
 **Cible quotidienne dérivée du poids**
 
@@ -221,7 +223,7 @@ Checklist d'inventaire des protéines instantanées (skyr, thon en boîte, cotta
 charcuterie maigre, whey). Chaque item porte ses grammes de protéines par portion et peut être logué
 directement dans le compteur en 1 tap depuis la liste.
 
-### 6.3 Module Séances (lot 3)
+### 6.3 Module Séances (jalon 5)
 
 **Deux modes**
 
@@ -254,7 +256,7 @@ du champ, avec une suggestion calculée :
 Compte à rebours 60 s / 90 s / personnalisé, signal sonore court et vibration en fin. Continue de
 tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas sur `setInterval` seul).
 
-### 6.4 Module Poids (livré avec le lot 0bis)
+### 6.4 Module Poids (jalon 3)
 
 - **Pesée suggérée, jamais imposée** : une carte discrète apparaît sur le dashboard quand la dernière
   pesée date de 7 jours ou plus, et disparaît sinon. Aucune notification, aucun rappel insistant.
@@ -266,7 +268,7 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
   il n'y a pas de poids cible, et aucun écran ne le présente comme une mesure de réussite — le PRD
   reste centré sur la recomposition (§3.3).
 
-### 6.5 Module Tendances (lot 4)
+### 6.5 Module Tendances (jalon 6)
 
 - **Index de force** : progression du volume (reps × séries, pondéré par la charge quand renseignée)
   sur les mouvements de base, fenêtre 3 à 12 mois, courbe Recharts.
@@ -575,7 +577,7 @@ Sur push `main` et CI verte : build puis publication sur GitHub Pages.
 
 ## 13. Critères d'acceptation
 
-**Lot 0 — squelette**
+**Jalon 1 — squelette**
 
 - [x] `npm run dev`, `npm run build`, `npm test`, `npm run lint` passent sans erreur ni warning.
 - [x] Les 4 onglets sont routés et l'état de navigation survit à un rechargement.
@@ -586,7 +588,7 @@ Sur push `main` et CI verte : build puis publication sur GitHub Pages.
 - [x] Le plancher du jour s'affiche et se valide, et la validation survit à un redémarrage.
 - [ ] Le site est en ligne sur GitHub Pages.
 
-**Transverses, valables sur tous les lots**
+**Transverses, valables sur tous les jalons**
 
 - [ ] Toute action cœur est atteignable en moins de 3 taps depuis l'ouverture de l'app.
 - [ ] Aucun écran n'affiche de compte à rebours vers une date.
@@ -619,7 +621,7 @@ Explicitement exclu, pour éviter la dérive :
 | Photos saturant le quota | Écritures en échec | Compression WebP 1200 px, jauge d'espace, alerte à 80 % |
 | Abandon après 3 semaines (le cycle burnout que l'app combat) | L'app ne sert plus | Score élastique sans reset, plancher volontairement ridicule (5 pompes), aucune notification qui transforme l'app en source de culpabilité |
 | Recharts alourdit le démarrage | Ouverture lente | Chunk séparé, chargé uniquement sur l'onglet Tendances |
-| Dérive de périmètre lot après lot | V1 jamais livrée | Section 14 opposable, critères de sortie par lot |
+| Dérive de périmètre jalon après jalon | V1 jamais livrée | Section 14 opposable, critères de sortie par jalon |
 
 ---
 

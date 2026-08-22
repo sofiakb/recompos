@@ -1,15 +1,13 @@
 import { useEffect } from 'react'
 import { useUiStore } from '@/stores/uiStore'
 
-const DISMISS_AFTER_MS = 2600
-
 export function Toast() {
   const toast = useUiStore((state) => state.toast)
   const dismiss = useUiStore((state) => state.dismissToast)
 
   useEffect(() => {
     if (!toast) return
-    const timer = window.setTimeout(dismiss, DISMISS_AFTER_MS)
+    const timer = window.setTimeout(dismiss, toast.durationMs)
     return () => window.clearTimeout(timer)
   }, [toast, dismiss])
 
@@ -19,11 +17,23 @@ export function Toast() {
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4"
+      className="fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4"
     >
-      <p className="animate-slide-up rounded-full border border-border bg-card px-4 py-2 text-sm shadow-lg">
-        {toast.message}
-      </p>
+      <div className="flex animate-slide-up items-center gap-3 rounded-full border border-border bg-card py-2 pl-4 pr-2 shadow-lg">
+        <p className="text-sm">{toast.message}</p>
+        {toast.action ? (
+          <button
+            type="button"
+            onClick={async () => {
+              await toast.action?.run()
+              dismiss()
+            }}
+            className="min-h-[36px] rounded-full px-3 text-sm font-semibold text-primary transition-colors active:bg-accent"
+          >
+            {toast.action.label}
+          </button>
+        ) : null}
+      </div>
     </div>
   )
 }
