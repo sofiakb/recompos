@@ -5,24 +5,24 @@ surcharge progressive. Hors ligne, sans compte, sans serveur — tout reste sur 
 
 Le cahier des charges complet est dans [`docs/recompos-pwa-prd.md`](docs/recompos-pwa-prd.md).
 
-## État : jalons 1 à 3 livrés
+## État : V1 complète, jalons 1 à 6 livrés
 
-Livré :
-
-- Les 4 onglets routés — Aujourd'hui, Séances, Nutrition, Tendances — plus l'écran Réglages.
-- Le plancher du jour et les habitudes empilées : validation en 1 tap, persistée.
-- Le score de consistance élastique sur 7 et 30 jours, et le jalon « Jour N ».
-- **Suivi du poids** : pesée suggérée chaque semaine, moyenne glissante sur 4 points, historique.
-- **Cible de protéines dérivée du poids** (1,8 g/kg), ajustable à la main — l'ajustement fige alors la
-  cible jusqu'à un retour explicite au calcul automatique.
-- **Plancher nutrition réel** : valider « 1 portion de protéines zéro-cuisson » demande laquelle et
-  ajoute ses grammes au total du jour.
-- Mini-onboarding 3 écrans, affiché une seule fois.
-- PWA installable, fonctionnelle hors ligne, avec bandeau de mise à jour non intrusif.
-- Base Dexie créée et pré-remplie (exercices, cheat sheet livraison, catalogue zéro-cuisson).
-
-À venir, un jalon à la fois : habitudes éditables et heatmap de consistance, tracker de séances avec
-surcharge progressive, puis tendances, photos et export/import. Le découpage complet est en §5 du PRD.
+- **Plancher & consistance** : plancher du jour et habitudes empilées en 1 tap, score élastique sur 7
+  et 30 jours, jalon « Jour N », heatmap sur 12 semaines.
+- **Habitudes éditables** : créer, renommer, réordonner, archiver et restaurer depuis les Réglages,
+  avec l'historique de chacune. Archiver la dernière habitude du plancher est refusé — un plancher vide
+  rendrait toute journée invalidable.
+- **Poids** : pesée suggérée chaque semaine, moyenne glissante sur 4 points, historique et courbe.
+- **Nutrition** : cible dérivée du poids (1,8 g/kg) et ajustable à la main — l'ajustement fige alors la
+  cible jusqu'à un retour explicite au calcul automatique. Compteur 1-tap avec annulation, catalogue
+  zéro-cuisson, cheat sheet livraison. Valider « 1 portion de protéines zéro-cuisson » demande laquelle
+  et ajoute ses grammes au total du jour.
+- **Séances** : circuit 20 min à trois blocs avec chrono, micro-séries hors séance, suggestions de
+  surcharge progressive, timer de repos qui survit à un écran verrouillé.
+- **Tendances** : index de force hebdomadaire, meilleures séries, tour de taille avec moyenne glissante,
+  coffre photos redimensionnées sur l'appareil.
+- **Sauvegarde** : export JSON versionné, import avec confirmation explicite avant écrasement.
+- Mini-onboarding 3 écrans, PWA installable et hors ligne, bandeau de mise à jour non intrusif.
 
 ## Démarrer
 
@@ -60,11 +60,11 @@ Le service worker n'est pas actif en `dev` : pour vérifier le comportement hors
 ```text
 src/
 ├── app/          Router (hash), layout, montage de l'app
-├── components/   ui/ primitives, shared/ nav, header, FAB, toast
+├── components/   ui/ primitives, charts/ courbes SVG, shared/ nav, header, FAB, toast
 ├── features/     un dossier par module métier
 ├── db/           schéma Dexie, données de seed, repositories
 ├── stores/       Zustand (settings persistés, état UI éphémère)
-├── lib/          logique pure : dates, consistance, utilitaires
+├── lib/          logique pure : dates, consistance, surcharge, index de force, sauvegarde
 ├── i18n/         toutes les chaînes visibles par l'utilisateur
 └── types/        modèle de données
 ```
@@ -85,7 +85,7 @@ première frame : réglages, définitions d'habitudes, préférences. IndexedDB 
 grossit sans limite ou se requête par plage de dates : logs quotidiens, protéines, séances, séries,
 mesures, photos.
 
-### Deux détails qui expliquent beaucoup de code
+### Les décisions qui expliquent le plus de code
 
 - **La journée bascule à 04h00**, pas à minuit : un shaker logué à 1h du matin appartient à la soirée
   qui précède. `DAY_ROLLOVER_HOUR` dans `src/lib/date.ts` est la seule source de vérité.
@@ -93,6 +93,10 @@ mesures, photos.
   par le nombre de jours depuis l'installation. Rien ne se remet jamais à zéro.
 - **La cible de protéines suit le poids, sauf si tu la touches** : `auto` recalcule à chaque pesée,
   `manual` fige le nombre que tu as choisi. L'app ne déplace jamais une valeur que tu as posée.
+- **Les durées se calculent depuis un timestamp de départ**, jamais en accumulant des ticks : un écran
+  verrouillé étrangle `setInterval`, et un timer de repos qui perd 20 secondes est pire que pas de timer.
+- **Les graphiques sont du SVG écrit à la main** (`components/charts/LineChart.tsx`) : trois courbes de
+  ligne ne justifient pas ~100 Ko gzip de bibliothèque. Le PRD §5 documente cet écart.
 
 ## Déploiement
 
@@ -107,4 +111,8 @@ doit les changer tous les trois.
 
 Aucune requête réseau au runtime, aucun compte, aucune télémétrie. Les données ne quittent jamais
 l'appareil — ce qui veut aussi dire qu'elles disparaissent si le stockage du navigateur est vidé.
-L'export manuel arrive avec le module Tendances.
+
+**Réglages → Exporter mes données** écrit un JSON versionné contenant tout : réglages, habitudes,
+historique, séries, mesures et photos en base64. Au-delà de 5 Mo de photos, elles partent dans un
+second fichier. L'import accepte l'un, l'autre, ou les deux à la fois, et demande une confirmation
+explicite avant d'écraser — il remplace, il ne fusionne pas.

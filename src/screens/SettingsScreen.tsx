@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Download, Upload } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ToggleRow } from '@/components/ui/toggle-row'
+import { BackupCard } from '@/features/backup/BackupCard'
 import { HabitManagerCard } from '@/features/habits/HabitManagerCard'
 import { ProteinTargetEditor } from '@/features/nutrition/ProteinTargetEditor'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
@@ -12,20 +13,9 @@ import { WeightSheet } from '@/features/weight/WeightSheet'
 import { useWeight } from '@/features/weight/useWeight'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
+import { formatBytes } from '@/lib/format'
 import { SCHEMA_VERSION } from '@/types/models'
 import { t } from '@/i18n/fr'
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} o`
-  const units = ['Ko', 'Mo', 'Go']
-  let value = bytes / 1024
-  let unit = 0
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024
-    unit++
-  }
-  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unit]}`
-}
 
 interface StorageInfo {
   usage: number
@@ -135,19 +125,10 @@ export function SettingsScreen() {
             <p className="text-xs text-muted-foreground">
               {storage?.persisted ? t.settings.storagePersisted : t.settings.storageBestEffort}
             </p>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" disabled>
-                <Download size={18} aria-hidden />
-                {t.settings.export}
-              </Button>
-              <Button variant="outline" className="flex-1" disabled>
-                <Upload size={18} aria-hidden />
-                {t.settings.import}
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">{t.today.comingInLot}</p>
           </CardContent>
         </Card>
+
+        <BackupCard />
 
         <Card>
           <CardHeader>

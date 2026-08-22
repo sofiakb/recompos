@@ -76,6 +76,8 @@ export function WorkoutsScreen() {
     <>
       <ScreenHeader title={t.nav.workouts} subtitle={formatLongDate(workouts.today)} />
 
+      <RestTimer timer={timer} />
+
       <div className="flex flex-col gap-3 px-4">
         <CircuitCard
           session={workouts.session}
@@ -142,8 +144,6 @@ export function WorkoutsScreen() {
           </CardContent>
         </Card>
       </div>
-
-      <RestTimer timer={timer} />
 
       <SetLoggerSheet
         open={loggingExercise !== null}

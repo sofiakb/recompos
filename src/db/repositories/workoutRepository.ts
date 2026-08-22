@@ -2,7 +2,7 @@
 import { db, type RecompDb } from '@/db/dexie'
 import { minutesBetween } from '@/lib/timer'
 import { toLogicalDate, type IsoDate } from '@/lib/date'
-import { createId } from '@/lib/utils'
+import { createId, nowIso } from '@/lib/utils'
 import type {
   Exercise,
   ExerciseSet,
@@ -117,7 +117,7 @@ export async function logSet(input: LogSetInput, database: RecompDb = db): Promi
     difficulty: input.difficulty,
     rpe: input.rpe,
     date: input.date ?? toLogicalDate(),
-    timestamp: new Date().toISOString(),
+    timestamp: nowIso(),
   }
   await database.sets.add(set)
   return set

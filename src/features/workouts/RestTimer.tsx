@@ -9,7 +9,13 @@ interface RestTimerProps {
   timer: RestTimerState
 }
 
-/** Sticks above the tab bar while resting; nothing at all when not. */
+/**
+ * A sticky bar under the header while resting, and nothing at all when not.
+ *
+ * Floating it above the tab bar put it in the same corner as the quick-action
+ * button, which covered its own controls. Sticking it to the top keeps it
+ * visible through a scroll without fighting anything for the space.
+ */
 export function RestTimer({ timer }: RestTimerProps) {
   if (!timer.running) return null
 
@@ -17,7 +23,7 @@ export function RestTimer({ timer }: RestTimerProps) {
   const elapsed = timer.durationSeconds - timer.remaining
 
   return (
-    <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 px-4">
+    <div className="sticky top-0 z-30 bg-background/95 px-4 py-2 backdrop-blur">
       <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 shadow-lg">
         <div className="flex items-center gap-3">
           <Timer size={18} className="text-muted-foreground" aria-hidden />

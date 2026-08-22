@@ -1,7 +1,7 @@
 /** Protein logs and the day's denormalised total. */
 import { db, type RecompDb } from '@/db/dexie'
 import { toLogicalDate, type IsoDate } from '@/lib/date'
-import { createId } from '@/lib/utils'
+import { createId, nowIso } from '@/lib/utils'
 import type { ProteinLog, ProteinSource } from '@/types/models'
 
 export async function logsForDate(date: IsoDate, database: RecompDb = db): Promise<ProteinLog[]> {
@@ -50,7 +50,7 @@ export async function addProteinLog(
   const log: ProteinLog = {
     id: createId(),
     date,
-    timestamp: new Date().toISOString(),
+    timestamp: nowIso(),
     grams: Math.max(0, Math.round(grams)),
     sourceType,
     note: options.note,

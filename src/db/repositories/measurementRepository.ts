@@ -1,6 +1,6 @@
 /** Body weight and waist entries. One row per logical day, latest write wins. */
 import { db, type RecompDb } from '@/db/dexie'
-import { clampWeightKg } from '@/lib/nutrition'
+import { clampWaistCm, clampWeightKg } from '@/lib/nutrition'
 import { daysBetween, toLogicalDate, type IsoDate } from '@/lib/date'
 import { createId } from '@/lib/utils'
 import type { Measurement } from '@/types/models'
@@ -20,6 +20,36 @@ export async function logWeight(
   }
   await database.measurements.put(measurement)
   return measurement
+}
+
+/**
+ * Records a waist measurement on the same one-row-per-day entry as the weight.
+ *
+ * Weight and waist share a row rather than living in two tables: they are the
+ * same act — measuring yourself — and keeping them together makes « the day I
+ * measured » a single fact instead of two that can disagree.
+ */
+export async function logWaist(
+  waistCm: number,
+  date: IsoDate = toLogicalDate(),
+  database: RecompDb = db,
+): Promise<Measurement> {
+  const existing = await database.measurements.where('date').equals(date).first()
+  const measurement: Measurement = {
+    id: existing?.id ?? createId(),
+    date,
+    weightKg: existing?.weightKg,
+    waistCm: clampWaistCm(waistCm),
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
+  }
+  await database.measurements.put(measurement)
+  return measurement
+}
+
+/** Waist entries newest first. */
+export async function recentWaists(limit = 24, database: RecompDb = db): Promise<Measurement[]> {
+  const rows = await database.measurements.orderBy('date').reverse().toArray()
+  return rows.filter((row) => typeof row.waistCm === 'number').slice(0, limit)
 }
 
 /** Weigh-ins newest first — the order `smoothedWeightKg` expects. */

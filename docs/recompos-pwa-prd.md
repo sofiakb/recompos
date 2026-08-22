@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.3 — plan recalé sur le livré |
+| Version | 1.4 — V1 complète |
 | Date | 2026-08-22 |
-| Statut | Jalons 1 à 3 livrés — jalons 4 à 6 à venir |
-| Remplace | v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Statut | Jalons 1 à 6 livrés |
+| Remplace | v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -38,9 +38,9 @@ une décision d'implémentation.
 | 4 | Langue | Français d'abord, i18n-ready | Tous les textes dans un module de constantes ; code et identifiants en anglais |
 | 5 | Sauvegarde | Export/import JSON manuel | Zéro backend. Bouton export (JSON + photos) et import dans les réglages |
 | 6 | Rappels | Aucune notification | Ni push, ni notification locale. L'ouverture de l'app est le seul déclencheur |
-| 7 | Photos | Blobs locaux + compression WebP côté client | Jamais de sortie de l'appareil. Pas de chiffrement, pas de code PIN en V1 |
+| 7 | Photos | Octets locaux + compression WebP côté client | Jamais de sortie de l'appareil. Pas de chiffrement, pas de code PIN en V1. Stockées en `ArrayBuffer` et non en `Blob` (voir §8) |
 | 8 | Onboarding | Mini-onboarding 3 écrans | ~30 secondes au premier lancement, jamais réaffiché |
-| 9 | Graphiques | Recharts | Courbes et barres thémées dark, ~100 Ko gzip acceptés |
+| 9 | Graphiques | SVG maison (~2 Ko), Recharts écarté | Décision révisée au jalon 6 : trois courbes ne justifient pas ~100 Ko gzip. Réversible — Recharts reste le plan B si un graphique interactif devient nécessaire |
 | 10 | Livraison | GitHub Pages + Actions, Vitest + Testing Library, lint et typecheck en CI | Déploiement auto sur push `main`, base path Vite à configurer |
 | 11 | Cible de protéines | Dérivée du poids : 1,8 g/kg, arrondi à 5 g | La cible n'est plus un nombre à inventer ; elle suit le corps |
 | 12 | Override manuel | Toute modification à la main fige la cible | Une nouvelle pesée ne réécrit jamais un chiffre choisi par l'utilisateur ; retour à l'auto en un tap |
@@ -77,14 +77,14 @@ une décision d'implémentation.
 | Icônes | Lucide React | Import nommé uniquement, pour préserver le tree-shaking |
 | État | Zustand 4 + middleware `persist` | Un store par domaine, pas de store global monolithique |
 | Base locale | Dexie 4 (IndexedDB) | Historiques, séances, mesures, photos |
-| Graphiques | Recharts 2 | Chargé en `lazy` sur l'écran Tendances uniquement |
+| Graphiques | SVG écrit à la main | `components/charts/LineChart.tsx`, ~120 lignes, aucune dépendance |
 | PWA | `vite-plugin-pwa` (Workbox) | `registerType: 'autoUpdate'`, precache de l'app shell |
 | Tests | Vitest + Testing Library + jsdom | Logique métier couverte en priorité |
 | Qualité | ESLint, Prettier, `tsc --noEmit` | Bloquants en CI |
 | CI/CD | GitHub Actions → GitHub Pages | Déploiement sur push `main` |
 
-**Contraintes de bundle** : app shell hors Recharts sous 200 Ko gzip. Recharts est isolé dans un chunk
-chargé à la demande.
+**Contraintes de bundle** : app shell sous 200 Ko gzip, vérifié à chaque build. Aucun découpage en
+chunks n'a été nécessaire : au jalon 6, l'app complète pèse ~145 Ko gzip.
 
 ---
 
@@ -105,7 +105,6 @@ Dexie et stores Zustand, types complets, données de seed, PWA installable et ho
 **Jalon 2 — Plancher & consistance**
 Plancher du jour et habitudes empilées validables en 1 tap, `floorCompleted` dérivé des complétions,
 score de consistance élastique 7 et 30 jours, jalon cumulatif « Jour N ».
-*Reste ouvert* : création et édition d'habitudes depuis les Réglages, historique et heatmap.
 
 **Jalon 3 — Poids & nutrition**
 Suivi du poids (pesée hebdomadaire suggérée, moyenne glissante, historique), cible de protéines dérivée
@@ -113,19 +112,33 @@ du poids avec override figé, plancher nutrition en portion réelle, compteur de
 (anneau, ajout rapide, montant libre, annulation), catalogue zéro-cuisson avec inventaire, cheat sheet
 livraison filtrable.
 
-### À venir
-
 **Jalon 4 — Habitudes éditables**
-Créer, renommer, réordonner et archiver une habitude depuis les Réglages. Historique par habitude.
-Heatmap de consistance sur 12 semaines. C'est le reliquat du jalon 2.
+Création, renommage, réordonnancement et archivage d'une habitude depuis les Réglages, restauration
+d'une habitude archivée, historique par habitude, heatmap de consistance sur 12 semaines. Archiver la
+dernière habitude du plancher est refusé : un plancher vide rendrait toute journée invalidable.
 
 **Jalon 5 — Séances**
-Circuit 20 min, micro-séries (grease the groove), surcharge progressive, timer de repos.
+Circuit 20 min à trois blocs avec chrono de séance et mouvement interchangeable par bloc, micro-séries
+hors séance depuis l'action rapide, suggestions de surcharge progressive, timer de repos dérivé d'un
+timestamp. Une séance close sans aucune série est supprimée plutôt qu'archivée à vide.
 
 **Jalon 6 — Tendances & sauvegarde**
-Index de force, tour de taille, coffre photos, courbes Recharts, export/import JSON.
+Index de force hebdomadaire base 100 sur 12 / 26 / 52 semaines, meilleures séries par mouvement, tour
+de taille avec moyenne glissante, coffre photos WebP redimensionnées sur l'appareil avec comparaison
+première/dernière, courbes SVG maison, export JSON versionné et import avec confirmation explicite
+avant écrasement.
 
-Chaque jalon est autonome, testé, déployé, et utilisable seul. Aucun jalon ne casse le précédent.
+Chaque jalon est autonome, testé, déployé, et utilisable seul. Aucun jalon n'a cassé le précédent.
+
+**Écarts assumés par rapport aux versions précédentes du PRD**, tous deux décidés au jalon 6 :
+
+1. **Recharts n'est pas utilisé.** Trois courbes de ligne, sans interaction, ne justifient pas ~100 Ko
+   gzip sur un téléphone. `components/charts/LineChart.tsx` fait le travail en une centaine de lignes,
+   gère les trous de données et une série secondaire en pointillés. La décision est réversible.
+2. **Les photos sont stockées en `ArrayBuffer`, pas en `Blob`.** Le clone structuré traite un
+   `ArrayBuffer` de façon identique dans toutes les implémentations d'IndexedDB, ce qui n'est pas vrai
+   du `Blob` (Safari a livré des bugs, et `fake-indexeddb` le réduit à un objet vide, rendant la
+   sauvegarde intestable). Le `Blob` n'est reconstruit qu'au moment de l'affichage.
 
 ---
 
@@ -271,10 +284,17 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
 ### 6.5 Module Tendances (jalon 6)
 
 - **Index de force** : progression du volume (reps × séries, pondéré par la charge quand renseignée)
-  sur les mouvements de base, fenêtre 3 à 12 mois, courbe Recharts.
+  sur les mouvements de base, fenêtre 3, 6 ou 12 mois, courbe SVG.
+
+  Le facteur de charge est la part de poids de corps ajoutée : une traction à +8 kg sur un corps de
+  80 kg vaut 1,1 fois une traction au poids de corps. Cela évite qu'un passage au lesté en cours de
+  fenêtre ressemble à un bond de 800 %, et n'introduit aucune constante inventée — l'app connaît déjà
+  le poids de corps. Le résultat est publié en **base 100 sur la première semaine ayant du volume** :
+  la valeur absolue mélange des mouvements et ne veut rien dire seule. Une semaine sans série est un
+  **trou dans la courbe**, pas un zéro.
 - **Mesures** : tour de taille en cm, saisie hebdomadaire suggérée mais jamais imposée. Courbe avec
   moyenne glissante sur 4 points pour lisser le bruit quotidien.
-- **Coffre photos** : photos mensuelles stockées en Blob dans IndexedDB, redimensionnées côté client
+- **Coffre photos** : photos mensuelles stockées en octets dans IndexedDB, redimensionnées côté client
   à 1200 px sur le grand côté et converties en WebP qualité 0,8. Vue comparative deux photos côte à côte.
 - **Matrice de consistance** : heatmap 12 semaines du plancher, en CSS grid, sans dépendance.
 - **Aucun compte à rebours.** Uniquement des jalons cumulatifs.
@@ -334,7 +354,7 @@ src/
 | Préférences UI (dernier onglet, sections repliées) | Zustand persist / localStorage | Confort, perte sans gravité |
 | Logs quotidiens, protéines, séances, séries | Dexie / IndexedDB | Croissance illimitée, requêtes par plage de dates |
 | Mesures | Dexie / IndexedDB | Historique long |
-| Photos | Dexie / IndexedDB (Blob) | Volumineux, incompatible localStorage |
+| Photos | Dexie / IndexedDB (`ArrayBuffer`) | Volumineux, incompatible localStorage |
 
 ---
 
@@ -428,7 +448,8 @@ export interface Measurement {
 export interface ProgressPhoto {
   id: string;
   date: IsoDate;
-  blob: Blob;                               // WebP, 1200 px max sur le grand côté
+  bytes: ArrayBuffer;                       // WebP, 1200 px max sur le grand côté
+  mimeType: string;                         // image/webp, ou image/jpeg en repli
   angle: 'front' | 'side' | 'back';
   widthPx: number;
   heightPx: number;
@@ -479,7 +500,7 @@ export interface ExportBundle {
   measurements: Measurement[];
   takeoutOptions: TakeoutOption[];
   zeroCookItems: ZeroCookItem[];
-  photos?: Array<Omit<ProgressPhoto, 'blob'> & { dataUrl: string }>;
+  photos?: Array<Omit<ProgressPhoto, 'bytes'> & { dataUrl: string }>;
 }
 ```
 
@@ -620,7 +641,7 @@ Explicitement exclu, pour éviter la dérive :
 | Éviction d'IndexedDB par iOS après 7 jours sans usage | Perte de données | `navigator.storage.persist()`, PWA installée (exemptée), rappel d'export dans les Réglages |
 | Photos saturant le quota | Écritures en échec | Compression WebP 1200 px, jauge d'espace, alerte à 80 % |
 | Abandon après 3 semaines (le cycle burnout que l'app combat) | L'app ne sert plus | Score élastique sans reset, plancher volontairement ridicule (5 pompes), aucune notification qui transforme l'app en source de culpabilité |
-| Recharts alourdit le démarrage | Ouverture lente | Chunk séparé, chargé uniquement sur l'onglet Tendances |
+| Une bibliothèque de graphiques alourdit le démarrage | Ouverture lente | Courbes SVG écrites à la main, aucune dépendance ajoutée |
 | Dérive de périmètre jalon après jalon | V1 jamais livrée | Section 14 opposable, critères de sortie par jalon |
 
 ---
