@@ -19,23 +19,52 @@ export async function completedHabitIds(
   return new Set(rows.map((row) => row.habitId))
 }
 
+/**
+ * Marks one habit complete for a day.
+ *
+ * `proteinLogId` ties the completion to the protein log it created, so undoing
+ * the habit can withdraw those grams from the day's total too.
+ */
+export async function completeHabit(
+  habitId: string,
+  date: IsoDate,
+  proteinLogId?: string,
+  database: RecompDb = db,
+): Promise<HabitCompletion> {
+  const existing = await database.habitCompletions.where({ habitId, date }).first()
+  if (existing) return existing
+  const completion: HabitCompletion = {
+    id: createId(),
+    habitId,
+    date,
+    completedAt: new Date().toISOString(),
+    proteinLogId,
+  }
+  await database.habitCompletions.add(completion)
+  return completion
+}
+
+/** Removes a completion and hands it back, so its side effects can be undone. */
+export async function uncompleteHabit(
+  habitId: string,
+  date: IsoDate,
+  database: RecompDb = db,
+): Promise<HabitCompletion | null> {
+  const existing = await database.habitCompletions.where({ habitId, date }).first()
+  if (!existing) return null
+  await database.habitCompletions.delete(existing.id)
+  return existing
+}
+
 /** Toggles one habit for one day and returns its new state. */
 export async function toggleHabit(
   habitId: string,
   date: IsoDate,
   database: RecompDb = db,
 ): Promise<boolean> {
-  const existing = await database.habitCompletions.where({ habitId, date }).first()
-  if (existing) {
-    await database.habitCompletions.delete(existing.id)
-    return false
-  }
-  await database.habitCompletions.add({
-    id: createId(),
-    habitId,
-    date,
-    completedAt: new Date().toISOString(),
-  })
+  const removed = await uncompleteHabit(habitId, date, database)
+  if (removed) return false
+  await completeHabit(habitId, date, undefined, database)
   return true
 }
 

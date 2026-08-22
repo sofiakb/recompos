@@ -1,23 +1,49 @@
-import { Dumbbell } from 'lucide-react'
+import { useState } from 'react'
+import { Dumbbell, Scale } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { ConsistencyStrip } from '@/features/floor/ConsistencyStrip'
 import { FloorCard } from '@/features/floor/FloorCard'
 import { useFloor } from '@/features/floor/useFloor'
-import { useSettingsStore } from '@/stores/settingsStore'
+import { ProteinCard } from '@/features/nutrition/ProteinCard'
+import { ProteinPortionSheet } from '@/features/nutrition/ProteinPortionSheet'
+import { useProtein } from '@/features/nutrition/useProtein'
+import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
+import { WeightSheet } from '@/features/weight/WeightSheet'
+import { useWeight } from '@/features/weight/useWeight'
 import { useUiStore } from '@/stores/uiStore'
 import { formatLongDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
+import type { FloorHabitDefinition, ZeroCookItem } from '@/types/models'
 
 export function TodayScreen() {
   const floor = useFloor()
-  const proteinTarget = useSettingsStore((state) => state.settings.proteinTargetGrams)
+  const protein = useProtein()
+  const target = useProteinTarget()
+  const weight = useWeight()
   const showToast = useUiStore((state) => state.showToast)
 
-  // Lot 2 replaces this with the live daily aggregate.
-  const proteinToday = 0
+  // The habit waiting for its portion to be picked, if any.
+  const [portionHabit, setPortionHabit] = useState<FloorHabitDefinition | null>(null)
+  const [weighInOpen, setWeighInOpen] = useState(false)
+
+  const onToggle = async (habit: FloorHabitDefinition) => {
+    const outcome = await floor.toggle(habit)
+    if (outcome === 'needs_portion') setPortionHabit(habit)
+  }
+
+  const onCompleteAll = async () => {
+    const pending = await floor.completeFloor()
+    if (pending.length > 0) setPortionHabit(pending[0])
+  }
+
+  const onPickPortion = async (item: ZeroCookItem) => {
+    if (!portionHabit) return
+    await floor.completeWithPortion(portionHabit, item)
+    setPortionHabit(null)
+    showToast(t.nutrition.addedGrams(item.proteinPerServingGrams))
+  }
 
   return (
     <>
@@ -33,8 +59,8 @@ export function TodayScreen() {
           description={t.today.floorSubtitle}
           habits={floor.floorHabits}
           completedIds={floor.completedIds}
-          onToggle={floor.toggle}
-          onCompleteAll={floor.completeFloor}
+          onToggle={onToggle}
+          onCompleteAll={onCompleteAll}
           allDone={floor.floorCompleted}
           doneLabel={t.today.floorDone}
           doneHint={t.today.floorDoneHint}
@@ -42,31 +68,30 @@ export function TodayScreen() {
 
         <ConsistencyStrip score7={floor.score7} score30={floor.score30} />
 
+        <ProteinCard protein={protein} target={target} />
+
+        {weight.isDue ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.today.weighInDue}</CardTitle>
+              <CardDescription>{t.today.weighInDueHint}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" block onClick={() => setWeighInOpen(true)}>
+                <Scale size={18} aria-hidden />
+                {t.weight.logCta}
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
+
         <FloorCard
           title={t.today.stackTitle}
           description={t.today.stackSubtitle}
           habits={floor.stackHabits}
           completedIds={floor.completedIds}
-          onToggle={floor.toggle}
+          onToggle={onToggle}
         />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.today.proteinTitle}</CardTitle>
-            <span className="tnum text-sm text-muted-foreground">
-              {t.today.proteinOf(proteinToday, proteinTarget)}
-            </span>
-          </CardHeader>
-          <CardContent>
-            <Progress
-              value={proteinToday}
-              max={proteinTarget}
-              label={t.today.proteinTitle}
-              className="h-2.5"
-            />
-            <p className="mt-2 text-xs text-muted-foreground">{t.today.comingInLot}</p>
-          </CardContent>
-        </Card>
 
         <Button
           size="lg"
@@ -79,6 +104,22 @@ export function TodayScreen() {
           {t.today.startWorkout}
         </Button>
       </div>
+
+      <ProteinPortionSheet
+        open={portionHabit !== null}
+        onClose={() => setPortionHabit(null)}
+        onPick={onPickPortion}
+      />
+      <WeightSheet
+        open={weighInOpen}
+        initialKg={weight.latest?.weightKg ?? null}
+        onClose={() => setWeighInOpen(false)}
+        onSubmit={async (kg) => {
+          await weight.log(kg)
+          setWeighInOpen(false)
+          showToast(t.weight.saved(kg))
+        }}
+      />
     </>
   )
 }

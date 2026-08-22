@@ -13,6 +13,15 @@ export type IsoDateTime = string // ISO 8601
 export type HabitCategory = 'workout' | 'nutrition' | 'mobility'
 export type HabitKind = 'floor' | 'stack'
 
+/**
+ * How a habit is validated.
+ *
+ * `protein_portion` asks which zero-cook portion was eaten and logs its grams,
+ * so the floor actually feeds the daily protein target instead of just being
+ * ticked off.
+ */
+export type HabitCompletionMode = 'toggle' | 'protein_portion'
+
 export interface FloorHabitDefinition {
   id: string
   title: string
@@ -21,6 +30,7 @@ export interface FloorHabitDefinition {
   targetRepsOrAction: string
   category: HabitCategory
   kind: HabitKind
+  completionMode: HabitCompletionMode
   order: number
   /** Archived habits stop appearing today but stay in past completions. */
   archivedAt?: IsoDateTime
@@ -33,6 +43,8 @@ export interface HabitCompletion {
   habitId: string
   date: IsoDate
   completedAt: IsoDateTime
+  /** Set for `protein_portion` habits: the protein log this completion created. */
+  proteinLogId?: string
 }
 
 export type MovementPattern = 'push' | 'pull' | 'legs' | 'core' | 'other'
@@ -137,11 +149,19 @@ export interface ZeroCookItem {
   isCustom: boolean
 }
 
+export type ProteinTargetMode = 'auto' | 'manual'
+
 export interface AppSettings {
   schemaVersion: number
   /** Anchors both the consistency denominator and the « Jour N » milestone. */
   installedAt: IsoDateTime
-  proteinTargetGrams: number
+  /**
+   * `auto` derives the daily protein target from smoothed body weight; `manual`
+   * freezes whatever the user typed, and a later weigh-in never overwrites it.
+   */
+  proteinTargetMode: ProteinTargetMode
+  /** Only meaningful in `manual` mode. */
+  manualProteinTargetGrams?: number
   locale: 'fr'
   onboardingCompletedAt?: IsoDateTime
   restTimerDefaultSeconds: 60 | 90
@@ -166,4 +186,4 @@ export interface ExportBundle {
 }
 
 /** Bumped whenever the shape above changes. Guards Dexie and import. */
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2

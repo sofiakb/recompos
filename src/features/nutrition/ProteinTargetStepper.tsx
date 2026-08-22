@@ -1,10 +1,9 @@
 import { Minus, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MAX_PROTEIN_TARGET_GRAMS, MIN_PROTEIN_TARGET_GRAMS } from '@/lib/nutrition'
 import { t } from '@/i18n/fr'
 
-export const MIN_PROTEIN_TARGET = 80
-export const MAX_PROTEIN_TARGET = 250
-const STEP = 10
+const STEP = 5
 
 interface ProteinTargetStepperProps {
   value: number
@@ -12,11 +11,12 @@ interface ProteinTargetStepperProps {
 }
 
 /**
- * A stepper rather than a slider: it is precise with a thumb, and 10 g is the
- * only granularity that matters here.
+ * A stepper rather than a slider: it is precise with a thumb, and 5 g is the
+ * only granularity that matters against a target derived from body weight.
  */
 export function ProteinTargetStepper({ value, onChange }: ProteinTargetStepperProps) {
-  const clamp = (next: number) => Math.min(MAX_PROTEIN_TARGET, Math.max(MIN_PROTEIN_TARGET, next))
+  const clamp = (next: number) =>
+    Math.min(MAX_PROTEIN_TARGET_GRAMS, Math.max(MIN_PROTEIN_TARGET_GRAMS, next))
 
   return (
     <div className="flex items-center justify-between gap-4">
@@ -24,7 +24,7 @@ export function ProteinTargetStepper({ value, onChange }: ProteinTargetStepperPr
         size="icon"
         variant="outline"
         aria-label={`-${STEP} g`}
-        disabled={value <= MIN_PROTEIN_TARGET}
+        disabled={value <= MIN_PROTEIN_TARGET_GRAMS}
         onClick={() => onChange(clamp(value - STEP))}
       >
         <Minus size={20} aria-hidden />
@@ -37,7 +37,7 @@ export function ProteinTargetStepper({ value, onChange }: ProteinTargetStepperPr
         size="icon"
         variant="outline"
         aria-label={`+${STEP} g`}
-        disabled={value >= MAX_PROTEIN_TARGET}
+        disabled={value >= MAX_PROTEIN_TARGET_GRAMS}
         onClick={() => onChange(clamp(value + STEP))}
       >
         <Plus size={20} aria-hidden />

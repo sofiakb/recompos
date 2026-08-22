@@ -4,7 +4,11 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ToggleRow } from '@/components/ui/toggle-row'
-import { ProteinTargetStepper } from '@/features/nutrition/ProteinTargetStepper'
+import { ProteinTargetEditor } from '@/features/nutrition/ProteinTargetEditor'
+import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
+import { WeightCard } from '@/features/weight/WeightCard'
+import { WeightSheet } from '@/features/weight/WeightSheet'
+import { useWeight } from '@/features/weight/useWeight'
 import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
 import { SCHEMA_VERSION } from '@/types/models'
@@ -50,7 +54,9 @@ function useStorageInfo(): StorageInfo | null {
 export function SettingsScreen() {
   const settings = useSettingsStore((state) => state.settings)
   const habits = useSettingsStore((state) => state.habits)
-  const setProteinTarget = useSettingsStore((state) => state.setProteinTarget)
+  const target = useProteinTarget()
+  const weight = useWeight()
+  const [weighInOpen, setWeighInOpen] = useState(false)
   const setRestTimerSeconds = useSettingsStore((state) => state.setRestTimerSeconds)
   const toggleHaptics = useSettingsStore((state) => state.toggleHaptics)
   const toggleSound = useSettingsStore((state) => state.toggleSound)
@@ -78,9 +84,11 @@ export function SettingsScreen() {
             <CardTitle>{t.settings.proteinTarget}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ProteinTargetStepper value={settings.proteinTargetGrams} onChange={setProteinTarget} />
+            <ProteinTargetEditor target={target} />
           </CardContent>
         </Card>
+
+        <WeightCard weight={weight} onLog={() => setWeighInOpen(true)} />
 
         <Card>
           <CardHeader>
@@ -170,6 +178,16 @@ export function SettingsScreen() {
           </CardContent>
         </Card>
       </div>
+
+      <WeightSheet
+        open={weighInOpen}
+        initialKg={weight.latest?.weightKg ?? null}
+        onClose={() => setWeighInOpen(false)}
+        onSubmit={async (kg) => {
+          await weight.log(kg)
+          setWeighInOpen(false)
+        }}
+      />
     </>
   )
 }

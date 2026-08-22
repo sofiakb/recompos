@@ -10,7 +10,7 @@ interface FloorCardProps {
   description: string
   habits: FloorHabitDefinition[]
   completedIds: Set<string>
-  onToggle: (habitId: string) => void
+  onToggle: (habit: FloorHabitDefinition) => void
   onCompleteAll?: () => void
   allDone?: boolean
   doneLabel?: string
@@ -52,7 +52,7 @@ export function FloorCard({
                 <button
                   type="button"
                   aria-pressed={done}
-                  onClick={() => onToggle(habit.id)}
+                  onClick={() => onToggle(habit)}
                   className="flex min-h-touch w-full items-center gap-3 rounded-md py-2 text-left transition-colors active:bg-accent"
                 >
                   <span
