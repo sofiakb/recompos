@@ -1,5 +1,11 @@
 /** Default content shipped with a fresh install (PRD annexe A). */
-import type { Exercise, FloorHabitDefinition, TakeoutOption, ZeroCookItem } from '@/types/models'
+import type {
+  Exercise,
+  FloorHabitDefinition,
+  MovementPattern,
+  TakeoutOption,
+  ZeroCookItem,
+} from '@/types/models'
 
 type HabitSeed = Omit<FloorHabitDefinition, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -256,3 +262,19 @@ export const DEFAULT_ZERO_COOK: ZeroCookItem[] = [
 
 /** Used only until a first weigh-in makes the computed target available. */
 export const FALLBACK_PROTEIN_TARGET_GRAMS = 150
+
+/** The three blocks of the 20-minute circuit (PRD §6.3). */
+export interface CircuitBlock {
+  pattern: MovementPattern
+  /** Pre-selected movement; any exercise of the same pattern can replace it. */
+  defaultExerciseId: string
+}
+
+export const CIRCUIT_BLOCKS: CircuitBlock[] = [
+  { pattern: 'push', defaultExerciseId: 'pushup' },
+  { pattern: 'pull', defaultExerciseId: 'band-row' },
+  { pattern: 'legs', defaultExerciseId: 'bulgarian-split-squat' },
+]
+
+/** Displayed as a guide, never as a countdown the user can fail (PRD §3.3). */
+export const CIRCUIT_TARGET_MINUTES = 20
