@@ -6,7 +6,7 @@
 |---|---|
 | Version | 1.1 — cadrage validé |
 | Date | 2026-08-22 |
-| Statut | Prêt pour implémentation (lot 0) |
+| Statut | Lot 0 livré — lots 1 à 4 à venir |
 | Remplace | `recompos-pwa-prd.md` v1.0 (brouillon initial) |
 
 ---
@@ -529,13 +529,13 @@ Sur push `main` et CI verte : build puis publication sur GitHub Pages.
 
 **Lot 0 — squelette**
 
-- [ ] `npm run dev`, `npm run build`, `npm test`, `npm run lint` passent sans erreur ni warning.
-- [ ] Les 4 onglets sont routés et l'état de navigation survit à un rechargement.
-- [ ] L'app est installable sur iOS et Android, et s'ouvre en mode avion.
-- [ ] Les réglages écrits persistent après fermeture complète de l'app.
-- [ ] La base Dexie est créée avec toutes les tables et les données de seed.
-- [ ] L'onboarding 3 écrans s'affiche une seule fois.
-- [ ] Le plancher du jour s'affiche et se valide, et la validation survit à un redémarrage.
+- [x] `npm run dev`, `npm run build`, `npm test`, `npm run lint` passent sans erreur ni warning.
+- [x] Les 4 onglets sont routés et l'état de navigation survit à un rechargement.
+- [~] L'app est installable et s'ouvre en mode avion — vérifié sous Chromium mobile ; reste à confirmer sur un iPhone réel.
+- [x] Les réglages écrits persistent après fermeture complète de l'app.
+- [x] La base Dexie est créée avec toutes les tables et les données de seed.
+- [x] L'onboarding 3 écrans s'affiche une seule fois.
+- [x] Le plancher du jour s'affiche et se valide, et la validation survit à un redémarrage.
 - [ ] Le site est en ligne sur GitHub Pages.
 
 **Transverses, valables sur tous les lots**
