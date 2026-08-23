@@ -53,10 +53,14 @@ export class RecompDb extends Dexie {
 export const db = new RecompDb()
 
 /**
- * Fills catalog tables on first run. Idempotent: existing rows are left alone so
- * a user's edits to the takeout sheet survive an app update.
+ * Fills catalog tables on first run.
+ *
+ * `alreadySeeded` comes from settings rather than from a row count: a user who
+ * deletes every zero-cook item means it, and inferring "never seeded" from an
+ * empty table would hand them all seven back on the next launch.
  */
-export async function seedDatabase(database: RecompDb = db): Promise<void> {
+export async function seedDatabase(database: RecompDb = db, alreadySeeded = false): Promise<void> {
+  if (alreadySeeded) return
   await database.transaction(
     'rw',
     database.exercises,

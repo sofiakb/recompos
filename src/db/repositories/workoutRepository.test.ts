@@ -3,6 +3,7 @@ import { RecompDb, seedDatabase } from '@/db/dexie'
 import {
   activeSession,
   addCustomExercise,
+  deleteCustomExercise,
   discardEmptySession,
   endSession,
   exercisesByPattern,
@@ -216,5 +217,38 @@ describe('sets', () => {
       },
     ])
     expect((await setsSince('2026-07-01', TODAY, db)).map((set) => set.id)).toEqual(['b'])
+  })
+})
+
+describe('deleteCustomExercise', () => {
+  it('removes a custom movement nothing points at', async () => {
+    const custom = await addCustomExercise('Dips', 'push', [6, 12], db)
+    expect(await deleteCustomExercise(custom.id, db)).toBe('deleted')
+    expect(await db.exercises.get(custom.id)).toBeUndefined()
+  })
+
+  it('refuses to delete a seeded movement', async () => {
+    expect(await deleteCustomExercise('pushup', db)).toBe('not_custom')
+    expect(await db.exercises.get('pushup')).toBeTruthy()
+  })
+
+  it('refuses to orphan sets that already reference it', async () => {
+    const custom = await addCustomExercise('Dips', 'push', [6, 12], db)
+    await logSet(
+      {
+        exerciseId: custom.id,
+        reps: 8,
+        loadOrResistance: '',
+        difficulty: 'target',
+        date: TODAY,
+      },
+      db,
+    )
+    expect(await deleteCustomExercise(custom.id, db)).toBe('in_use')
+    expect(await db.exercises.get(custom.id)).toBeTruthy()
+  })
+
+  it('reports an unknown id as not custom rather than throwing', async () => {
+    expect(await deleteCustomExercise('nope', db)).toBe('not_custom')
   })
 })

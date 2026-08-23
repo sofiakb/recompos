@@ -102,6 +102,21 @@ describe('seedDatabase', () => {
     expect(await db.exercises.count()).toBe(exerciseCount)
     expect((await db.takeoutOptions.get('burger'))?.pick).toBe('Modifié par l’utilisateur')
   })
+
+  it('leaves a deliberately emptied catalog empty once seeding is recorded', async () => {
+    await seedDatabase(db)
+    await db.zeroCookItems.clear()
+
+    // What the app does on every launch after the first one.
+    await seedDatabase(db, true)
+
+    expect(await db.zeroCookItems.count()).toBe(0)
+  })
+
+  it('still seeds a fresh install when nothing has been recorded', async () => {
+    await seedDatabase(db, false)
+    expect(await db.zeroCookItems.count()).toBeGreaterThan(0)
+  })
 })
 
 describe('habitHistory', () => {

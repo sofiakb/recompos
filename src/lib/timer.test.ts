@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  clampRestSeconds,
   elapsedSeconds,
   formatDuration,
   isElapsed,
+  MAX_REST_SECONDS,
+  MIN_REST_SECONDS,
   minutesBetween,
   remainingSeconds,
+  REST_PRESETS,
 } from '@/lib/timer'
 
 const START = 1_000_000_000_000
@@ -60,5 +64,24 @@ describe('minutesBetween', () => {
 
   it('never reports a negative session', () => {
     expect(minutesBetween('2026-08-22T10:20:00.000Z', '2026-08-22T10:00:00.000Z')).toBe(0)
+  })
+})
+
+describe('clampRestSeconds', () => {
+  it('keeps a plausible duration untouched', () => {
+    expect(clampRestSeconds(120)).toBe(120)
+  })
+
+  it('holds the bounds instead of storing an absurd rest', () => {
+    expect(clampRestSeconds(2)).toBe(MIN_REST_SECONDS)
+    expect(clampRestSeconds(99_999)).toBe(MAX_REST_SECONDS)
+  })
+
+  it('rounds a typed decimal', () => {
+    expect(clampRestSeconds(75.6)).toBe(76)
+  })
+
+  it('falls back to the first preset on a non-number', () => {
+    expect(clampRestSeconds(Number.NaN)).toBe(REST_PRESETS[0])
   })
 })

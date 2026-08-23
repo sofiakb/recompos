@@ -166,7 +166,13 @@ export function validateBundle(raw: unknown): ValidationResult {
     bundle: {
       ...(candidate as ExportBundle),
       schemaVersion: SCHEMA_VERSION,
-      settings: migrated.settings,
+      settings: {
+        ...migrated.settings,
+        // A bundle written before the flag existed still proves the catalogs
+        // were established; without this, the next launch would seed the
+        // defaults back on top of an import that deliberately dropped them.
+        catalogsSeededAt: migrated.settings.catalogsSeededAt ?? candidate.exportedAt,
+      },
       habits: migrated.habits,
       takeoutOptions: candidate.takeoutOptions ?? [],
       zeroCookItems: candidate.zeroCookItems ?? [],

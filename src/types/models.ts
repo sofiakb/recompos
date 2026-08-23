@@ -172,7 +172,15 @@ export interface AppSettings {
   manualProteinTargetGrams?: number
   locale: 'fr'
   onboardingCompletedAt?: IsoDateTime
-  restTimerDefaultSeconds: 60 | 90
+  /**
+   * Set once the catalogs have been filled.
+   *
+   * Seeding used to be skipped whenever a catalog was non-empty, which meant
+   * emptying one on purpose brought every default back on the next launch.
+   */
+  catalogsSeededAt?: IsoDateTime
+  /** Seconds. 60 and 90 are offered as presets; any value in range is allowed. */
+  restTimerDefaultSeconds: number
   hapticsEnabled: boolean
   soundEnabled: boolean
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ToggleRow } from '@/components/ui/toggle-row'
 import { BackupCard } from '@/features/backup/BackupCard'
@@ -11,6 +10,7 @@ import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { WeightCard } from '@/features/weight/WeightCard'
 import { WeightSheet } from '@/features/weight/WeightSheet'
 import { useWeight } from '@/features/weight/useWeight'
+import { RestTimerSetting } from '@/features/workouts/RestTimerSetting'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
 import { formatBytes } from '@/lib/format'
@@ -47,7 +47,6 @@ export function SettingsScreen() {
   const target = useProteinTarget()
   const weight = useWeight()
   const [weighInOpen, setWeighInOpen] = useState(false)
-  const setRestTimerSeconds = useSettingsStore((state) => state.setRestTimerSeconds)
   const toggleHaptics = useSettingsStore((state) => state.toggleHaptics)
   const toggleSound = useSettingsStore((state) => state.toggleSound)
   const storage = useStorageInfo()
@@ -83,17 +82,8 @@ export function SettingsScreen() {
           <CardHeader>
             <CardTitle>{t.settings.restTimer}</CardTitle>
           </CardHeader>
-          <CardContent className="flex gap-2">
-            {([60, 90] as const).map((seconds) => (
-              <Button
-                key={seconds}
-                variant={settings.restTimerDefaultSeconds === seconds ? 'primary' : 'outline'}
-                onClick={() => setRestTimerSeconds(seconds)}
-                className="flex-1"
-              >
-                {seconds} s
-              </Button>
-            ))}
+          <CardContent>
+            <RestTimerSetting />
           </CardContent>
         </Card>
 
