@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.5 — V1 complète, écarts refermés |
+| Version | 1.6 — V1 complète, décision n°6 réexaminée |
 | Date | 2026-08-23 |
 | Statut | Jalons 1 à 6 livrés |
-| Remplace | v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Remplace | v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -37,7 +37,7 @@ une décision d'implémentation.
 | 3 | Persistance | Zustand `persist` (localStorage) + Dexie/IndexedDB | localStorage pour réglages et état courant, IndexedDB pour historiques et photos |
 | 4 | Langue | Français d'abord, i18n-ready | Tous les textes dans un module de constantes ; code et identifiants en anglais |
 | 5 | Sauvegarde | Export/import JSON manuel | Zéro backend. Bouton export (JSON + photos) et import dans les réglages |
-| 6 | Rappels | Aucune notification | Ni push, ni notification locale. L'ouverture de l'app est le seul déclencheur |
+| 6 | Rappels | Aucune notification | Ni push, ni notification locale. L'ouverture de l'app est le seul déclencheur. Question rouverte le 23/08/2026, décision maintenue — voir annexe B |
 | 7 | Photos | Octets locaux + compression WebP côté client | Jamais de sortie de l'appareil. Pas de chiffrement, pas de code PIN en V1. Stockées en `ArrayBuffer` et non en `Blob` (voir §8) |
 | 8 | Onboarding | Mini-onboarding 3 écrans | ~30 secondes au premier lancement, jamais réaffiché |
 | 9 | Graphiques | SVG maison (~2 Ko), Recharts écarté | Décision révisée au jalon 6 : trois courbes ne justifient pas ~100 Ko gzip. Réversible — Recharts reste le plan B si un graphique interactif devient nécessaire |
@@ -643,7 +643,8 @@ Sur push `main` et CI verte : build puis publication sur GitHub Pages.
 Explicitement exclu, pour éviter la dérive :
 
 - Synchronisation cloud, comptes utilisateurs, backend de quelque nature.
-- Notifications push ou locales (décision n°6).
+- Notifications push ou locales (décision n°6). Réexaminé le 23/08/2026 : maintenu, avec deux
+  contournements sans serveur documentés en annexe B.
 - Chiffrement des photos et code PIN (décision n°7).
 - Suivi calorique complet, base alimentaire, scan de code-barres.
 - Intégrations santé (Apple Health, Google Fit), objets connectés, balances.
@@ -711,3 +712,68 @@ Explicitement exclu, pour éviter la dérive :
 | Empilée | 10 squats à vide | Pendant que le café coule |
 | Empilée | 1 série de pompes max | Avant d'ouvrir le laptop |
 | Empilée | 2 min de gainage | Douche du soir |
+
+---
+
+## Annexe B — Rappels : pourquoi il n'y en a pas, et par où passer si on en veut
+
+**Statut** : décision n°6 maintenue. Question rouverte le 23 août 2026, tranchée à nouveau dans le même
+sens. Cette annexe existe pour que la question ne soit pas re-instruite depuis zéro la prochaine fois.
+
+### La raison produit
+
+Une app anti-burnout qui relance sur le téléphone se retourne contre son propre principe. Le §15 le dit
+déjà : le risque « abandon après 3 semaines » est mitigé par « aucune notification qui transforme l'app
+en source de culpabilité ». Une notification manquée devient une dette ; trois deviennent une raison de
+désinstaller. Tout le reste du produit est construit là-dessus — score élastique sans reset, plancher
+volontairement ridicule, pesée suggérée et jamais imposée.
+
+### La raison technique : le mur du « zéro serveur »
+
+Même en changeant d'avis sur le produit, il n'existe aujourd'hui **aucun moyen d'envoyer un rappel
+programmé depuis une PWA sans backend**. Les quatre pistes, et pourquoi aucune ne tient :
+
+| Piste | État | Verdict |
+|---|---|---|
+| **Web Push** (Push API + VAPID) | Fonctionne sur iOS 16.4+ pour une PWA ajoutée à l'écran d'accueil, et sur Android | Exige un service de push **et** un serveur applicatif qui déclenche l'envoi. Donc backend, donc compte, donc des données qui sortent de l'appareil |
+| **Notifications API seule** (`new Notification()`) | Disponible partout | Ne se déclenche que pendant qu'une page ou un service worker est vivant. Inutilisable comme rappel : il faudrait que l'app soit déjà ouverte |
+| **Notification Triggers** (`TimestampTrigger`) | Origin trial Chrome ~83-86, jamais passé en stable, abandonné | C'était *exactement* l'API qu'il aurait fallu — une notification programmée localement, sans serveur. Elle n'existe pas |
+| **Periodic Background Sync** | Chrome/Android uniquement, absent de Safari et Firefox | Le navigateur décide de la fréquence selon son propre score d'engagement ; l'intervalle demandé n'est qu'un indice. Et rien sur iOS, qui est la cible |
+
+Conclusion : notifications = backend. C'est une contradiction directe avec la décision n°1 du §14
+(« Synchronisation cloud, comptes utilisateurs, backend de quelque nature ») et avec la promesse de
+vie privée du §1.
+
+### Les deux options qui ne cassent rien
+
+**Option A — export d'un fichier `.ics` (recommandée).**
+Un bouton dans les Réglages produit un fichier calendrier à importer une fois, contenant un `VEVENT`
+avec `RRULE:FREQ=DAILY` et un `VALARM`. Le rappel est ensuite géré par le calendrier du système.
+
+- Aucun serveur, aucune permission de notification demandée, rien qui sorte de l'appareil.
+- Réutilise la mécanique de téléchargement déjà écrite pour l'export JSON (`features/backup/useBackup.ts`).
+- Coût estimé : un générateur de chaîne `.ics` d'une trentaine de lignes, un bouton, une chaîne i18n.
+- **Limite assumée** : le rappel n'est pas conscient de l'app. Il sonnera même si le plancher est déjà
+  validé. C'est le prix du zéro-serveur, et c'est acceptable pour un plancher qui se fait en 30 secondes.
+
+**Option B — API Badging (`navigator.setAppBadge`).**
+Une pastille sur l'icône de l'app installée quand le plancher du jour n'est pas fait.
+
+- Supporté sur Chrome et sur iOS 16.4+ pour une PWA à l'écran d'accueil.
+- **Limite qui la disqualifie presque** : la pastille ne peut être posée ou retirée que pendant que
+  l'app tourne — sans push, il n'y a pas d'autre moment d'exécution. Elle se figerait donc sur l'état
+  du dernier lancement et afficherait, deux jours plus tard, un rappel pour un jour révolu. Un chiffre
+  faux est pire qu'un chiffre absent.
+
+**Recommandation** : l'option A, ou rien.
+
+### Si la décision n°6 est renversée malgré tout
+
+Ce n'est pas un ajout de fonctionnalité, c'est un changement d'architecture. À mettre à jour en même
+temps, sous peine d'incohérence du PRD :
+
+1. Décision n°6 (§2) et la ligne correspondante du §14.
+2. La première ligne du §14 : un backend cesse d'être hors périmètre.
+3. La promesse « aucune requête réseau au runtime » du §1 et du README.
+4. La ligne « abandon après 3 semaines » du §15, dont la mitigation repose explicitement sur l'absence
+   de notification.
