@@ -10,6 +10,7 @@ import { DEFAULT_HABITS } from '@/db/seed'
 import { createId } from '@/lib/utils'
 import { toLogicalDate } from '@/lib/date'
 import { clampProteinTargetGrams } from '@/lib/nutrition'
+import { clampRestSeconds } from '@/lib/timer'
 import {
   SCHEMA_VERSION,
   type AppSettings,
@@ -48,10 +49,11 @@ interface SettingsState {
   setManualProteinTarget: (grams: number) => void
   /** Hands the target back to the weight-derived calculation. */
   resetProteinTargetToAuto: () => void
-  setRestTimerSeconds: (seconds: 60 | 90) => void
+  setRestTimerSeconds: (seconds: number) => void
   toggleHaptics: (enabled: boolean) => void
   toggleSound: (enabled: boolean) => void
   completeOnboarding: () => void
+  markCatalogsSeeded: () => void
   addHabit: (habit: Omit<FloorHabitDefinition, 'id' | 'createdAt' | 'updatedAt' | 'order'>) => void
   updateHabit: (id: string, patch: Partial<FloorHabitDefinition>) => void
   archiveHabit: (id: string) => void
@@ -87,7 +89,9 @@ export const useSettingsStore = create<SettingsState>()(
         })),
 
       setRestTimerSeconds: (seconds) =>
-        set((state) => ({ settings: { ...state.settings, restTimerDefaultSeconds: seconds } })),
+        set((state) => ({
+          settings: { ...state.settings, restTimerDefaultSeconds: clampRestSeconds(seconds) },
+        })),
 
       toggleHaptics: (enabled) =>
         set((state) => ({ settings: { ...state.settings, hapticsEnabled: enabled } })),
@@ -99,6 +103,13 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           settings: { ...state.settings, onboardingCompletedAt: new Date().toISOString() },
         })),
+
+      markCatalogsSeeded: () =>
+        set((state) =>
+          state.settings.catalogsSeededAt
+            ? state
+            : { settings: { ...state.settings, catalogsSeededAt: new Date().toISOString() } },
+        ),
 
       addHabit: (habit) =>
         set((state) => {

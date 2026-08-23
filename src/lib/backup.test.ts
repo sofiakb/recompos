@@ -294,3 +294,51 @@ describe('exportFileName', () => {
     )
   })
 })
+
+describe('catalog seeding across an import', () => {
+  const LEGACY = {
+    schemaVersion: SCHEMA_VERSION,
+    exportedAt: '2026-08-22T18:00:00.000Z',
+    settings: SETTINGS,
+    habits: [],
+    completions: [],
+    dailyLogs: [],
+    proteinLogs: [],
+    sessions: [],
+    sets: [],
+    measurements: [],
+    takeoutOptions: [],
+    zeroCookItems: [],
+  }
+
+  it('marks the catalogs seeded when the bundle predates the flag', () => {
+    const result = validateBundle(LEGACY)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.bundle.settings.catalogsSeededAt).toBe(LEGACY.exportedAt)
+  })
+
+  it('keeps the flag the bundle already carried', () => {
+    const result = validateBundle({
+      ...LEGACY,
+      settings: { ...SETTINGS, catalogsSeededAt: '2026-01-01T00:00:00.000Z' },
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.bundle.settings.catalogsSeededAt).toBe('2026-01-01T00:00:00.000Z')
+  })
+
+  it('restores an emptied catalog as empty', async () => {
+    await seedDatabase(db)
+    expect(await db.zeroCookItems.count()).toBeGreaterThan(0)
+
+    const result = validateBundle(LEGACY)
+    if (!result.ok) throw new Error('bundle rejected')
+    await applyImport(result.bundle, db)
+
+    expect(await db.zeroCookItems.count()).toBe(0)
+    // And the flag it carries stops the next launch from refilling it.
+    await seedDatabase(db, Boolean(result.bundle.settings.catalogsSeededAt))
+    expect(await db.zeroCookItems.count()).toBe(0)
+  })
+})

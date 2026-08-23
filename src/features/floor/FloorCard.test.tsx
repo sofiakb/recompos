@@ -105,3 +105,49 @@ describe('FloorCard', () => {
     expect(container).toBeEmptyDOMElement()
   })
 })
+
+describe('FloorCard folding', () => {
+  const allDone = new Set(['a', 'b'])
+
+  function renderDone() {
+    render(
+      <FloorCard
+        title="Plancher du jour"
+        description="Non négociable."
+        habits={habits}
+        completedIds={allDone}
+        onToggle={vi.fn()}
+        allDone
+        doneLabel="Plancher validé"
+        doneHint="La journée compte."
+      />,
+    )
+    return userEvent.setup()
+  }
+
+  it('folds the list away once the floor is complete', () => {
+    renderDone()
+    expect(screen.getByText('Plancher validé')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '5 pompes' })).not.toBeInTheDocument()
+  })
+
+  it('reopens on demand, so a habit can still be unchecked', async () => {
+    const user = renderDone()
+    await user.click(screen.getByRole('button', { name: 'Revoir le plancher' }))
+    expect(screen.getByRole('button', { name: /5 pompes/ })).toBeInTheDocument()
+  })
+
+  it('stays open while the floor is incomplete', () => {
+    render(
+      <FloorCard
+        title="Plancher du jour"
+        description="Non négociable."
+        habits={habits}
+        completedIds={new Set(['a'])}
+        onToggle={vi.fn()}
+      />,
+    )
+    expect(screen.getByRole('button', { name: /5 pompes/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /plancher/i })).not.toBeInTheDocument()
+  })
+})

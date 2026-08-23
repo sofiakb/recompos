@@ -5,6 +5,16 @@
  * interval: a locked screen throttles or suspends `setInterval`, and a rest
  * timer that quietly loses 20 seconds is worse than no timer at all.
  */
+/** The two presets offered as buttons; any duration in range can be typed. */
+export const REST_PRESETS = [60, 90] as const
+export const MIN_REST_SECONDS = 15
+export const MAX_REST_SECONDS = 600
+
+export function clampRestSeconds(seconds: number): number {
+  if (!Number.isFinite(seconds)) return REST_PRESETS[0]
+  return Math.min(MAX_REST_SECONDS, Math.max(MIN_REST_SECONDS, Math.round(seconds)))
+}
+
 export function elapsedSeconds(startedAtMs: number, nowMs: number): number {
   return Math.max(0, Math.floor((nowMs - startedAtMs) / 1000))
 }

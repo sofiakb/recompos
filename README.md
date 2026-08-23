@@ -14,11 +14,12 @@ Le cahier des charges complet est dans [`docs/recompos-pwa-prd.md`](docs/recompo
   rendrait toute journée invalidable.
 - **Poids** : pesée suggérée chaque semaine, moyenne glissante sur 4 points, historique et courbe.
 - **Nutrition** : cible dérivée du poids (1,8 g/kg) et ajustable à la main — l'ajustement fige alors la
-  cible jusqu'à un retour explicite au calcul automatique. Compteur 1-tap avec annulation, catalogue
-  zéro-cuisson, cheat sheet livraison. Valider « 1 portion de protéines zéro-cuisson » demande laquelle
-  et ajoute ses grammes au total du jour.
-- **Séances** : circuit 20 min à trois blocs avec chrono, micro-séries hors séance, suggestions de
-  surcharge progressive, timer de repos qui survit à un écran verrouillé.
+  cible jusqu'à un retour explicite au calcul automatique. Compteur 1-tap avec annulation. Catalogue
+  zéro-cuisson et cheat sheet livraison entièrement éditables, defaults compris. Valider « 1 portion de
+  protéines zéro-cuisson » demande laquelle et ajoute ses grammes au total du jour.
+- **Séances** : circuit 20 min à trois blocs avec chrono, micro-séries hors séance, mouvements
+  personnalisés, suggestions de surcharge progressive, timer de repos (60 s, 90 s ou libre) qui survit
+  à un écran verrouillé.
 - **Tendances** : index de force hebdomadaire, meilleures séries, tour de taille avec moyenne glissante,
   coffre photos redimensionnées sur l'appareil.
 - **Sauvegarde** : export JSON versionné, import avec confirmation explicite avant écrasement.
@@ -95,6 +96,9 @@ mesures, photos.
   `manual` fige le nombre que tu as choisi. L'app ne déplace jamais une valeur que tu as posée.
 - **Les durées se calculent depuis un timestamp de départ**, jamais en accumulant des ticks : un écran
   verrouillé étrangle `setInterval`, et un timer de repos qui perd 20 secondes est pire que pas de timer.
+- **Semer les catalogues n'est pas « la table est vide »** : c'est un drapeau dans les réglages
+  (`catalogsSeededAt`). Sans lui, supprimer ses sept sources zéro-cuisson les rendrait toutes au
+  lancement suivant, et restaurer une sauvegarde ferait réapparaître des entrées supprimées exprès.
 - **Les graphiques sont du SVG écrit à la main** (`components/charts/LineChart.tsx`) : trois courbes de
   ligne ne justifient pas ~100 Ko gzip de bibliothèque. Le PRD §5 documente cet écart.
 

@@ -10,6 +10,9 @@ export const PROTEIN_GRAMS_PER_KG = 1.8
 export const MIN_PROTEIN_TARGET_GRAMS = 80
 export const MAX_PROTEIN_TARGET_GRAMS = 250
 
+/** Ceiling on a single log or portion — above this it is a typo, not a meal. */
+export const MAX_PROTEIN_LOG_GRAMS = 300
+
 export const MIN_WEIGHT_KG = 35
 export const MAX_WEIGHT_KG = 250
 

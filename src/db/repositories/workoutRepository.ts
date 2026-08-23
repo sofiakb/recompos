@@ -42,6 +42,33 @@ export async function addCustomExercise(
   return exercise
 }
 
+export async function setCountForExercise(
+  exerciseId: string,
+  database: RecompDb = db,
+): Promise<number> {
+  return database.sets.where('exerciseId').equals(exerciseId).count()
+}
+
+export type DeleteExerciseResult = 'deleted' | 'not_custom' | 'in_use'
+
+/**
+ * Removes a custom movement, but only while nothing points at it.
+ *
+ * A seeded exercise stays put — it may be named in another exercise's
+ * progression chain — and one that already has sets would leave them orphaned,
+ * showing a raw id in the history forever.
+ */
+export async function deleteCustomExercise(
+  id: string,
+  database: RecompDb = db,
+): Promise<DeleteExerciseResult> {
+  const exercise = await database.exercises.get(id)
+  if (!exercise?.isCustom) return 'not_custom'
+  if ((await setCountForExercise(id, database)) > 0) return 'in_use'
+  await database.exercises.delete(id)
+  return 'deleted'
+}
+
 export async function startSession(
   type: SessionType,
   date: IsoDate = toLogicalDate(),

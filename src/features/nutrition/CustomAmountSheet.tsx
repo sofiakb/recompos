@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Delete } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/sheet'
+import { MAX_PROTEIN_LOG_GRAMS } from '@/lib/nutrition'
 import { t } from '@/i18n/fr'
 
 interface CustomAmountSheetProps {
@@ -11,7 +12,6 @@ interface CustomAmountSheetProps {
 }
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
-const MAX_GRAMS = 300
 
 /**
  * A keypad rather than a text input: the OS keyboard covers half the screen and
@@ -25,12 +25,12 @@ export function CustomAmountSheet({ open, onClose, onSubmit }: CustomAmountSheet
   }, [open])
 
   const grams = Number(value || '0')
-  const isValid = grams > 0 && grams <= MAX_GRAMS
+  const isValid = grams > 0 && grams <= MAX_PROTEIN_LOG_GRAMS
 
   const press = (key: string) => {
     setValue((current) => {
       const next = `${current}${key}`.replace(/^0+/, '')
-      return Number(next) > MAX_GRAMS ? current : next
+      return Number(next) > MAX_PROTEIN_LOG_GRAMS ? current : next
     })
   }
 

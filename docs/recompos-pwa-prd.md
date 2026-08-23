@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.4 — V1 complète |
-| Date | 2026-08-22 |
+| Version | 1.5 — V1 complète, écarts refermés |
+| Date | 2026-08-23 |
 | Statut | Jalons 1 à 6 livrés |
-| Remplace | v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Remplace | v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -129,6 +129,24 @@ première/dernière, courbes SVG maison, export JSON versionné et import avec c
 avant écrasement.
 
 Chaque jalon est autonome, testé, déployé, et utilisable seul. Aucun jalon n'a cassé le précédent.
+
+**Reprise post-jalon 6.** Une relecture du dépôt contre le §6 a trouvé trois promesses que le code
+portait sans les exposer — les fonctions existaient et étaient testées, mais aucune UI ne les appelait :
+
+- Les catalogues zéro-cuisson et livraison sont maintenant réellement éditables (ajout, modification,
+  suppression), comme le §6.2 le demandait. L'édition est derrière un bouton « Gérer la liste » : la
+  ligne est tapée plusieurs fois par jour pour logguer et deux fois par mois pour éditer, et mettre les
+  deux dedans chasserait l'action fréquente.
+- Un mouvement personnalisé peut être créé depuis le sélecteur d'exercice, et supprimé tant qu'aucune
+  série ne le référence — sinon l'historique afficherait un identifiant brut pour toujours.
+- Le timer de repos accepte une durée libre entre 15 s et 600 s, en plus des deux presets (§6.3).
+- Le plancher se replie une fois validé (§6.1), avec réouverture en un tap pour pouvoir décocher.
+
+**Conséquence sur le seed** : remplir les catalogues ne peut plus se décider sur « la table est vide ».
+Un utilisateur qui supprime ses sept sources zéro-cuisson le pense ; l'ancienne règle les lui rendait
+toutes au lancement suivant. Le fait d'avoir semé est désormais enregistré dans les réglages
+(`catalogsSeededAt`), et une sauvegarde antérieure au drapeau se voit attribuer sa date d'export à
+l'import — sinon restaurer une sauvegarde ferait réapparaître des entrées supprimées exprès.
 
 **Écarts assumés par rapport aux versions précédentes du PRD**, tous deux décidés au jalon 6 :
 
@@ -266,7 +284,7 @@ du champ, avec une suggestion calculée :
 
 **Timer de repos**
 
-Compte à rebours 60 s / 90 s / personnalisé, signal sonore court et vibration en fin. Continue de
+Compte à rebours 60 s / 90 s / personnalisé (15 à 600 s), signal sonore court et vibration en fin. Continue de
 tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas sur `setInterval` seul).
 
 ### 6.4 Module Poids (jalon 3)
@@ -482,7 +500,8 @@ export interface AppSettings {
   manualProteinTargetGrams?: number;        // seulement en mode manual, figé
   locale: 'fr';
   onboardingCompletedAt?: IsoDateTime;
-  restTimerDefaultSeconds: 60 | 90;
+  restTimerDefaultSeconds: number;          // 15 à 600 s ; 60 et 90 proposés en presets
+  catalogsSeededAt?: IsoDateTime;           // vider un catalogue exprès doit tenir
   hapticsEnabled: boolean;
   soundEnabled: boolean;
 }
