@@ -116,6 +116,12 @@ doit les changer tous les trois.
 Aucune requête réseau au runtime, aucun compte, aucune télémétrie. Les données ne quittent jamais
 l'appareil — ce qui veut aussi dire qu'elles disparaissent si le stockage du navigateur est vidé.
 
+**Aucune notification**, ni push ni locale : c'est une décision de cadrage, pas un oubli. Une app
+anti-burnout qui relance sur le téléphone se retourne contre son propre principe, et techniquement un
+rappel programmé depuis une PWA exige un serveur de push — donc un compte et des données qui sortent de
+l'appareil. L'annexe B du PRD documente le raisonnement complet et les deux contournements sans serveur
+si la décision doit être revue.
+
 **Réglages → Exporter mes données** écrit un JSON versionné contenant tout : réglages, habitudes,
 historique, séries, mesures et photos en base64. Au-delà de 5 Mo de photos, elles partent dans un
 second fichier. L'import accepte l'un, l'autre, ou les deux à la fois, et demande une confirmation
