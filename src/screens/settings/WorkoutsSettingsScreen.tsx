@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ExercisePickerSheet } from '@/features/workouts/ExercisePickerSheet'
 import { RestTimerSetting } from '@/features/workouts/RestTimerSetting'
 import { useWorkouts } from '@/features/workouts/useWorkouts'
-import { SettingsPage } from '@/screens/settings/SettingsPage'
+import { SubPage } from '@/components/shared/SubPage'
 import { t } from '@/i18n/fr'
 
 export function WorkoutsSettingsScreen() {
@@ -12,7 +12,7 @@ export function WorkoutsSettingsScreen() {
   const [catalogueOpen, setCatalogueOpen] = useState(false)
 
   return (
-    <SettingsPage title={t.settings.sections.workouts.title} backTo="/settings">
+    <SubPage title={t.settings.sections.workouts.title} backTo="/settings">
       <Card>
         <CardHeader>
           <CardTitle>{t.settings.restTimer}</CardTitle>
@@ -47,6 +47,6 @@ export function WorkoutsSettingsScreen() {
         title={t.settings.exercises}
         onClose={() => setCatalogueOpen(false)}
       />
-    </SettingsPage>
+    </SubPage>
   )
 }

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart } from '@/components/charts/LineChart'
 import { Segmented } from '@/components/ui/segmented'
+import { TrendSection } from '@/features/trends/TrendSection'
 import { STRENGTH_WINDOWS, useStrength, type StrengthWindow } from '@/features/trends/useStrength'
 import { parseIsoDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
@@ -33,14 +33,8 @@ export function StrengthCard({ exerciseById }: StrengthCardProps) {
   const chartable = weeksLogged > 1
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.strength.title}</CardTitle>
-        <CardDescription>
-          {t.strength.hint} {t.strength.baseline}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <TrendSection title={t.strength.title} hint={`${t.strength.hint} ${t.strength.baseline}`}>
+      <div className="flex flex-col gap-3">
         <Segmented
           label={t.strength.title}
           value={String(weeks) as `${StrengthWindow}`}
@@ -128,7 +122,7 @@ export function StrengthCard({ exerciseById }: StrengthCardProps) {
             </ul>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </TrendSection>
   )
 }

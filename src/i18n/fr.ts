@@ -1,3 +1,5 @@
+import { formatDecimal } from '@/lib/format'
+
 /**
  * Every user-facing string lives here (PRD §7).
  *
@@ -22,6 +24,18 @@ export const fr = {
     floorSubtitle: 'Non négociable, et volontairement ridicule.',
     floorDone: 'Plancher validé',
     floorDoneHint: 'La journée compte. Tout le reste est du bonus.',
+    floorCounter: 'habitudes du plancher validées',
+    now: 'Maintenant',
+    markDone: 'Fait',
+    later: 'Plus tard',
+    dayValidated: 'Journée validée',
+    stateDone: 'fait',
+    stateTodo: 'à faire',
+    recap: 'Le plancher',
+    proteinShort: (current: number, target: number) => `${current} / ${target} g`,
+    consistencyTitle: 'Consistance',
+    consistencySummary: (percent: number) => `${percent} % sur 7 j`,
+    startCircuitLong: 'Démarrer le circuit 20 min',
     floorCollapse: 'Replier le plancher',
     floorExpand: 'Revoir le plancher',
     validateAll: 'Tout valider',
@@ -38,7 +52,7 @@ export const fr = {
     pickPortion: 'Quelle source de protéines ?',
     pickPortionHint: 'Le choix est ajouté au total du jour.',
     targetFromWeight: (weightKg: number, perKg: number) =>
-      `Calculé sur ${weightKg} kg × ${String(perKg).replace('.', ',')} g/kg`,
+      `Calculé sur ${formatDecimal(weightKg)} kg × ${formatDecimal(perKg)} g/kg`,
     targetManual: 'Cible ajustée à la main',
     targetNoWeight: 'Cible provisoire — ajoute ton poids pour la calculer',
     addedGrams: (grams: number) => `+${grams} g ajoutés`,
@@ -49,6 +63,13 @@ export const fr = {
     addGrams: (grams: number) => `Ajouter ${grams} g`,
     deleteDigit: 'Effacer un chiffre',
     todayTitle: 'Aujourd’hui',
+    journalTitle: 'Le journal du jour',
+    journalEmpty: 'Rien de logué pour le moment.',
+    whatToEat: 'Que manger ?',
+    aMeal: 'Un repas',
+    inFridge: 'Dans le frigo',
+    delivery: 'En livraison',
+    catalogues: 'Que manger ?',
     noLogYet: 'Rien de logué pour le moment.',
     editLog: (grams: number) => `Entrée de ${grams} g`,
     sourceLabel: 'Type de source',
@@ -100,8 +121,8 @@ export const fr = {
     logCta: 'Enregistrer une pesée',
     logTitle: 'Ton poids',
     logHint: 'À jeun de préférence, mais la régularité compte plus que le moment.',
-    lastEntry: (date: string, kg: number) => `Dernière pesée : ${date}, ${kg} kg`,
-    saved: (kg: number) => `${kg} kg enregistrés`,
+    lastEntry: (date: string, kg: number) => `Dernière pesée : ${date}, ${formatDecimal(kg)} kg`,
+    saved: (kg: number) => `${formatDecimal(kg)} kg enregistrés`,
     history: 'Historique',
     empty: 'Aucune pesée enregistrée.',
   },
@@ -196,6 +217,13 @@ export const fr = {
     customBadge: 'perso',
     microSets: 'Micro-séries',
     microSetsHint: 'Une série isolée, n’importe quand, sans ouvrir de séance.',
+    isolatedSet: 'Une série isolée, sans séance',
+    sessionInProgress: 'Séance en cours',
+    finish: 'Terminer',
+    logHere: 'Logguer',
+    pastAndStrength: 'Séances passées et index de force',
+    suggestionNote:
+      'Les suggestions viennent de ta dernière série sur le mouvement, jamais d’un barème.',
     logSet: 'Logguer une série',
     logSetFor: (name: string) => `Logguer une série de ${name}`,
     setsToday: 'Séries du jour',
@@ -251,11 +279,11 @@ export const fr = {
     logCta: 'Enregistrer une mesure',
     logTitle: 'Ton tour de taille',
     logHint: 'Au nombril, sans rentrer le ventre, le matin de préférence.',
-    saved: (cm: number) => `${cm} cm enregistrés`,
+    saved: (cm: number) => `${formatDecimal(cm)} cm enregistrés`,
     empty: 'Aucune mesure enregistrée.',
     history: 'Historique',
-    trendDown: (cm: number) => `−${cm} cm depuis la première mesure`,
-    trendUp: (cm: number) => `+${cm} cm depuis la première mesure`,
+    trendDown: (cm: number) => `−${formatDecimal(cm)} cm depuis la première mesure`,
+    trendUp: (cm: number) => `+${formatDecimal(cm)} cm depuis la première mesure`,
     trendFlat: 'Stable depuis la première mesure',
   },
   photos: {
@@ -293,9 +321,18 @@ export const fr = {
     errorFutureVersion:
       'Cette sauvegarde vient d’une version plus récente de l’app. Mets à jour avant de l’importer.',
   },
+  trends: {
+    since: (date: string) => `Depuis le ${date}`,
+    pastSessions: 'Séances passées',
+    photoVaultHint: 'Face, profil, dos — sur l’appareil uniquement.',
+  },
   consistency: {
     rolling7: '7 jours',
     rolling30: '30 jours',
+    summary: (band: string) => `de consistance sur 7 jours · ${band}`,
+    over30: (percent: number) => `${percent} % sur 30 j`,
+    explain:
+      'Une fenêtre glissante, jamais une série : une semaine ratée fait baisser le chiffre, elle ne remet rien à zéro.',
     band: {
       restart: 'à relancer',
       onTrack: 'en route',
@@ -365,6 +402,8 @@ export const fr = {
     dayOf: (current: number, target: number) => `${current} kcal sur ${target} kcal`,
     dayRemaining: (kcal: number) => `encore ${kcal} kcal`,
     dayOver: (kcal: number) => `${kcal} kcal au-dessus`,
+    macrosShort: (proteinG: number, carbsG: number, fatG: number) =>
+      `P ${proteinG} g · G ${carbsG} g · L ${fatG} g`,
     targetFromWeight: (maintenance: number, deficit: number) =>
       deficit === 0
         ? `Maintien estimé : ${maintenance} kcal`
@@ -456,6 +495,7 @@ export const fr = {
       body: 'Modifiable à tout moment dans les réglages.',
       unit: 'g par jour',
     },
+    removeHabit: (title: string) => `Retirer ${title}`,
     floor: {
       title: 'Ton plancher quotidien',
       body: "Garde-le assez petit pour être fait un mauvais jour. C'est tout l'intérêt.",
@@ -476,7 +516,8 @@ export const fr = {
     exercises: 'Mes mouvements',
     exercisesHint: 'Ajouter ou retirer un mouvement du catalogue.',
     replayOnboarding: "Revoir l'introduction",
-    replayOnboardingHint: "Rien n'est effacé : tes réglages et ton historique restent en place.",
+    replayOnboardingHint:
+      "Rien n'est effacé, et tout est pré-rempli : tes réglages et ton historique restent en place.",
     proteinTarget: 'Cible de protéines',
     proteinAuto: 'Calculée sur ton poids',
     proteinManual: 'Ajustée à la main',

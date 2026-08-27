@@ -61,23 +61,13 @@ export function CalorieCard({ macros }: CalorieCardProps) {
           />
         </div>
 
+        {/* One line rather than three stacked bars. The split between macros is
+            a detail you read once a day; the bars gave it the same weight as
+            the calorie total itself. */}
         {macroTotal > 0 ? (
-          <ul className="flex flex-col gap-1.5">
-            {MACROS.map((macro, index) => (
-              <li key={macro.key} className="flex items-center gap-2">
-                <span className="w-20 shrink-0 text-xs text-muted-foreground">{macro.label}</span>
-                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                  <span
-                    className="block h-full rounded-full bg-primary/60"
-                    style={{ width: `${(macroKcal[index] / macroTotal) * 100}%` }}
-                  />
-                </span>
-                <span className="tnum w-12 shrink-0 text-right text-xs text-muted-foreground">
-                  {macros[macro.key]} g
-                </span>
-              </li>
-            ))}
-          </ul>
+          <p className="tnum text-[13px] text-muted-foreground">
+            {t.meals.macrosShort(macros.proteinG, macros.carbsG, macros.fatG)}
+          </p>
         ) : null}
 
         <p className="text-xs text-muted-foreground">

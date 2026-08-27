@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { SettingsPage } from '@/screens/settings/SettingsPage'
+import { SubPage } from '@/components/shared/SubPage'
 import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
 import { formatCalendarDate, toLogicalDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
@@ -75,7 +75,7 @@ export function SettingsScreen() {
   ]
 
   return (
-    <SettingsPage title={t.settings.title} backTo="/">
+    <SubPage title={t.settings.title} backTo="/">
       <ul className="flex flex-col">
         {rubrics.map((rubric) => (
           <RubricRow key={rubric.to} {...rubric} />
@@ -87,6 +87,6 @@ export function SettingsScreen() {
         {formatCalendarDate(toLogicalDate(new Date(settings.installedAt)))}
       </p>
       <p className="px-1 text-xs text-muted-foreground">{t.settings.dataNotice}</p>
-    </SettingsPage>
+    </SubPage>
   )
 }

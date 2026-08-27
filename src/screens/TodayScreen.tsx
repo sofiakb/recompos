@@ -1,40 +1,54 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Dumbbell, Scale } from 'lucide-react'
+import { Dumbbell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
-import { ConsistencyStrip } from '@/features/floor/ConsistencyStrip'
-import { FloorCard } from '@/features/floor/FloorCard'
 import { useFloor } from '@/features/floor/useFloor'
-import { ProteinCard } from '@/features/nutrition/ProteinCard'
+import { FloorChecklist } from '@/features/today/FloorChecklist'
+import { FloorCounter } from '@/features/today/FloorCounter'
+import { NowCard } from '@/features/today/NowCard'
+import { StackChips } from '@/features/today/StackChips'
+import { SummaryRow } from '@/features/today/SummaryRow'
+import { canPostpone, nextFloorHabit, pendingHabits } from '@/features/today/queue'
 import { ProteinPortionSheet } from '@/features/nutrition/ProteinPortionSheet'
 import { useProtein } from '@/features/nutrition/useProtein'
-import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
-import { WeightSheet } from '@/features/weight/WeightSheet'
 import { useWorkouts } from '@/features/workouts/useWorkouts'
-import { useWeight } from '@/features/weight/useWeight'
 import { useUiStore } from '@/stores/uiStore'
 import { formatLongDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
 import type { FloorHabitDefinition, ZeroCookItem } from '@/types/models'
 
+/**
+ * Answers, in this order: what is left to do, where the protein stands, how
+ * consistent the last week was.
+ *
+ * Everything else it used to carry — the weigh-in card, the two consistency
+ * scores, the protein log — now lives on the screen that owns it. What is left
+ * here is a read and a link (handoff de refonte, décision n°18).
+ */
 export function TodayScreen() {
   const floor = useFloor()
   const protein = useProtein()
-  const target = useProteinTarget()
-  const weight = useWeight()
   const workouts = useWorkouts()
   const navigate = useNavigate()
   const showToast = useUiStore((state) => state.showToast)
 
   // The habit waiting for its portion to be picked, if any.
   const [portionHabit, setPortionHabit] = useState<FloorHabitDefinition | null>(null)
-  const [weighInOpen, setWeighInOpen] = useState(false)
+  // Purely local, and deliberately not persisted: postponing writes nothing,
+  // and a new day should start with a clean queue.
+  const [postponedIds, setPostponedIds] = useState<Set<string>>(new Set())
 
-  // Starting from the dashboard means landing on the workouts tab with the clock
-  // already running, not on a screen asking to start again.
+  const pending = useMemo(
+    () => pendingHabits(floor.floorHabits, floor.completedIds),
+    [floor.floorHabits, floor.completedIds],
+  )
+  const nextHabit = nextFloorHabit(floor.floorHabits, floor.completedIds, postponedIds)
+  const doneCount = floor.floorHabits.length - pending.length
+
   const onStartWorkout = async () => {
+    // Starting from here means landing on the workouts tab with the clock
+    // already running, not on a screen asking to start again.
     if (!workouts.session) await workouts.start('20min_circuit')
     navigate('/workouts')
   }
@@ -44,9 +58,13 @@ export function TodayScreen() {
     if (outcome === 'needs_portion') setPortionHabit(habit)
   }
 
-  const onCompleteAll = async () => {
-    const pending = await floor.completeFloor()
-    if (pending.length > 0) setPortionHabit(pending[0])
+  const onLater = () => {
+    if (!nextHabit) return
+    setPostponedIds((current) => {
+      const next = new Set(current)
+      next.add(nextHabit.id)
+      return next
+    })
   }
 
   const onPickPortion = async (item: ZeroCookItem) => {
@@ -59,54 +77,56 @@ export function TodayScreen() {
   return (
     <>
       <ScreenHeader
+        eyebrow={formatLongDate(floor.today)}
         title={t.today.dayMilestone(floor.dayNumber)}
-        subtitle={formatLongDate(floor.today)}
         showSettings
       />
 
-      <div className="flex flex-col gap-3 px-4">
-        <FloorCard
-          title={t.today.floorTitle}
-          description={t.today.floorSubtitle}
+      <div className="flex flex-col gap-7 px-5 pt-2">
+        <FloorCounter
+          done={doneCount}
+          total={floor.floorHabits.length}
+          states={floor.floorHabits.map((habit) => floor.completedIds.has(habit.id))}
+        />
+
+        <NowCard
+          habit={nextHabit}
+          onDone={() => {
+            if (nextHabit) void onToggle(nextHabit)
+          }}
+          onLater={canPostpone(floor.floorHabits, floor.completedIds) ? onLater : undefined}
+        />
+
+        <FloorChecklist
           habits={floor.floorHabits}
           completedIds={floor.completedIds}
-          onToggle={onToggle}
-          onCompleteAll={onCompleteAll}
-          allDone={floor.floorCompleted}
-          doneLabel={t.today.floorDone}
-          doneHint={t.today.floorDoneHint}
+          onToggle={(habit) => void onToggle(habit)}
         />
 
-        <ConsistencyStrip score7={floor.score7} score30={floor.score30} />
-
-        <ProteinCard protein={protein} target={target} />
-
-        {weight.isDue ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t.today.weighInDue}</CardTitle>
-              <CardDescription>{t.today.weighInDueHint}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" block onClick={() => setWeighInOpen(true)}>
-                <Scale size={18} aria-hidden />
-                {t.weight.logCta}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        <FloorCard
-          title={t.today.stackTitle}
-          description={t.today.stackSubtitle}
+        <StackChips
           habits={floor.stackHabits}
           completedIds={floor.completedIds}
-          onToggle={onToggle}
+          onToggle={(habit) => void onToggle(habit)}
         />
 
-        <Button size="lg" variant="secondary" block onClick={onStartWorkout} className="mb-2">
+        <section className="flex flex-col">
+          <SummaryRow
+            to="/nutrition"
+            label={t.today.proteinTitle}
+            value={String(protein.totalGrams)}
+            valueSuffix={` / ${protein.targetGrams} g`}
+            progress={{ value: protein.totalGrams, max: protein.targetGrams }}
+          />
+          <SummaryRow
+            to="/trends"
+            label={t.today.consistencyTitle}
+            value={t.today.consistencySummary(floor.score7.percent)}
+          />
+        </section>
+
+        <Button size="lg" variant="secondary" block onClick={() => void onStartWorkout()}>
           <Dumbbell size={20} aria-hidden />
-          {workouts.session ? t.today.resumeWorkout : t.today.startWorkout}
+          {workouts.session ? t.today.resumeWorkout : t.today.startCircuitLong}
         </Button>
       </div>
 
@@ -114,16 +134,6 @@ export function TodayScreen() {
         open={portionHabit !== null}
         onClose={() => setPortionHabit(null)}
         onPick={onPickPortion}
-      />
-      <WeightSheet
-        open={weighInOpen}
-        initialKg={weight.latest?.weightKg ?? null}
-        onClose={() => setWeighInOpen(false)}
-        onSubmit={async (kg) => {
-          await weight.log(kg)
-          setWeighInOpen(false)
-          showToast(t.weight.saved(kg))
-        }}
       />
     </>
   )

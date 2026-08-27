@@ -1,11 +1,11 @@
 import { HabitManagerCard } from '@/features/habits/HabitManagerCard'
-import { SettingsPage } from '@/screens/settings/SettingsPage'
+import { SubPage } from '@/components/shared/SubPage'
 import { t } from '@/i18n/fr'
 
 export function HabitsSettingsScreen() {
   return (
-    <SettingsPage title={t.settings.sections.habits.title} backTo="/settings">
+    <SubPage title={t.settings.sections.habits.title} backTo="/settings">
       <HabitManagerCard />
-    </SettingsPage>
+    </SubPage>
   )
 }
