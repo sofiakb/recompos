@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Segmented } from '@/components/ui/segmented'
@@ -20,14 +21,6 @@ const SEX_OPTIONS: Array<{ value: BiologicalSex | ''; label: string }> = [
   { value: 'female', label: t.meals.sex.female },
 ]
 
-/**
- * The three facts a resting-rate formula needs and a weight cannot supply.
- *
- * Optional by design: leaving them blank keeps the app working on a cruder
- * weight-only estimate, which the screen labels as such. They are worth asking
- * for once because the gap between guessing and knowing was about 300 kcal a day
- * — the size of the deficit itself.
- */
 /** Naming what is missing is what makes an incomplete profile fixable. */
 function missingFields(target: CalorieTargetState): string[] {
   const missing: string[] = []
@@ -37,6 +30,60 @@ function missingFields(target: CalorieTargetState): string[] {
   return missing
 }
 
+/**
+ * A number field that keeps what is being typed, and commits on blur.
+ *
+ * Committing on every keystroke means clamping every keystroke: typing « 178 »
+ * starts at « 1 », which a 120 cm floor rewrites to 120, and the field can never
+ * be finished. Half-typed numbers are not values, so nothing is stored until
+ * focus leaves — and the stored value is echoed back so a rejected entry does
+ * not silently linger on screen.
+ */
+function DraftNumberField({
+  label,
+  placeholder,
+  value,
+  onCommit,
+}: {
+  label: string
+  placeholder: string
+  value: number | null
+  onCommit: (value: number | undefined) => void
+}) {
+  const [draft, setDraft] = useState(value ? String(value) : '')
+
+  useEffect(() => {
+    setDraft(value ? String(value) : '')
+  }, [value])
+
+  return (
+    <Field label={label}>
+      {(id) => (
+        <Input
+          id={id}
+          className="tnum"
+          inputMode="numeric"
+          placeholder={placeholder}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value.replace(/[^\d]/g, ''))}
+          onBlur={() => {
+            const parsed = Number(draft)
+            onCommit(draft && Number.isFinite(parsed) && parsed > 0 ? parsed : undefined)
+          }}
+        />
+      )}
+    </Field>
+  )
+}
+
+/**
+ * The three facts a resting-rate formula needs and a weight cannot supply.
+ *
+ * Optional by design: leaving them blank keeps the app working on a cruder
+ * estimate, which the screen labels as such and which still tracks the activity
+ * level. They are worth asking for once because the gap between guessing and
+ * knowing was about 300 kcal a day — the size of the deficit itself.
+ */
 export function BodyProfileFields({ target }: BodyProfileFieldsProps) {
   const currentYear = new Date().getFullYear()
 
@@ -44,41 +91,19 @@ export function BodyProfileFields({ target }: BodyProfileFieldsProps) {
     <div className="flex flex-col gap-3">
       <p className="text-xs text-muted-foreground">{t.meals.profileHint}</p>
 
-      <Field label={t.meals.heightLabel}>
-        {(id) => (
-          <Input
-            id={id}
-            className="tnum"
-            inputMode="numeric"
-            placeholder="178"
-            value={target.heightCm ? String(target.heightCm) : ''}
-            onChange={(event) => {
-              const parsed = Number(event.target.value.replace(',', '.'))
-              target.setProfile({
-                heightCm: Number.isFinite(parsed) && parsed ? parsed : undefined,
-              })
-            }}
-          />
-        )}
-      </Field>
+      <DraftNumberField
+        label={t.meals.heightLabel}
+        placeholder={t.meals.heightPlaceholder}
+        value={target.heightCm}
+        onCommit={(heightCm) => target.setProfile({ heightCm })}
+      />
 
-      <Field label={t.meals.birthYearLabel}>
-        {(id) => (
-          <Input
-            id={id}
-            className="tnum"
-            inputMode="numeric"
-            placeholder={String(currentYear - 35)}
-            value={target.ageYears ? String(currentYear - target.ageYears) : ''}
-            onChange={(event) => {
-              const parsed = Number(event.target.value)
-              target.setProfile({
-                birthYear: Number.isFinite(parsed) && parsed > 1900 ? parsed : undefined,
-              })
-            }}
-          />
-        )}
-      </Field>
+      <DraftNumberField
+        label={t.meals.birthYearLabel}
+        placeholder={t.meals.birthYearPlaceholder}
+        value={target.ageYears ? currentYear - target.ageYears : null}
+        onCommit={(birthYear) => target.setProfile({ birthYear })}
+      />
 
       <div className="flex flex-col gap-1.5">
         {/* No pre-selection. A control that displays « Homme » without having

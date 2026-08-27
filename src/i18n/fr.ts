@@ -368,7 +368,10 @@ export const fr = {
     missing: { height: 'la taille', birthYear: 'l’année de naissance', sex: 'le sexe' },
     profileComplete: 'Calculé avec ta dépense au repos (Mifflin-St Jeor).',
     heightLabel: 'Taille (cm)',
+    // « ex. » so a placeholder cannot be mistaken for a value already entered.
+    heightPlaceholder: 'ex. 178',
     birthYearLabel: 'Année de naissance',
+    birthYearPlaceholder: 'ex. 1990',
     sexLabel: 'Sexe',
     sex: { male: 'Homme', female: 'Femme' },
     sexHint: 'La formule de dépense au repos en dépend. Aucun autre usage dans l’app.',

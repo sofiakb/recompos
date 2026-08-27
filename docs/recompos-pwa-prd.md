@@ -452,10 +452,12 @@ maintien          = dépense au repos × facteur d'activité
 cible             = arrondi_50(maintien × (1 − déficit))
 ```
 
-**Repli assumé** — sans taille ni année de naissance, l'app retombe sur `poids × 27 kcal/kg` et
-**l'écrit à l'écran, en nommant les champs manquants**. 27 plutôt que 30 : une estimation trop haute
-annule le déficit en silence, ce qui est précisément la panne d'origine. Le repli est délibérément
-conservateur.
+**Repli assumé** — sans taille ni année de naissance, l'app estime la dépense au repos à
+`poids × 22 kcal/kg` et **l'écrit à l'écran, en nommant les champs manquants**. Un *taux de repos*
+et non un maintien fini, pour que le facteur d'activité s'applique dans les deux cas : un repli qui
+ignorait l'activité faisait bouger le sélecteur sans changer le chiffre, et un interrupteur qui ne
+fait rien est pire qu'un interrupteur absent. 22 kcal/kg tombe à quelques kcal de ce que donne
+Mifflin-St Jeor pour un adulte moyen au même poids.
 
 **Déficit** — 10 % par défaut, réglable (0, 10, 15, 20 %). Pas les 20–25 % d'une application
 d'amaigrissement : l'objectif est la recomposition (§3.3), et un déficit marqué est la façon la plus
@@ -467,9 +469,14 @@ le voir sans effet serait un piège.
 arrondit deux fois et dérive de 25 kcal sans raison.
 
 **Profil facultatif** — taille, année de naissance et sexe ne sont demandés qu'une fois, dans les
-réglages, et ne servent qu'à cette formule. Le sexe n'a **aucune valeur pré-sélectionnée** : un
-contrôle qui affiche « Homme » sans l'avoir enregistré laisse le profil incomplet tout en paraissant
-rempli — c'est arrivé, et le test de bout en bout le vérifie maintenant.
+réglages, et ne servent qu'à cette formule. Deux pièges rencontrés, tous deux couverts par le test de
+bout en bout :
+
+- Le sexe n'a **aucune valeur pré-sélectionnée**. Un contrôle qui affiche « Homme » sans l'avoir
+  enregistré laisse le profil incomplet tout en paraissant rempli.
+- Les champs numériques **ne s'enregistrent qu'à la perte du focus**. Borner à chaque frappe revient à
+  borner un nombre à moitié tapé : saisir « 178 » commence par « 1 », qu'un plancher à 120 cm
+  réécrivait en 120 — et le champ ne pouvait plus jamais être terminé.
 
 Rien de tout cela ne remplace le vrai calibrage, que l'écran rappelle : ajuster après trois semaines,
 en regardant ce que fait la courbe de poids.
