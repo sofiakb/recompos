@@ -21,7 +21,7 @@ export function SettingsPage({ title, backTo, children }: SettingsPageProps) {
         <Link
           to={backTo}
           aria-label={t.onboarding.back}
-          className="h-touch w-touch flex items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="flex h-touch w-touch items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <ArrowLeft size={22} aria-hidden />
         </Link>

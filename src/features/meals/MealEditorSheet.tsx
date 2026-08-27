@@ -136,7 +136,7 @@ export function MealEditorSheet({
                   type="button"
                   aria-label={t.meals.removeItem(item.name || String(index + 1))}
                   onClick={() => setItems((current) => current.filter((_, i) => i !== index))}
-                  className="h-touch w-touch flex shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex h-touch w-touch shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Trash2 size={16} aria-hidden />
                 </button>

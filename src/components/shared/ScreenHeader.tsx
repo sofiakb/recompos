@@ -19,7 +19,7 @@ export function ScreenHeader({ title, subtitle, showSettings = false }: ScreenHe
         <Link
           to="/settings"
           aria-label={t.nav.settings}
-          className="h-touch w-touch flex shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="flex h-touch w-touch shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <Settings size={22} aria-hidden />
         </Link>

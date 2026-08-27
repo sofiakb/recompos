@@ -236,6 +236,11 @@ Aucun texte en dur dans un composant. Les ajouts de la refonte :
 
 Une renommage à trancher côté produit : « Habitudes empilées » → « En plus » dans l'UI. Le modèle garde `kind: 'stack'`.
 
+> **Tranché le 27/08/2026 : non.** L'UI garde « Habitudes empilées » — le terme dit le
+> mécanisme, une habitude accrochée à une ancre qui existe déjà. C'est un écart assumé
+> par rapport à ce document, pas un oubli d'implémentation : voir décision n°19 du PRD.
+> La chaîne « En plus » n'est donc pas à ajouter à `src/i18n/fr.ts`.
+
 ## Assets
 
 Aucun nouvel asset. Toutes les icônes sont des icônes **lucide** déjà présentes via `lucide-react` : `settings`, `check`, `chevron-right`, `chevron-up`, `chevron-down`, `arrow-left`, `house`, `salad`, `dumbbell`, `trending-up`, `trending-down`, `plus`, `minus`, `x`, `circle-plus`, `play`, `square`, `repeat`, `timer`, `trash-2`, `camera`, `pencil`, `pencil-line`, `ruler`, `download`, `upload`, `refresh-cw`, `loader-circle`. Les graphiques restent du SVG écrit à la main (`src/components/charts/LineChart.tsx`, `WeightSparkline.tsx`) — pas de bibliothèque de charting.

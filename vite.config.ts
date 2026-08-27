@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
+import pkg from './package.json'
 
 // GitHub Pages serves the app from /recompos/. Keep this in sync with the
 // manifest scope/start_url and with the router basename.
@@ -10,6 +11,10 @@ const BASE = '/recompos/'
 
 export default defineConfig({
   base: BASE,
+  // The app version comes from package.json, and nowhere else. The screen used
+  // to print SCHEMA_VERSION, which counts Dexie migrations: it moves when the
+  // data shape changes and says nothing about what is shipped.
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   resolve: {
     alias: { '@': path.resolve(__dirname, 'src') },
   },

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { SettingsPage } from '@/screens/settings/SettingsPage'
 import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
 import { formatCalendarDate, toLogicalDate } from '@/lib/date'
-import { SCHEMA_VERSION } from '@/types/models'
 import { t } from '@/i18n/fr'
 
 interface Rubric {
@@ -84,7 +83,7 @@ export function SettingsScreen() {
       </ul>
 
       <p className="tnum px-1 pt-2 text-xs text-muted-foreground">
-        {t.settings.version} {SCHEMA_VERSION}.0 · {t.settings.installedOn.toLowerCase()}{' '}
+        {t.settings.version} {__APP_VERSION__} · {t.settings.installedOn.toLowerCase()}{' '}
         {formatCalendarDate(toLogicalDate(new Date(settings.installedAt)))}
       </p>
       <p className="px-1 text-xs text-muted-foreground">{t.settings.dataNotice}</p>

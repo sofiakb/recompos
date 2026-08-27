@@ -51,6 +51,14 @@ export default {
       minWidth: {
         touch: '48px',
       },
+      // `h-touch w-touch` (Button size="icon") needs the scale on height/width
+      // too — minHeight/minWidth alone leave those classes ungenerated.
+      height: {
+        touch: '48px',
+      },
+      width: {
+        touch: '48px',
+      },
       keyframes: {
         'pop-in': {
           '0%': { transform: 'scale(0.92)', opacity: '0' },

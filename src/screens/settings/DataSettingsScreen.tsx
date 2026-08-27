@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BackupCard } from '@/features/backup/BackupCard'
 import { SettingsPage } from '@/screens/settings/SettingsPage'
 import { formatBytes } from '@/lib/format'
+import { SCHEMA_VERSION } from '@/types/models'
 import { t } from '@/i18n/fr'
 
 interface StorageInfo {
@@ -48,6 +49,12 @@ export function DataSettingsScreen() {
           <p className="text-xs text-muted-foreground">
             {storage?.persisted ? t.settings.storagePersisted : t.settings.storageBestEffort}
           </p>
+          {/* The schema number belongs next to export/import, the only place it
+              means anything: it is what a backup file carries. */}
+          <p className="tnum border-t border-border pt-3 text-xs text-muted-foreground">
+            {t.settings.schemaVersion(SCHEMA_VERSION)}
+          </p>
+          <p className="text-xs text-muted-foreground">{t.settings.schemaVersionHint}</p>
         </CardContent>
       </Card>
 

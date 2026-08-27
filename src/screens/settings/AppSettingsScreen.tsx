@@ -4,7 +4,6 @@ import { ToggleRow } from '@/components/ui/toggle-row'
 import { SettingsPage } from '@/screens/settings/SettingsPage'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { formatCalendarDate, toLogicalDate } from '@/lib/date'
-import { SCHEMA_VERSION } from '@/types/models'
 import { t } from '@/i18n/fr'
 
 export function AppSettingsScreen() {
@@ -45,7 +44,7 @@ export function AppSettingsScreen() {
         </CardHeader>
         <CardContent className="flex flex-col gap-1 text-sm text-muted-foreground">
           <p>
-            {t.settings.version} {SCHEMA_VERSION}.0
+            {t.settings.version} {__APP_VERSION__}
           </p>
           <p>
             {t.settings.installedOn}{' '}

@@ -90,7 +90,7 @@ export function ZeroCookCatalog({ onLog }: ZeroCookCatalogProps) {
                     aria-checked={item.inStock}
                     aria-label={t.nutrition.inStock(item.name)}
                     onClick={() => void setZeroCookStock(item.id, !item.inStock)}
-                    className="h-touch flex w-9 shrink-0 items-center justify-center"
+                    className="flex h-touch w-9 shrink-0 items-center justify-center"
                   >
                     <span
                       className={cn(
