@@ -10,7 +10,8 @@ import {
   DEFAULT_DEFICIT_PERCENT,
   DEFICIT_CHOICES,
   estimateMaintenance,
-  FALLBACK_MAINTENANCE_KCAL_PER_KG,
+  ACTIVITY_FACTORS as FACTORS,
+  FALLBACK_BMR_KCAL_PER_KG,
   MAX_CALORIE_TARGET_KCAL,
   MIN_CALORIE_TARGET_KCAL,
 } from '@/lib/nutrition'
@@ -62,10 +63,29 @@ describe('estimateMaintenance', () => {
     expect(at('moderate')).toBe(2500)
   })
 
-  it('falls back to the weight-only coefficient, and says so', () => {
+  it('falls back to the weight-only rate, and says so', () => {
     const estimate = estimateMaintenance({ weightKg: 78.3 })
     expect(estimate.fromProfile).toBe(false)
-    expect(estimate.kcal).toBe(Math.round((78.3 * FALLBACK_MAINTENANCE_KCAL_PER_KG) / 50) * 50)
+    expect(estimate.kcal).toBe(
+      Math.round((78.3 * FALLBACK_BMR_KCAL_PER_KG * FACTORS.light) / 50) * 50,
+    )
+  })
+
+  it('still tracks the activity level while the profile is incomplete', () => {
+    // A control that moves without changing the number is worse than a missing
+    // one: the activity segment did exactly that before the fallback used it.
+    const at = (activityLevel: keyof typeof ACTIVITY_FACTORS) =>
+      estimateMaintenance({ weightKg: 78.3, activityLevel }).kcal
+    expect(at('sedentary')).toBeLessThan(at('light'))
+    expect(at('light')).toBeLessThan(at('moderate'))
+  })
+
+  it('lands close to the formula it stands in for', () => {
+    // Same body, with and without the profile: the fallback should be in the
+    // same neighbourhood, not a different answer.
+    const crude = estimateMaintenance({ weightKg: 78.3, activityLevel: 'light' }).kcal
+    const real = estimateMaintenance({ ...FULL }).kcal
+    expect(Math.abs(crude - real)).toBeLessThanOrEqual(150)
   })
 
   it('needs every field before it trusts the formula', () => {
@@ -75,9 +95,9 @@ describe('estimateMaintenance', () => {
     )
   })
 
-  it('keeps the fallback conservative — too high would cancel the deficit', () => {
-    // The weight-only figure must not exceed what the formula gives a tall,
-    // young body at the same weight, or the estimate quietly erases the cut.
+  it('keeps the fallback under what the formula gives a tall, young body', () => {
+    // Too high an estimate quietly erases the deficit, which is the failure
+    // this whole calculation replaced.
     const crude = estimateMaintenance({ weightKg: 78.3 }).kcal
     const generous = estimateMaintenance({ ...FULL, heightCm: 190, ageYears: 25 }).kcal
     expect(crude).toBeLessThan(generous)
@@ -118,8 +138,10 @@ describe('computeCalorieTargetKcal', () => {
     }
   })
 
-  it('works before the profile exists', () => {
-    expect(computeCalorieTargetKcal({ weightKg: 78.3 })).toBe(1900)
+  it('works before the profile exists, and still sits under maintenance', () => {
+    const target = computeCalorieTargetKcal({ weightKg: 78.3 })
+    expect(target).toBe(2000)
+    expect(target).toBeLessThan(estimateMaintenance({ weightKg: 78.3 }).kcal)
   })
 })
 

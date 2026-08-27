@@ -39,13 +39,18 @@ export interface BodyProfile {
 export type BiologicalSex = 'male' | 'female'
 
 /**
- * Fallback maintenance, in kcal per kg, used only until height and age exist.
+ * Fallback *resting* rate, in kcal per kg, used until height and age exist.
  *
- * A resting rate near 22 kcal/kg times a factor a touch above sedentary. It is
- * deliberately conservative: an estimate that is too high quietly cancels the
- * deficit, which is exactly the failure this replaced.
+ * A rate rather than a finished maintenance figure, so the activity factor
+ * applies either way. A fallback that ignored activity made the activity
+ * control move without changing anything — a switch that does nothing is worse
+ * than a missing one.
+ *
+ * 22 kcal/kg is the usual rule of thumb, and lands within a few kcal of what
+ * Mifflin-St Jeor gives an average adult at the same weight. It stays an
+ * estimate, and the screen keeps saying so.
  */
-export const FALLBACK_MAINTENANCE_KCAL_PER_KG = 27
+export const FALLBACK_BMR_KCAL_PER_KG = 22
 
 /**
  * Multipliers on the resting rate. Standard values, named for what a day looks
@@ -124,7 +129,7 @@ function rawMaintenance(input: MaintenanceInput): MaintenanceEstimate {
         ageYears: input.ageYears as number,
         sex: input.sex as BiologicalSex,
       }) * factor
-    : input.weightKg * FALLBACK_MAINTENANCE_KCAL_PER_KG
+    : input.weightKg * FALLBACK_BMR_KCAL_PER_KG * factor
 
   return { kcal, fromProfile: complete }
 }
