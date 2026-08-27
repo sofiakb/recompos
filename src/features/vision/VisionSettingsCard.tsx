@@ -105,7 +105,11 @@ export function VisionSettingsCard() {
 
         <Field
           label={t.vision.modelLabel}
-          hint={definition.defaultModel ? t.vision.modelHint(definition.defaultModel) : undefined}
+          hint={
+            definition.defaultModel
+              ? t.vision.modelHint(definition.defaultModel)
+              : t.vision.modelRequired
+          }
         >
           {(id) => (
             <Input

@@ -55,26 +55,84 @@ function asConfidence(value: unknown): MealConfidence {
 }
 
 /**
- * Pulls the first JSON object out of a completion.
+ * Every balanced `{…}` in a string, outermost first.
  *
- * JSON mode is requested, but a fenced block or a leading « Voici » still shows
- * up often enough that failing on it would mean a failed meal for the user.
+ * Quotes and escapes are tracked so a brace inside a value — « sauce 1/2 { » —
+ * does not close an object early.
+ */
+function balancedObjects(text: string): string[] {
+  const found: string[] = []
+  let depth = 0
+  let start = -1
+  let inString = false
+  let escaped = false
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]
+    if (escaped) {
+      escaped = false
+      continue
+    }
+    if (char === '\\') {
+      escaped = true
+      continue
+    }
+    if (char === '"') {
+      inString = !inString
+      continue
+    }
+    if (inString) continue
+    if (char === '{') {
+      if (depth === 0) start = i
+      depth++
+    } else if (char === '}') {
+      depth--
+      if (depth === 0 && start !== -1) {
+        found.push(text.slice(start, i + 1))
+        start = -1
+      }
+      if (depth < 0) depth = 0
+    }
+  }
+  return found
+}
+
+/**
+ * Pulls the meal object out of a completion.
+ *
+ * JSON mode is requested, but the answer still arrives wrapped often enough that
+ * failing on it would mean a failed meal: a fenced block, a leading « Voici », or
+ * — with the reasoning models these providers now serve — a whole train of
+ * thought before the answer. So every balanced object is a candidate, and the
+ * one that actually looks like a meal wins over the one that merely parses.
  */
 export function extractJson(text: string): unknown {
   const trimmed = text.trim()
   try {
     return JSON.parse(trimmed)
   } catch {
-    // fall through to the brace scan
+    // fall through to the scan
   }
-  const start = trimmed.indexOf('{')
-  const end = trimmed.lastIndexOf('}')
-  if (start === -1 || end <= start) return null
-  try {
-    return JSON.parse(trimmed.slice(start, end + 1))
-  } catch {
-    return null
+
+  const candidates = balancedObjects(trimmed)
+  let firstParsed: unknown = null
+  for (const candidate of candidates) {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(candidate)
+    } catch {
+      continue
+    }
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      Array.isArray((parsed as { items?: unknown }).items)
+    ) {
+      return parsed
+    }
+    if (firstParsed === null) firstParsed = parsed
   }
+  return firstParsed
 }
 
 function parseItem(raw: unknown): MealItem | null {

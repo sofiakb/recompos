@@ -378,6 +378,7 @@ export const fr = {
     keyPlaceholder: 'gsk_…',
     modelLabel: 'Modèle',
     modelHint: (fallback: string) => `Vide = ${fallback}`,
+    modelRequired: 'À renseigner pour ce service.',
     baseUrlLabel: 'Endpoint',
     baseUrlPlaceholder: 'https://mon-endpoint/v1',
     getKey: 'Obtenir une clé',
@@ -396,6 +397,7 @@ export const fr = {
       network: 'pas de réponse (réseau ou CORS)',
       server: 'erreur du service',
       bad_response: 'réponse illisible',
+      model: 'modèle introuvable chez ce service',
     },
     corsHelp:
       'Si le test échoue en « pas de réponse » alors que la clé est bonne, c’est que le service refuse les appels directs depuis le navigateur. Il faudra passer par un petit relais.',

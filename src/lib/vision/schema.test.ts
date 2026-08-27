@@ -26,6 +26,26 @@ describe('extractJson', () => {
   it('returns null on nothing parseable', () => {
     expect(extractJson('désolé, je ne peux pas')).toBeNull()
   })
+
+  it('steps over a reasoning preamble that contains braces of its own', () => {
+    const answer =
+      '<think>Je compare {assiette} et {portion} avant de conclure.</think>\n' +
+      '{"items":[{"name":"Riz","quantity":"200 g","kcal":260,"proteinG":5,"carbsG":56,"fatG":1}]}'
+    const parsed = extractJson(answer) as { items: unknown[] }
+    expect(parsed.items).toHaveLength(1)
+  })
+
+  it('prefers the object that looks like a meal over one that merely parses', () => {
+    const answer = '{"note":"je réfléchis"} puis {"items":[{"name":"Œuf","kcal":78}]}'
+    const parsed = extractJson(answer) as { items: unknown[] }
+    expect(parsed.items).toHaveLength(1)
+  })
+
+  it('is not fooled by a brace inside a value', () => {
+    const answer = '{"label":"Sauce {maison}","items":[{"name":"Pâtes","kcal":300}]}'
+    const parsed = extractJson(answer) as { label: string }
+    expect(parsed.label).toBe('Sauce {maison}')
+  })
 })
 
 describe('parseAnalysis', () => {

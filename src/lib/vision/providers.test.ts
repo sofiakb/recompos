@@ -29,7 +29,7 @@ describe('resolveEndpoint', () => {
   it('uses the provider defaults', () => {
     expect(resolveEndpoint('groq', { apiKey: 'k', enabled: true })).toEqual({
       url: 'https://api.groq.com/openai/v1/chat/completions',
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      model: 'qwen/qwen3.8-27b',
     })
   })
 
@@ -61,10 +61,14 @@ describe('resolveEndpoint', () => {
 describe('configuredProviders', () => {
   it('keeps only the ones with a key, in chain order', () => {
     const chain = configuredProviders({
-      openrouter: { apiKey: 'or', enabled: true },
+      openrouter: { apiKey: 'or', enabled: true, model: 'un/modele' },
       groq: { apiKey: 'gsk', enabled: true },
     })
     expect(chain.map((provider) => provider.id)).toEqual(['groq', 'openrouter'])
+  })
+
+  it('skips a provider with no default model until one is named', () => {
+    expect(configuredProviders({ openrouter: { apiKey: 'or', enabled: true } })).toEqual([])
   })
 
   it('skips a disabled or empty entry', () => {
@@ -96,6 +100,7 @@ describe('analyseWithProvider', () => {
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer gsk_test')
     const body = JSON.parse(init.body as string)
     expect(body.response_format).toEqual({ type: 'json_object' })
+    expect(body.max_completion_tokens).toBe(2048)
     expect(body.messages[1].content[1].image_url.url).toBe(DATA_URL)
   })
 
@@ -162,7 +167,7 @@ describe('analyseMeal', () => {
       .mockResolvedValueOnce(reply(ANSWER))
 
     const outcome = await analyseMeal(
-      [groq(), { id: 'openrouter', settings: { apiKey: 'or', enabled: true } }],
+      [groq(), { id: 'openrouter', settings: { apiKey: 'or', enabled: true, model: 'un/modele' } }],
       { dataUrl: DATA_URL },
       fetchMock,
     )
@@ -176,7 +181,7 @@ describe('analyseMeal', () => {
       .mockResolvedValueOnce(reply(ANSWER))
 
     const outcome = await analyseMeal(
-      [groq(), { id: 'openrouter', settings: { apiKey: 'or', enabled: true } }],
+      [groq(), { id: 'openrouter', settings: { apiKey: 'or', enabled: true, model: 'un/modele' } }],
       { dataUrl: DATA_URL },
       fetchMock,
     )
@@ -186,7 +191,7 @@ describe('analyseMeal', () => {
   it('stops at the first success instead of polling them all', async () => {
     const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
     await analyseMeal(
-      [groq(), { id: 'openrouter', settings: { apiKey: 'or', enabled: true } }],
+      [groq(), { id: 'openrouter', settings: { apiKey: 'or', enabled: true, model: 'un/modele' } }],
       { dataUrl: DATA_URL },
       fetchMock,
     )
@@ -205,11 +210,77 @@ describe('analyseMeal', () => {
   })
 })
 
+describe('model fallback', () => {
+  const notFound = () =>
+    new Response(
+      JSON.stringify({ error: { code: 'model_not_found', message: 'does not exist' } }),
+      { status: 404 },
+    )
+
+  it('names a retired model rather than calling it a server fault', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(notFound())
+    await expect(
+      analyseWithProvider(
+        {
+          id: 'custom',
+          settings: { apiKey: 'k', enabled: true, baseUrl: 'http://x/v1', model: 'parti' },
+        },
+        { dataUrl: DATA_URL },
+        fetchMock,
+      ),
+    ).rejects.toMatchObject({ kind: 'model' })
+  })
+
+  it('retries the backup model when the built-in default has gone', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(notFound()).mockResolvedValueOnce(reply(ANSWER))
+
+    const analysis = await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    expect(analysis.items).toHaveLength(1)
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).model).toBe('qwen/qwen3.8-27b')
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).model).toBe('qwen/qwen3.6-27b')
+  })
+
+  it('does not second-guess a model the user typed', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(notFound())
+    await expect(
+      analyseWithProvider(groq({ model: 'mon/choix' }), { dataUrl: DATA_URL }, fetchMock),
+    ).rejects.toMatchObject({ kind: 'model' })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the backup model for the repair attempt too', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(notFound())
+      .mockResolvedValueOnce(reply('pas du JSON'))
+      .mockResolvedValueOnce(reply(ANSWER))
+
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body).model).toBe('qwen/qwen3.6-27b')
+  })
+
+  it('the key test reports the backup model when that is the one that works', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(notFound())
+      .mockResolvedValueOnce(reply('{"ok":true}'))
+
+    const result = await testProvider('groq', { apiKey: 'k', enabled: true }, fetchMock)
+    expect(result).toEqual({ ok: true, model: 'qwen/qwen3.6-27b' })
+  })
+
+  it('reports the model failure when the backup is gone too', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(notFound())
+    const result = await testProvider('groq', { apiKey: 'k', enabled: true }, fetchMock)
+    expect(result).toMatchObject({ ok: false, kind: 'model' })
+  })
+})
+
 describe('testProvider', () => {
   it('reports the model that answered', async () => {
     const fetchMock = vi.fn().mockResolvedValue(reply('{"ok":true}'))
     const result = await testProvider('groq', { apiKey: 'k', enabled: true }, fetchMock)
-    expect(result).toEqual({ ok: true, model: 'meta-llama/llama-4-scout-17b-16e-instruct' })
+    expect(result).toEqual({ ok: true, model: 'qwen/qwen3.8-27b' })
   })
 
   it('reports why it failed rather than just failing', async () => {
