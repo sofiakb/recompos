@@ -12,6 +12,8 @@ import type {
   Exercise,
   ExerciseSet,
   HabitCompletion,
+  MealEntry,
+  MealPhoto,
   Measurement,
   ProgressPhoto,
   ProteinLog,
@@ -31,6 +33,8 @@ export class RecompDb extends Dexie {
   photos!: Table<ProgressPhoto, string>
   takeoutOptions!: Table<TakeoutOption, string>
   zeroCookItems!: Table<ZeroCookItem, string>
+  meals!: Table<MealEntry, string>
+  mealPhotos!: Table<MealPhoto, string>
 
   constructor(name = 'recompos') {
     super(name)
@@ -46,6 +50,14 @@ export class RecompDb extends Dexie {
       photos: 'id, date, angle',
       takeoutOptions: 'id, cuisine',
       zeroCookItems: 'id',
+    })
+    // Meals arrive in their own version so an existing install keeps its data:
+    // Dexie only replays the deltas, and version 1 stays declared above.
+    this.version(2).stores({
+      // `status` is indexed because the retry queue asks for pending rows on
+      // every launch and on every return of the network.
+      meals: 'id, date, status, timestamp',
+      mealPhotos: 'id, mealId, date',
     })
   }
 }

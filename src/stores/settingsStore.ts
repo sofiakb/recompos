@@ -9,13 +9,19 @@ import { persist } from 'zustand/middleware'
 import { DEFAULT_HABITS } from '@/db/seed'
 import { createId } from '@/lib/utils'
 import { toLogicalDate } from '@/lib/date'
-import { clampProteinTargetGrams } from '@/lib/nutrition'
+import {
+  clampCalorieTargetKcal,
+  clampProteinTargetGrams,
+  DEFAULT_MEAL_PHOTO_RETENTION_DAYS,
+} from '@/lib/nutrition'
 import { clampRestSeconds } from '@/lib/timer'
 import {
   SCHEMA_VERSION,
   type AppSettings,
   type FloorHabitDefinition,
   type ProteinTargetMode,
+  type VisionProviderId,
+  type VisionProviderSettings,
 } from '@/types/models'
 
 export const STORAGE_KEY = 'recompos:settings'
@@ -39,6 +45,8 @@ function initialSettings(): AppSettings {
     restTimerDefaultSeconds: 60,
     hapticsEnabled: true,
     soundEnabled: true,
+    calorieTargetMode: 'auto',
+    mealPhotoRetentionDays: DEFAULT_MEAL_PHOTO_RETENTION_DAYS,
   }
 }
 
@@ -50,6 +58,12 @@ interface SettingsState {
   /** Hands the target back to the weight-derived calculation. */
   resetProteinTargetToAuto: () => void
   setRestTimerSeconds: (seconds: number) => void
+  /** Freezes the calorie target on a human-chosen number, like the protein one. */
+  setManualCalorieTarget: (kcal: number) => void
+  resetCalorieTargetToAuto: () => void
+  setMealPhotoRetentionDays: (days: number) => void
+  setVisionProvider: (id: VisionProviderId, patch: Partial<VisionProviderSettings>) => void
+  clearVisionProvider: (id: VisionProviderId) => void
   toggleHaptics: (enabled: boolean) => void
   toggleSound: (enabled: boolean) => void
   completeOnboarding: () => void
@@ -92,6 +106,50 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           settings: { ...state.settings, restTimerDefaultSeconds: clampRestSeconds(seconds) },
         })),
+
+      setManualCalorieTarget: (kcal) =>
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            calorieTargetMode: 'manual',
+            manualCalorieTargetKcal: clampCalorieTargetKcal(kcal),
+          },
+        })),
+
+      resetCalorieTargetToAuto: () =>
+        set((state) => {
+          const { manualCalorieTargetKcal: _dropped, ...settings } = state.settings
+          return { settings: { ...settings, calorieTargetMode: 'auto' } }
+        }),
+
+      setMealPhotoRetentionDays: (days) =>
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            mealPhotoRetentionDays: Math.max(0, Math.min(365, Math.round(days))),
+          },
+        })),
+
+      setVisionProvider: (id, patch) =>
+        set((state) => {
+          const current = state.settings.visionProviders?.[id]
+          return {
+            settings: {
+              ...state.settings,
+              visionProviders: {
+                ...state.settings.visionProviders,
+                [id]: { apiKey: '', enabled: true, ...current, ...patch },
+              },
+            },
+          }
+        }),
+
+      clearVisionProvider: (id) =>
+        set((state) => {
+          const providers = { ...state.settings.visionProviders }
+          delete providers[id]
+          return { settings: { ...state.settings, visionProviders: providers } }
+        }),
 
       toggleHaptics: (enabled) =>
         set((state) => ({ settings: { ...state.settings, hapticsEnabled: enabled } })),
@@ -209,6 +267,11 @@ export function migrateSettings(persisted: unknown, fromVersion: number): Persis
     settings: {
       ...settings,
       schemaVersion: SCHEMA_VERSION,
+      // v2 → v3 added the calorie target and the meal photo retention. Both get
+      // their defaults rather than being left undefined, so nothing downstream
+      // has to guard for a settings object that predates the meal module.
+      calorieTargetMode: settings.calorieTargetMode ?? 'auto',
+      mealPhotoRetentionDays: settings.mealPhotoRetentionDays ?? DEFAULT_MEAL_PHOTO_RETENTION_DAYS,
       proteinTargetMode: proteinTargetGrams ? 'manual' : 'auto',
       ...(proteinTargetGrams
         ? { manualProteinTargetGrams: clampProteinTargetGrams(proteinTargetGrams) }

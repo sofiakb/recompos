@@ -10,6 +10,7 @@ import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { WeightCard } from '@/features/weight/WeightCard'
 import { WeightSheet } from '@/features/weight/WeightSheet'
 import { useWeight } from '@/features/weight/useWeight'
+import { VisionSettingsCard } from '@/features/vision/VisionSettingsCard'
 import { RestTimerSetting } from '@/features/workouts/RestTimerSetting'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
@@ -77,6 +78,8 @@ export function SettingsScreen() {
         <WeightCard weight={weight} onLog={() => setWeighInOpen(true)} />
 
         <HabitManagerCard />
+
+        <VisionSettingsCard />
 
         <Card>
           <CardHeader>
