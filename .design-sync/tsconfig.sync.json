@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["src/*"],
+      "virtual:pwa-register/react": [".design-sync/shims/pwa-register.ts"]
+    }
+  }
+}

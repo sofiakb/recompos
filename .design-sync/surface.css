@@ -1,0 +1,15 @@
+/*
+ * RecompOS ships a single dark theme (src/index.css defines :root only — there
+ * is no light palette). Anything that renders it on a white page is showing a
+ * lie: near-white foreground text on white. Preview cards and design canvases
+ * both paint their own background, so the theme's surface is asserted here,
+ * after Tailwind's base layer, rather than left to the host.
+ */
+html {
+  background-color: hsl(var(--background));
+}
+
+body {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground));
+}
