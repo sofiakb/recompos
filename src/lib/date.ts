@@ -63,3 +63,15 @@ export function formatLongDate(date: IsoDate, locale = 'fr-FR'): string {
     month: 'long',
   })
 }
+
+/**
+ * A date read once, months or years after the fact: the weekday is noise there,
+ * and the year is the part that matters. Used for the install date.
+ */
+export function formatCalendarDate(date: IsoDate, locale = 'fr-FR'): string {
+  return parseIsoDate(date).toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}

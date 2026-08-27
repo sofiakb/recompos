@@ -1,174 +1,93 @@
-import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ToggleRow } from '@/components/ui/toggle-row'
-import { BackupCard } from '@/features/backup/BackupCard'
-import { CalorieTargetEditor } from '@/features/meals/CalorieTargetEditor'
-import { MealPhotoRetention } from '@/features/meals/MealPhotoRetention'
-import { HabitManagerCard } from '@/features/habits/HabitManagerCard'
-import { ProteinTargetEditor } from '@/features/nutrition/ProteinTargetEditor'
-import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
-import { WeightCard } from '@/features/weight/WeightCard'
-import { WeightSheet } from '@/features/weight/WeightSheet'
-import { useWeight } from '@/features/weight/useWeight'
-import { VisionSettingsCard } from '@/features/vision/VisionSettingsCard'
-import { RestTimerSetting } from '@/features/workouts/RestTimerSetting'
-import { useSettingsStore } from '@/stores/settingsStore'
-import { formatLongDate, toLogicalDate } from '@/lib/date'
-import { formatBytes } from '@/lib/format'
+import { SettingsPage } from '@/screens/settings/SettingsPage'
+import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
+import { formatCalendarDate, toLogicalDate } from '@/lib/date'
 import { SCHEMA_VERSION } from '@/types/models'
 import { t } from '@/i18n/fr'
 
-interface StorageInfo {
-  usage: number
-  quota: number
-  persisted: boolean
+interface Rubric {
+  to: string
+  title: string
+  subtitle: string
 }
 
-function useStorageInfo(): StorageInfo | null {
-  const [info, setInfo] = useState<StorageInfo | null>(null)
-  useEffect(() => {
-    let cancelled = false
-    async function read() {
-      if (!navigator.storage?.estimate) return
-      const estimate = await navigator.storage.estimate()
-      const persisted = (await navigator.storage.persisted?.()) ?? false
-      if (cancelled) return
-      setInfo({ usage: estimate.usage ?? 0, quota: estimate.quota ?? 0, persisted })
-    }
-    void read()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-  return info
+function RubricRow({ to, title, subtitle }: Rubric) {
+  return (
+    <li>
+      <Link
+        to={to}
+        className="flex min-h-[68px] items-center gap-3 border-b border-border py-3 transition-colors hover:bg-accent"
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-medium">{title}</span>
+          <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>
+        </span>
+        <ChevronRight size={18} className="shrink-0 text-muted-foreground" aria-hidden />
+      </Link>
+    </li>
+  )
 }
 
+/**
+ * Six rubrics, each its own sub-page. The screen used to stack eleven unrelated
+ * cards on one scroll, which made every setting equally hard to find; the split
+ * is the handoff de refonte's (docs/design).
+ */
 export function SettingsScreen() {
   const settings = useSettingsStore((state) => state.settings)
-  const target = useProteinTarget()
-  const weight = useWeight()
-  const [weighInOpen, setWeighInOpen] = useState(false)
-  const toggleHaptics = useSettingsStore((state) => state.toggleHaptics)
-  const toggleSound = useSettingsStore((state) => state.toggleSound)
-  const storage = useStorageInfo()
+  const habits = useSettingsStore((state) => state.habits)
+
+  const floor = selectHabits(habits, 'floor')
+  const stack = selectHabits(habits, 'stack')
+
+  const rubrics: Rubric[] = [
+    {
+      to: '/settings/objectifs',
+      title: t.settings.sections.goals.title,
+      subtitle: t.settings.sections.goals.subtitle,
+    },
+    {
+      to: '/settings/habitudes',
+      title: t.settings.sections.habits.title,
+      // The only live subtitle: it says what the floor currently costs a day.
+      subtitle: t.settings.habitsCount(floor.length, stack.length),
+    },
+    {
+      to: '/settings/seances',
+      title: t.settings.sections.workouts.title,
+      subtitle: t.settings.sections.workouts.subtitle,
+    },
+    {
+      to: '/settings/analyse-photo',
+      title: t.settings.sections.vision.title,
+      subtitle: t.settings.sections.vision.subtitle,
+    },
+    {
+      to: '/settings/donnees',
+      title: t.settings.sections.data.title,
+      subtitle: t.settings.sections.data.subtitle,
+    },
+    {
+      to: '/settings/application',
+      title: t.settings.sections.app.title,
+      subtitle: t.settings.sections.app.subtitle,
+    },
+  ]
 
   return (
-    <>
-      <header className="flex items-center gap-2 px-2 pb-2 pt-[calc(1rem+env(safe-area-inset-top))]">
-        <Link
-          to="/"
-          aria-label={t.onboarding.back}
-          className="h-touch w-touch flex items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <ArrowLeft size={22} aria-hidden />
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">{t.settings.title}</h1>
-      </header>
+    <SettingsPage title={t.settings.title} backTo="/">
+      <ul className="flex flex-col">
+        {rubrics.map((rubric) => (
+          <RubricRow key={rubric.to} {...rubric} />
+        ))}
+      </ul>
 
-      <div className="flex flex-col gap-3 px-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.settings.proteinTarget}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProteinTargetEditor target={target} />
-          </CardContent>
-        </Card>
-
-        <WeightCard weight={weight} onLog={() => setWeighInOpen(true)} />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.meals.targetTitle}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CalorieTargetEditor />
-          </CardContent>
-        </Card>
-
-        <HabitManagerCard />
-
-        <VisionSettingsCard />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.meals.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MealPhotoRetention />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.settings.restTimer}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RestTimerSetting />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-4">
-            <ToggleRow
-              label={t.settings.haptics}
-              checked={settings.hapticsEnabled}
-              onChange={toggleHaptics}
-            />
-            <ToggleRow
-              label={t.settings.sound}
-              checked={settings.soundEnabled}
-              onChange={toggleSound}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.settings.storage}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <p className="tnum text-sm text-muted-foreground">
-              {storage && storage.quota > 0
-                ? t.settings.storageUsage(formatBytes(storage.usage), formatBytes(storage.quota))
-                : t.settings.storageUnknown}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {storage?.persisted ? t.settings.storagePersisted : t.settings.storageBestEffort}
-            </p>
-          </CardContent>
-        </Card>
-
-        <BackupCard />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.settings.about}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1 text-sm text-muted-foreground">
-            <p>
-              {t.settings.version} {SCHEMA_VERSION}.0
-            </p>
-            <p>
-              {t.settings.installedOn}{' '}
-              {formatLongDate(toLogicalDate(new Date(settings.installedAt)))}
-            </p>
-            <p className="mt-2 text-xs">{t.settings.dataNotice}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <WeightSheet
-        open={weighInOpen}
-        initialKg={weight.latest?.weightKg ?? null}
-        onClose={() => setWeighInOpen(false)}
-        onSubmit={async (kg) => {
-          await weight.log(kg)
-          setWeighInOpen(false)
-        }}
-      />
-    </>
+      <p className="tnum px-1 pt-2 text-xs text-muted-foreground">
+        {t.settings.version} {SCHEMA_VERSION}.0 · {t.settings.installedOn.toLowerCase()}{' '}
+        {formatCalendarDate(toLogicalDate(new Date(settings.installedAt)))}
+      </p>
+      <p className="px-1 text-xs text-muted-foreground">{t.settings.dataNotice}</p>
+    </SettingsPage>
   )
 }

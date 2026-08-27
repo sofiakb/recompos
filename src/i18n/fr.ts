@@ -13,7 +13,7 @@ export const fr = {
     today: "Aujourd'hui",
     workouts: 'Séances',
     nutrition: 'Nutrition',
-    trends: 'Tendances',
+    trends: 'Progression',
     settings: 'Réglages',
   },
   today: {
@@ -461,6 +461,20 @@ export const fr = {
   },
   settings: {
     title: 'Réglages',
+    // Six rubrics instead of eleven flat cards: each one is a sub-page, so a
+    // screen is never a wall of unrelated controls (handoff de refonte).
+    sections: {
+      goals: { title: 'Objectifs', subtitle: 'Protéines, calories, ton corps' },
+      habits: { title: 'Habitudes' },
+      workouts: { title: 'Séances', subtitle: 'Timer de repos, mouvements' },
+      vision: { title: 'Analyse photo', subtitle: 'Clé API, modèle, rétention des photos' },
+      data: { title: 'Données', subtitle: 'Stockage, export, import' },
+      app: { title: 'Application', subtitle: 'Haptique, sons, à propos' },
+    },
+    exercises: 'Mes mouvements',
+    exercisesHint: 'Ajouter ou retirer un mouvement du catalogue.',
+    replayOnboarding: "Revoir l'introduction",
+    replayOnboardingHint: "Rien n'est effacé : tes réglages et ton historique restent en place.",
     proteinTarget: 'Cible de protéines',
     proteinAuto: 'Calculée sur ton poids',
     proteinManual: 'Ajustée à la main',
