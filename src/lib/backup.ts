@@ -77,6 +77,7 @@ export async function buildExport(
     takeoutOptions,
     zeroCookItems,
     photoRows,
+    meals,
   ] = await Promise.all([
     database.habitCompletions.toArray(),
     database.dailyLogs.toArray(),
@@ -87,6 +88,7 @@ export async function buildExport(
     database.takeoutOptions.toArray(),
     database.zeroCookItems.toArray(),
     database.photos.toArray(),
+    database.meals.toArray(),
   ])
 
   const photos: SerializedPhoto[] = photoRows.map(({ bytes, ...rest }) => ({
@@ -109,6 +111,10 @@ export async function buildExport(
     measurements,
     takeoutOptions,
     zeroCookItems,
+    // Meal photos are deliberately not exported: they are a transient aid the
+    // retention setting already deletes, and inlining a month of plates would
+    // dwarf everything else in the file. The numbers travel; the plates do not.
+    ...(meals.length > 0 ? { meals } : {}),
     ...(inlinePhotos && photos.length > 0 ? { photos } : {}),
   }
 
@@ -176,6 +182,8 @@ export function validateBundle(raw: unknown): ValidationResult {
       habits: migrated.habits,
       takeoutOptions: candidate.takeoutOptions ?? [],
       zeroCookItems: candidate.zeroCookItems ?? [],
+      // Absent from any bundle written before the meal module existed.
+      meals: candidate.meals ?? [],
     },
   }
 }
@@ -196,6 +204,7 @@ export interface ImportSummary {
   sets: number
   measurements: number
   photos: number
+  meals: number
 }
 
 /**
@@ -225,6 +234,8 @@ export async function applyImport(
     database.photos,
     database.takeoutOptions,
     database.zeroCookItems,
+    database.meals,
+    database.mealPhotos,
   ]
 
   await database.transaction('rw', tables, async () => {
@@ -238,6 +249,10 @@ export async function applyImport(
       database.photos.clear(),
       database.takeoutOptions.clear(),
       database.zeroCookItems.clear(),
+      database.meals.clear(),
+      // The photos of the meals being replaced would otherwise outlive the rows
+      // that pointed at them, and nothing would ever collect them.
+      database.mealPhotos.clear(),
     ])
     await Promise.all([
       database.habitCompletions.bulkAdd(bundle.completions),
@@ -249,6 +264,8 @@ export async function applyImport(
       database.photos.bulkAdd(photos),
       database.takeoutOptions.bulkAdd(bundle.takeoutOptions),
       database.zeroCookItems.bulkAdd(bundle.zeroCookItems),
+      // A restored meal has no photo to point at any more.
+      database.meals.bulkAdd((bundle.meals ?? []).map(({ photoId: _gone, ...meal }) => meal)),
     ])
   })
 
@@ -260,6 +277,7 @@ export async function applyImport(
     sets: bundle.sets.length,
     measurements: bundle.measurements.length,
     photos: photos.length,
+    meals: bundle.meals?.length ?? 0,
   }
 }
 

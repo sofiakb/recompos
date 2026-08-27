@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
+import { CalorieCard } from '@/features/meals/CalorieCard'
+import { MealsCard } from '@/features/meals/MealsCard'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
 import { ProteinLogList } from '@/features/nutrition/ProteinLogList'
 import { ProteinRing } from '@/features/nutrition/ProteinRing'
 import { QuickAddRow } from '@/features/nutrition/QuickAddRow'
 import { TakeoutCheatSheet } from '@/features/nutrition/TakeoutCheatSheet'
 import { ZeroCookCatalog } from '@/features/nutrition/ZeroCookCatalog'
+import { useMeals } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
@@ -15,6 +18,7 @@ import type { ProteinLog, ProteinSource } from '@/types/models'
 
 export function NutritionScreen() {
   const protein = useProtein()
+  const meals = useMeals()
   const target = useProteinTarget()
   const showToast = useUiStore((state) => state.showToast)
   const [customOpen, setCustomOpen] = useState(false)
@@ -55,6 +59,10 @@ export function NutritionScreen() {
             />
           </CardContent>
         </Card>
+
+        <CalorieCard macros={meals.macros} />
+
+        <MealsCard meals={meals} />
 
         <Card>
           <CardHeader>
