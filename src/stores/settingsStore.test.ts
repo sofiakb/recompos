@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { migrateSettings } from '@/stores/settingsStore'
+import { migrateSettings, useSettingsStore } from '@/stores/settingsStore'
 import { SCHEMA_VERSION } from '@/types/models'
 
 const V1_STATE = {
@@ -78,5 +78,30 @@ describe('migrateSettings v1 → v2', () => {
       habits: V1_STATE.habits,
     }
     expect(migrateSettings(current, SCHEMA_VERSION)).toBe(current)
+  })
+})
+
+describe('replayOnboarding', () => {
+  it('reopens the intro without erasing what it collected', () => {
+    const store = useSettingsStore.getState()
+    store.completeOnboarding()
+    const before = useSettingsStore.getState().settings
+
+    useSettingsStore.getState().replayOnboarding()
+    const after = useSettingsStore.getState().settings
+
+    expect(after.onboardingCompletedAt).toBeUndefined()
+    // The flag is the only thing dropped: the intro is meant to be re-read,
+    // not to reset the profile it pre-fills its fields from.
+    expect(after.proteinTargetMode).toBe(before.proteinTargetMode)
+    expect(after.installedAt).toBe(before.installedAt)
+    expect(useSettingsStore.getState().habits).toHaveLength(store.habits.length)
+  })
+
+  it('leaves no blank string behind that would still read as seen', () => {
+    useSettingsStore.getState().completeOnboarding()
+    useSettingsStore.getState().replayOnboarding()
+
+    expect('onboardingCompletedAt' in useSettingsStore.getState().settings).toBe(false)
   })
 })

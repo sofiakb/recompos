@@ -80,6 +80,8 @@ interface SettingsState {
   toggleHaptics: (enabled: boolean) => void
   toggleSound: (enabled: boolean) => void
   completeOnboarding: () => void
+  /** Reopens the intro. Only the seen-flag is dropped; no setting or log is touched. */
+  replayOnboarding: () => void
   markCatalogsSeeded: () => void
   addHabit: (habit: Omit<FloorHabitDefinition, 'id' | 'createdAt' | 'updatedAt' | 'order'>) => void
   updateHabit: (id: string, patch: Partial<FloorHabitDefinition>) => void
@@ -207,6 +209,15 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           settings: { ...state.settings, onboardingCompletedAt: new Date().toISOString() },
         })),
+
+      replayOnboarding: () =>
+        set((state) => {
+          // Drop the key rather than blanking it: `onboardingCompletedAt` is
+          // optional, and an empty string would still read as "seen" anywhere
+          // the check is a truthiness test on the raw value.
+          const { onboardingCompletedAt: _seen, ...rest } = state.settings
+          return { settings: rest }
+        }),
 
       markCatalogsSeeded: () =>
         set((state) =>

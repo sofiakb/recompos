@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   DAY_ROLLOVER_HOUR,
   daysBetween,
+  formatCalendarDate,
   formatIsoDate,
   lastDays,
   parseIsoDate,
@@ -71,5 +72,17 @@ describe('lastDays', () => {
 describe('parseIsoDate / formatIsoDate', () => {
   it('round-trips a date key', () => {
     expect(formatIsoDate(parseIsoDate('2026-01-05'))).toBe('2026-01-05')
+  })
+})
+
+describe('formatCalendarDate', () => {
+  it('names the year and drops the weekday', () => {
+    // The install date is read long after the fact: "jeudi" tells nobody
+    // anything, and without the year "27 août" is ambiguous by year two.
+    expect(formatCalendarDate('2026-07-15')).toBe('15 juillet 2026')
+  })
+
+  it('reads the date as local, not as an instant', () => {
+    expect(formatCalendarDate('2026-01-01')).toBe('1 janvier 2026')
   })
 })

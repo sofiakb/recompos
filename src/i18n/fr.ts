@@ -13,7 +13,7 @@ export const fr = {
     today: "Aujourd'hui",
     workouts: 'Séances',
     nutrition: 'Nutrition',
-    trends: 'Tendances',
+    trends: 'Progression',
     settings: 'Réglages',
   },
   today: {
@@ -134,10 +134,12 @@ export const fr = {
     modePortionHint: 'Valider demande la source et ajoute ses grammes au total du jour.',
     kind: { floor: 'Plancher', stack: 'Empilée' },
     category: { workout: 'Séance', nutrition: 'Nutrition', mobility: 'Mobilité' },
-    moveUp: 'Monter',
-    moveDown: 'Descendre',
+    reorder: 'Réordonner',
+    reorderHint: 'Glisse la poignée, ou utilise les flèches haut et bas au clavier.',
     archive: 'Archiver',
+    archiveThis: 'Archiver cette habitude',
     restore: 'Restaurer',
+    restoreThis: 'Restaurer cette habitude',
     archived: (title: string) => `${title} archivée`,
     restored: (title: string) => `${title} restaurée`,
     created: 'Habitude ajoutée',
@@ -461,6 +463,20 @@ export const fr = {
   },
   settings: {
     title: 'Réglages',
+    // Six rubrics instead of eleven flat cards: each one is a sub-page, so a
+    // screen is never a wall of unrelated controls (handoff de refonte).
+    sections: {
+      goals: { title: 'Objectifs', subtitle: 'Protéines, calories, ton corps' },
+      habits: { title: 'Habitudes' },
+      workouts: { title: 'Séances', subtitle: 'Timer de repos, mouvements' },
+      vision: { title: 'Analyse photo', subtitle: 'Clé API, modèle, rétention des photos' },
+      data: { title: 'Données', subtitle: 'Stockage, export, import' },
+      app: { title: 'Application', subtitle: 'Haptique, sons, à propos' },
+    },
+    exercises: 'Mes mouvements',
+    exercisesHint: 'Ajouter ou retirer un mouvement du catalogue.',
+    replayOnboarding: "Revoir l'introduction",
+    replayOnboardingHint: "Rien n'est effacé : tes réglages et ton historique restent en place.",
     proteinTarget: 'Cible de protéines',
     proteinAuto: 'Calculée sur ton poids',
     proteinManual: 'Ajustée à la main',
@@ -487,6 +503,8 @@ export const fr = {
     import: 'Importer une sauvegarde',
     about: 'À propos',
     version: 'Version',
+    schemaVersion: (n: number) => `Schéma de données v${n}`,
+    schemaVersionHint: 'Le numéro que porte une sauvegarde. Il ne suit pas la version de l’app.',
     installedOn: 'Installée le',
     dataNotice:
       'Tout reste sur cet appareil. Aucun compte, aucun serveur, aucune donnée envoyée nulle part.',

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/recompos-design-system-6768cd54-6702-4006-a552-970ab7ba03d6/_ds_bundle.css">
+<link rel="stylesheet" href="_ds/recompos-design-system-6768cd54-6702-4006-a552-970ab7ba03d6/styles.css">
+<script src="_ds/recompos-design-system-6768cd54-6702-4006-a552-970ab7ba03d6/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:#09090b}
+.tnum{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="min-height:100vh;background:hsl(var(--background));color:hsl(var(--foreground));font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0 0">
+  <div style="display:flex;align-items:center;gap:12px;width:390px;padding:0 4px">
+    <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">État actuel — recréé depuis le code</p>
+  </div>
+
+  <div style="position:relative;width:390px;height:844px;overflow:hidden;border:1px solid hsl(var(--border));border-radius:24px;background:hsl(var(--background))">
+    <div id="scroll" style="height:100%;overflow-y:auto;padding-bottom:136px">
+
+      <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 16px 8px">
+          <div>
+            <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Jour 42</h1>
+            <p style="margin:2px 0 0;font-size:14px;color:hsl(var(--muted-foreground))">jeudi 27 août 2026</p>
+          </div>
+          <button type="button" aria-label="Réglages" onClick="{{ goSettings }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </header>
+
+        <div style="display:flex;flex-direction:column;gap:12px;padding:0 16px">
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Plancher du jour</h2>
+              </div>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Non négociable, et volontairement ridicule.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;padding:8px 16px 16px">
+              <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                <li>
+                  <button type="button" aria-pressed="true" style="display:flex;align-items:center;gap:12px;min-height:48px;width:100%;border:0;border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer" style-active="background:hsl(var(--accent))">
+                    <span style="display:flex;align-items:center;justify-content:center;height:28px;width:28px;flex-shrink:0;border:2px solid hsl(var(--primary));border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+                    <span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));text-decoration:line-through">5 pompes</span></span>
+                  </button>
+                </li>
+                <li>
+                  <button type="button" aria-pressed="false" style="display:flex;align-items:center;gap:12px;min-height:48px;width:100%;border:0;border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer" style-active="background:hsl(var(--accent))">
+                    <span style="display:flex;height:28px;width:28px;flex-shrink:0;border:2px solid hsl(var(--muted-foreground) / .4);border-radius:9999px"></span>
+                    <span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">1 portion de protéines zéro-cuisson</span></span>
+                  </button>
+                </li>
+              </ul>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;margin-top:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Tout valider</button>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:24px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card));padding:16px">
+            <div style="flex:1">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+                <span style="font-size:12px;color:hsl(var(--muted-foreground))">7 jours</span>
+                <span class="tnum" style="font-size:18px;font-weight:600">86 %</span>
+              </div>
+              <div style="height:6px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted));margin-top:6px"><div style="height:100%;width:86%;border-radius:9999px;background:hsl(var(--primary))"></div></div>
+              <p style="margin:4px 0 0;font-size:11px;color:hsl(var(--muted-foreground))">solide</p>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+                <span style="font-size:12px;color:hsl(var(--muted-foreground))">30 jours</span>
+                <span class="tnum" style="font-size:18px;font-weight:600">71 %</span>
+              </div>
+              <div style="height:6px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted));margin-top:6px"><div style="height:100%;width:71%;border-radius:9999px;background:hsl(var(--primary))"></div></div>
+              <p style="margin:4px 0 0;font-size:11px;color:hsl(var(--muted-foreground))">en route</p>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px">
+              <button type="button" onClick="{{ goNutrition }}" style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;border:0;background:transparent;padding:0;text-align:left;color:inherit;cursor:pointer">
+                <span style="display:flex;flex-direction:column">
+                  <span style="font-size:16px;font-weight:600;line-height:1.25">Protéines</span>
+                  <span class="tnum" style="font-size:14px;color:hsl(var(--muted-foreground))">128 g sur 165 g</span>
+                </span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;flex-shrink:0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+              </button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;padding:8px 16px 16px">
+              <div style="height:10px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted))"><div style="height:100%;width:77.5%;border-radius:9999px;background:hsl(var(--primary))"></div></div>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Calculé sur 78,4 kg × 1,8 g/kg</p>
+              <ul style="display:flex;flex-direction:column;gap:4px;margin:4px 0 0;padding:0;list-style:none">
+                <li class="tnum" style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:hsl(var(--muted-foreground))"><span>Skyr nature</span><span>+17 g</span></li>
+                <li class="tnum" style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:hsl(var(--muted-foreground))"><span>Repas</span><span>+45 g</span></li>
+                <li class="tnum" style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:hsl(var(--muted-foreground))"><span>Thon en boîte au naturel</span><span>+26 g</span></li>
+                <li class="tnum" style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:hsl(var(--muted-foreground))"><span>Repas</span><span>+40 g</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Pesée de la semaine</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Quand tu veux. L'app ne regarde que la tendance, jamais le chiffre du jour.</p>
+            </div>
+            <div style="padding:8px 16px 16px">
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>
+                Enregistrer une pesée
+              </button>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Habitudes empilées</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Accrochées à un moment qui existe déjà.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;padding:8px 16px 16px">
+              <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                <li>
+                  <button type="button" style="display:flex;align-items:center;gap:12px;min-height:48px;width:100%;border:0;border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer" style-active="background:hsl(var(--accent))">
+                    <span style="display:flex;align-items:center;justify-content:center;height:28px;width:28px;flex-shrink:0;border:2px solid hsl(var(--primary));border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+                    <span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));text-decoration:line-through">10 squats à vide</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">Pendant que le café coule</span></span>
+                  </button>
+                </li>
+                <li>
+                  <button type="button" style="display:flex;align-items:center;gap:12px;min-height:48px;width:100%;border:0;border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer" style-active="background:hsl(var(--accent))">
+                    <span style="display:flex;height:28px;width:28px;flex-shrink:0;border:2px solid hsl(var(--muted-foreground) / .4);border-radius:9999px"></span>
+                    <span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">1 série de pompes max</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">Avant d'ouvrir le laptop</span></span>
+                  </button>
+                </li>
+                <li>
+                  <button type="button" style="display:flex;align-items:center;gap:12px;min-height:48px;width:100%;border:0;border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer" style-active="background:hsl(var(--accent))">
+                    <span style="display:flex;height:28px;width:28px;flex-shrink:0;border:2px solid hsl(var(--muted-foreground) / .4);border-radius:9999px"></span>
+                    <span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">2 min de gainage</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">Douche du soir</span></span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <button type="button" onClick="{{ goWorkouts }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;width:100%;margin-bottom:8px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:16px;font-weight:500;cursor:pointer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg>
+            Séance 20 min
+          </button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isWorkouts }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <header style="padding:16px 16px 8px">
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Séances</h1>
+          <p style="margin:2px 0 0;font-size:14px;color:hsl(var(--muted-foreground))">jeudi 27 août 2026</p>
+        </header>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:0 16px">
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Circuit 20 min</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Trois blocs. Le chrono est un repère, pas un compte à rebours.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <p class="tnum" style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">20 min · 3 blocs</p>
+              <div>
+                <h3 style="margin:0;font-size:14px;font-weight:600">Au programme</h3>
+                <p style="margin:0 0 8px;font-size:12px;color:hsl(var(--muted-foreground))">Un bloc par groupe. Tu peux changer un mouvement avant de démarrer.</p>
+                <ul style="display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none">
+                  <li style="display:flex;align-items:center;gap:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);padding:8px">
+                    <div style="min-width:0;flex:1">
+                      <p style="margin:0;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Poussée</p>
+                      <p style="margin:0;font-size:14px;font-weight:500">Pompes</p>
+                      <p class="tnum" style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">8 à 15 reps</p>
+                    </div>
+                    <button type="button" aria-label="Changer de mouvement" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg></button>
+                  </li>
+                  <li style="display:flex;align-items:center;gap:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);padding:8px">
+                    <div style="min-width:0;flex:1">
+                      <p style="margin:0;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Tirage</p>
+                      <p style="margin:0;font-size:14px;font-weight:500">Rowing élastique</p>
+                      <p class="tnum" style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">10 à 15 reps</p>
+                    </div>
+                    <button type="button" aria-label="Changer de mouvement" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg></button>
+                  </li>
+                  <li style="display:flex;align-items:center;gap:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);padding:8px">
+                    <div style="min-width:0;flex:1">
+                      <p style="margin:0;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Bas du corps</p>
+                      <p style="margin:0;font-size:14px;font-weight:500">Fentes bulgares</p>
+                      <p class="tnum" style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">8 à 12 reps</p>
+                    </div>
+                    <button type="button" aria-label="Changer de mouvement" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg></button>
+                  </li>
+                </ul>
+              </div>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:500;cursor:pointer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg>
+                Démarrer le circuit
+              </button>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Micro-séries</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Une série isolée, n'importe quand, sans ouvrir de séance.</p>
+            </div>
+            <div style="padding:8px 16px 16px">
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:14px;font-weight:500;cursor:pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
+                Logguer une série
+              </button>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Séries du jour</h2></div>
+            <div style="padding:8px 16px 16px">
+              <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                <li style="display:flex;align-items:center;gap:12px;border-bottom:1px solid hsl(var(--border) / .6);padding:8px 0">
+                  <div style="min-width:0;flex:1">
+                    <p style="margin:0;font-size:14px;font-weight:500">Pompes</p>
+                    <p class="tnum" style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">12 reps — Poids du corps · Cible</p>
+                  </div>
+                  <button type="button" aria-label="Supprimer cette série" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                </li>
+                <li style="display:flex;align-items:center;gap:12px;padding:8px 0">
+                  <div style="min-width:0;flex:1">
+                    <p style="margin:0;font-size:14px;font-weight:500">Rowing élastique</p>
+                    <p class="tnum" style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">15 reps — Élastique noir · Facile</p>
+                  </div>
+                  <button type="button" aria-label="Supprimer cette série" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="margin-bottom:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Séances passées</h2></div>
+            <div style="padding:8px 16px 16px">
+              <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                <li style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid hsl(var(--border) / .6);padding:8px 0;font-size:14px">
+                  <span style="min-width:0;flex:1;color:hsl(var(--muted-foreground))">mardi 25 août 2026</span>
+                  <span style="font-size:12px;color:hsl(var(--muted-foreground))">Circuit 20 min</span>
+                  <span class="tnum" style="font-weight:500">22 min</span>
+                </li>
+                <li style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid hsl(var(--border) / .6);padding:8px 0;font-size:14px">
+                  <span style="min-width:0;flex:1;color:hsl(var(--muted-foreground))">samedi 22 août 2026</span>
+                  <span style="font-size:12px;color:hsl(var(--muted-foreground))">Micro-séries</span>
+                  <span class="tnum" style="font-weight:500">6 min</span>
+                </li>
+                <li style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;font-size:14px">
+                  <span style="min-width:0;flex:1;color:hsl(var(--muted-foreground))">jeudi 20 août 2026</span>
+                  <span style="font-size:12px;color:hsl(var(--muted-foreground))">Circuit 20 min</span>
+                  <span class="tnum" style="font-weight:500">19 min</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isNutrition }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <header style="padding:16px 16px 8px"><h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Nutrition</h1></header>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:0 16px">
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:16px;padding:16px">
+              <div style="position:relative;width:176px;height:176px;margin:0 auto">
+                <svg width="176" height="176" viewBox="0 0 176 176" style="transform:rotate(-90deg)" aria-hidden="true">
+                  <circle cx="88" cy="88" r="81" fill="none" stroke="hsl(var(--muted))" stroke-width="14"></circle>
+                  <circle cx="88" cy="88" r="81" fill="none" stroke="hsl(var(--primary))" stroke-width="14" stroke-linecap="round" stroke-dasharray="508.9" stroke-dashoffset="114.5"></circle>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                  <p class="tnum" style="margin:0;font-size:36px;font-weight:600;line-height:1">128</p>
+                  <p class="tnum" style="margin:4px 0 0;font-size:14px;color:hsl(var(--muted-foreground))">sur 165 g</p>
+                  <p class="tnum" style="margin:8px 0 0;font-size:12px;color:hsl(var(--primary))">encore 37 g</p>
+                </div>
+              </div>
+              <p style="margin:0;text-align:center;font-size:12px;color:hsl(var(--muted-foreground))">Calculé sur 78,4 kg × 1,8 g/kg</p>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                <button type="button" class="tnum" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));cursor:pointer"><span style="font-size:16px;font-weight:600">+20</span><span style="font-size:11px;opacity:.8">g</span></button>
+                <button type="button" class="tnum" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));cursor:pointer"><span style="font-size:16px;font-weight:600">+30</span><span style="font-size:11px;opacity:.8">g</span></button>
+                <button type="button" class="tnum" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));cursor:pointer"><span style="font-size:16px;font-weight:600">+40</span><span style="font-size:11px;opacity:.8">g</span></button>
+                <button type="button" aria-label="Montant libre" style="display:flex;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Calories du jour</h2></div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+                <p class="tnum" style="margin:0"><span style="font-size:30px;font-weight:600">1 620</span><span style="margin-left:4px;font-size:14px;color:hsl(var(--muted-foreground))">/ 2 140 kcal</span></p>
+                <p class="tnum" style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">encore 520 kcal</p>
+              </div>
+              <div style="height:8px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted))"><div style="height:100%;width:75.7%;border-radius:9999px;background:hsl(var(--primary))"></div></div>
+              <ul style="display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none">
+                <li style="display:flex;align-items:center;gap:8px"><span style="width:80px;flex-shrink:0;font-size:12px;color:hsl(var(--muted-foreground))">Protéines</span><span style="height:6px;flex:1;overflow:hidden;border-radius:9999px;background:hsl(var(--muted))"><span style="display:block;height:100%;width:32%;border-radius:9999px;background:hsl(var(--primary) / .6)"></span></span><span class="tnum" style="width:48px;flex-shrink:0;text-align:right;font-size:12px;color:hsl(var(--muted-foreground))">128 g</span></li>
+                <li style="display:flex;align-items:center;gap:8px"><span style="width:80px;flex-shrink:0;font-size:12px;color:hsl(var(--muted-foreground))">Glucides</span><span style="height:6px;flex:1;overflow:hidden;border-radius:9999px;background:hsl(var(--muted))"><span style="display:block;height:100%;width:38%;border-radius:9999px;background:hsl(var(--primary) / .6)"></span></span><span class="tnum" style="width:48px;flex-shrink:0;text-align:right;font-size:12px;color:hsl(var(--muted-foreground))">152 g</span></li>
+                <li style="display:flex;align-items:center;gap:8px"><span style="width:80px;flex-shrink:0;font-size:12px;color:hsl(var(--muted-foreground))">Lipides</span><span style="height:6px;flex:1;overflow:hidden;border-radius:9999px;background:hsl(var(--muted))"><span style="display:block;height:100%;width:30%;border-radius:9999px;background:hsl(var(--primary) / .6)"></span></span><span class="tnum" style="width:48px;flex-shrink:0;text-align:right;font-size:12px;color:hsl(var(--muted-foreground))">54 g</span></li>
+              </ul>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Maintien estimé 2 380 kcal, moins 10 %</p>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Repas</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Photographie l'assiette. Corrige ce qui est faux — c'est le détail qui compte, pas le total.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                <li style="display:flex;align-items:center;gap:12px;border-bottom:1px solid hsl(var(--border) / .6);padding:8px 0">
+                  <span style="display:block;height:48px;width:48px;flex-shrink:0;border-radius:6px;background:hsl(var(--muted))"></span>
+                  <button type="button" style="min-height:48px;min-width:0;flex:1;border:0;background:transparent;padding:0;text-align:left;color:inherit;cursor:pointer">
+                    <p style="margin:0;display:flex;align-items:center;gap:6px;font-size:12px;color:hsl(var(--muted-foreground))">Déjeuner <span>· corrigé</span></p>
+                    <p style="margin:0;font-size:14px;font-weight:500">Poulet grillé, riz, salade</p>
+                    <p class="tnum" style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">P 45 · G 62 · L 18</p>
+                  </button>
+                  <span class="tnum" style="flex-shrink:0;font-size:14px;font-weight:600">620 kcal</span>
+                </li>
+                <li style="display:flex;align-items:center;gap:12px;padding:8px 0">
+                  <span style="display:block;height:48px;width:48px;flex-shrink:0;border-radius:6px;background:hsl(var(--muted))"></span>
+                  <button type="button" style="min-height:48px;min-width:0;flex:1;border:0;background:transparent;padding:0;text-align:left;color:inherit;cursor:pointer">
+                    <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Petit-déj</p>
+                    <p style="margin:0;display:flex;align-items:center;gap:6px;font-size:14px;color:hsl(var(--muted-foreground))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>Analyse en cours…</p>
+                  </button>
+                </li>
+              </ul>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:500;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"></path><circle cx="12" cy="13" r="3"></circle></svg>Photographier un repas</button>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:14px;font-weight:500;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 21h8"></path><path d="m15 5 4 4"></path><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>Saisir à la main</button>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Aujourd'hui</h2></div>
+            <div style="padding:8px 16px 16px">
+              <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                <li><button type="button" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;width:100%;border:0;border-bottom:1px solid hsl(var(--border) / .6);border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer"><span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">Skyr nature</span><span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">08:12 · Zéro-cuisson</span></span><span class="tnum" style="flex-shrink:0;font-size:14px;font-weight:600">+17 g</span></button></li>
+                <li><button type="button" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;width:100%;border:0;border-bottom:1px solid hsl(var(--border) / .6);border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer"><span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">Repas</span><span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">13:05</span></span><span class="tnum" style="flex-shrink:0;font-size:14px;font-weight:600">+45 g</span></button></li>
+                <li><button type="button" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;width:100%;border:0;border-bottom:1px solid hsl(var(--border) / .6);border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer"><span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">Thon en boîte au naturel</span><span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">16:40 · Zéro-cuisson</span></span><span class="tnum" style="flex-shrink:0;font-size:14px;font-weight:600">+26 g</span></button></li>
+                <li><button type="button" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;width:100%;border:0;border-radius:6px;background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer"><span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">Repas</span><span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">20:15</span></span><span class="tnum" style="flex-shrink:0;font-size:14px;font-weight:600">+40 g</span></button></li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Zéro-cuisson</h2>
+                  <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Ce qu'il y a dans le frigo, et ce que ça rapporte.</p>
+                </div>
+                <button type="button" style="flex-shrink:0;border:0;border-radius:6px;background:transparent;padding:4px 8px;font-size:12px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))">Gérer la liste</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;padding:8px 16px 16px">
+              <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                <sc-for list="{{ zeroCook }}" as="item" hint-placeholder-count="4">
+                  <li style="display:flex;align-items:center;gap:8px;border-bottom:1px solid hsl(var(--border) / .6);padding:4px 0">
+                    <button type="button" aria-label="{{ item.stockLabel }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:36px;flex-shrink:0;border:0;background:transparent;cursor:pointer">
+                      <span style="display:flex;align-items:center;justify-content:center;height:24px;width:24px;border:2px solid hsl(var(--primary));border-radius:6px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+                    </button>
+                    <span style="display:flex;min-width:0;flex:1;flex-direction:column">
+                      <span style="font-size:14px;font-weight:500">{{ item.name }}</span>
+                      <span style="font-size:12px;color:hsl(var(--muted-foreground))">{{ item.serving }}</span>
+                    </span>
+                    <button type="button" class="tnum" style="display:flex;align-items:center;gap:4px;min-height:48px;flex-shrink:0;border:0;border-radius:9999px;background:hsl(var(--secondary));padding:0 12px;font-size:14px;font-weight:600;color:hsl(var(--primary));cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{{ item.grams }} g</button>
+                  </li>
+                </sc-for>
+              </ul>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter une source</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Livraison</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Quoi commander quand tu ne cuisines pas. Grammes estimés.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div style="display:flex;gap:8px;overflow-x:auto;margin:0 -4px;padding:0 4px 4px">
+                <button type="button" style="min-height:36px;flex-shrink:0;border:1px solid hsl(var(--primary));border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground));padding:0 12px;font-size:14px;cursor:pointer">Tout</button>
+                <button type="button" style="min-height:36px;flex-shrink:0;border:1px solid hsl(var(--border));border-radius:9999px;background:transparent;color:hsl(var(--muted-foreground));padding:0 12px;font-size:14px;cursor:pointer">Japonais</button>
+                <button type="button" style="min-height:36px;flex-shrink:0;border:1px solid hsl(var(--border));border-radius:9999px;background:transparent;color:hsl(var(--muted-foreground));padding:0 12px;font-size:14px;cursor:pointer">Shawarma / libanais</button>
+                <button type="button" style="min-height:36px;flex-shrink:0;border:1px solid hsl(var(--border));border-radius:9999px;background:transparent;color:hsl(var(--muted-foreground));padding:0 12px;font-size:14px;cursor:pointer">Rôtisserie</button>
+              </div>
+              <ul style="display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none">
+                <li style="border:1px solid hsl(var(--border) / .6);border-radius:var(--radius);padding:12px">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                    <p style="margin:0;font-size:14px;font-weight:600">Japonais</p>
+                    <button type="button" class="tnum" style="display:flex;align-items:center;gap:4px;min-height:48px;flex-shrink:0;border:0;border-radius:9999px;background:hsl(var(--secondary));padding:0 12px;font-size:14px;font-weight:600;color:hsl(var(--primary));cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>~45 g</button>
+                  </div>
+                  <p style="margin:8px 0 0;display:flex;gap:8px;font-size:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;flex-shrink:0" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Yakitori (poulet, bœuf), sashimi, edamame</p>
+                  <p style="margin:4px 0 0;display:flex;gap:8px;font-size:14px;color:hsl(var(--muted-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;flex-shrink:0" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>Tempura, bowls sauce sucrée, California rolls</p>
+                  <div style="display:flex;justify-content:flex-end;gap:4px;margin-top:8px">
+                    <button type="button" aria-label="Modifier Japonais" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg></button>
+                    <button type="button" aria-label="Supprimer Japonais" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                  </div>
+                </li>
+                <li style="border:1px solid hsl(var(--border) / .6);border-radius:var(--radius);padding:12px">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                    <p style="margin:0;font-size:14px;font-weight:600">Shawarma / libanais</p>
+                    <button type="button" class="tnum" style="display:flex;align-items:center;gap:4px;min-height:48px;flex-shrink:0;border:0;border-radius:9999px;background:hsl(var(--secondary));padding:0 12px;font-size:14px;font-weight:600;color:hsl(var(--primary));cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>~55 g</button>
+                  </div>
+                  <p style="margin:8px 0 0;display:flex;gap:8px;font-size:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;flex-shrink:0" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Assiette poulet grillé, viande en supplément, salade</p>
+                  <p style="margin:4px 0 0;display:flex;gap:8px;font-size:14px;color:hsl(var(--muted-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;flex-shrink:0" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>Frites, sauce blanche à volonté, galette</p>
+                  <div style="display:flex;justify-content:flex-end;gap:4px;margin-top:8px">
+                    <button type="button" aria-label="Modifier Shawarma" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg></button>
+                    <button type="button" aria-label="Supprimer Shawarma" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                  </div>
+                </li>
+              </ul>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter une cuisine</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isTrends }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <header style="padding:16px 16px 8px"><h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Tendances</h1></header>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:0 16px 8px">
+          <div style="display:flex;gap:24px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card));padding:16px">
+            <div style="flex:1">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px"><span style="font-size:12px;color:hsl(var(--muted-foreground))">7 jours</span><span class="tnum" style="font-size:18px;font-weight:600">86 %</span></div>
+              <div style="height:6px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted));margin-top:6px"><div style="height:100%;width:86%;border-radius:9999px;background:hsl(var(--primary))"></div></div>
+              <p style="margin:4px 0 0;font-size:11px;color:hsl(var(--muted-foreground))">solide</p>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px"><span style="font-size:12px;color:hsl(var(--muted-foreground))">30 jours</span><span class="tnum" style="font-size:18px;font-weight:600">71 %</span></div>
+              <div style="height:6px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted));margin-top:6px"><div style="height:100%;width:71%;border-radius:9999px;background:hsl(var(--primary))"></div></div>
+              <p style="margin:4px 0 0;font-size:11px;color:hsl(var(--muted-foreground))">en route</p>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">12 dernières semaines</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Une case par jour. Les jours avant l'installation restent vides.</p>
+            </div>
+            <div style="padding:8px 16px 16px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;gap:4px;overflow-x:auto;padding-bottom:4px">
+                  <sc-for list="{{ heatmap }}" as="week" hint-placeholder-count="12">
+                    <div style="display:flex;flex-direction:column;gap:4px">
+                      <span style="height:12px;font-size:10px;line-height:12px;color:hsl(var(--muted-foreground))">{{ week.label }}</span>
+                      <sc-for list="{{ week.cells }}" as="cell" hint-placeholder-count="7">
+                        <span style="height:12px;width:12px;border-radius:3px;background:{{ cell.bg }};box-shadow:{{ cell.ring }}"></span>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:hsl(var(--muted-foreground))">
+                  <span>Rien</span>
+                  <span style="height:12px;width:12px;border-radius:3px;background:hsl(var(--muted))" aria-hidden="true"></span>
+                  <span style="height:12px;width:12px;border-radius:3px;background:hsl(var(--primary))" aria-hidden="true"></span>
+                  <span>Validé</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Force</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Le volume de tes séries, semaine par semaine. Ta première semaine de séries vaut 100.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div role="radiogroup" aria-label="Force" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">4 semaines</button>
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">8 semaines</button>
+                <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">12 semaines</button>
+              </div>
+              <div>
+                <div style="display:flex;align-items:baseline;justify-content:space-between">
+                  <span class="tnum" style="font-size:30px;font-weight:600">118</span>
+                  <span style="font-size:14px;color:hsl(var(--muted-foreground))">12 séries cette semaine</span>
+                </div>
+                <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">+18 % de volume vs ta première semaine</p>
+              </div>
+              <svg viewBox="0 0 320 140" role="img" aria-label="Force" style="width:100%">
+                <defs><linearGradient id="strengthFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(var(--primary))" stop-opacity="0.28"></stop><stop offset="100%" stop-color="hsl(var(--primary))" stop-opacity="0"></stop></linearGradient></defs>
+                <line x1="34" x2="312" y1="19" y2="19" stroke="hsl(var(--border))" stroke-width="1"></line>
+                <text x="30" y="22" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">122</text>
+                <line x1="34" x2="312" y1="66" y2="66" stroke="hsl(var(--border))" stroke-width="1"></line>
+                <text x="30" y="69" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">111</text>
+                <line x1="34" x2="312" y1="113" y2="113" stroke="hsl(var(--border))" stroke-width="1"></line>
+                <text x="30" y="116" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">100</text>
+                <path d="M 34,122 L 34,113.0 59.3,104.0 84.5,109.0 109.8,88.0 135.1,77.0 160.4,80.0 185.6,62.0 210.9,52.0 236.2,55.0 261.5,36.0 286.7,30.0 312,19.0 L 312,122 Z" fill="url(#strengthFill)"></path>
+                <polyline points="34,113.0 59.3,104.0 84.5,109.0 109.8,88.0 135.1,77.0 160.4,80.0 185.6,62.0 210.9,52.0 236.2,55.0 261.5,36.0 286.7,30.0 312,19.0" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                <circle cx="312" cy="19" r="3" fill="hsl(var(--primary))"></circle>
+                <text x="34" y="136" font-size="8" fill="hsl(var(--muted-foreground))">8 juin</text>
+                <text x="312" y="136" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">24 août</text>
+              </svg>
+              <div>
+                <button type="button" aria-expanded="false" style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;width:100%;border:0;background:transparent;padding:0;text-align:left;font-size:14px;color:hsl(var(--muted-foreground));cursor:pointer">Comment c'est calculé<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+              </div>
+              <div>
+                <h3 style="margin:0 0 4px;font-size:14px;font-weight:600">Meilleures séries</h3>
+                <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                  <li style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid hsl(var(--border) / .6);padding:6px 0;font-size:14px"><span style="min-width:0;flex:1">Rowing élastique</span><span class="tnum" style="color:hsl(var(--muted-foreground))">18 reps — Élastique noir</span></li>
+                  <li style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid hsl(var(--border) / .6);padding:6px 0;font-size:14px"><span style="min-width:0;flex:1">Pompes</span><span class="tnum" style="color:hsl(var(--muted-foreground))">15 reps — Poids du corps</span></li>
+                  <li style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;font-size:14px"><span style="min-width:0;flex:1">Fentes bulgares</span><span class="tnum" style="color:hsl(var(--muted-foreground))">12 reps — 12 kg</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Poids</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Moyenne des dernières pesées, pas le chiffre du jour.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+                <p class="tnum" style="margin:0"><span style="font-size:30px;font-weight:600">78,4</span><span style="margin-left:4px;font-size:14px;color:hsl(var(--muted-foreground))">kg</span></p>
+                <p class="tnum" style="margin:0;display:flex;align-items:center;gap:4px;font-size:14px;color:hsl(var(--muted-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 17h6v-6"></path><path d="m22 17-8.5-8.5-5 5L2 7"></path></svg>−1,2 kg</p>
+              </div>
+              <svg viewBox="0 0 100 28" preserveAspectRatio="none" style="height:32px;width:100%" aria-hidden="true"><polyline points="0.0,4.0 16.7,8.0 33.3,6.0 50.0,14.0 66.7,12.0 83.3,20.0 100.0,24.0" fill="none" stroke="hsl(var(--primary))" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline></svg>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Dernière pesée : dimanche 24 août 2026, 78,1 kg</p>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>Enregistrer une pesée</button>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Historique</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Moyenne des dernières pesées, pas le chiffre du jour.</p>
+            </div>
+            <div style="padding:8px 16px 16px">
+              <svg viewBox="0 0 320 140" role="img" aria-label="Poids" style="width:100%">
+                <defs><linearGradient id="weightFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(var(--primary))" stop-opacity="0.28"></stop><stop offset="100%" stop-color="hsl(var(--primary))" stop-opacity="0"></stop></linearGradient></defs>
+                <line x1="34" x2="312" y1="19" y2="19" stroke="hsl(var(--border))" stroke-width="1"></line>
+                <text x="30" y="22" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">79,6</text>
+                <line x1="34" x2="312" y1="66" y2="66" stroke="hsl(var(--border))" stroke-width="1"></line>
+                <text x="30" y="69" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">78,9</text>
+                <line x1="34" x2="312" y1="113" y2="113" stroke="hsl(var(--border))" stroke-width="1"></line>
+                <text x="30" y="116" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">78,1</text>
+                <path d="M 34,122 L 34,19.0 89.6,34.0 145.2,28.0 200.8,72.0 256.4,88.0 312,113.0 L 312,122 Z" fill="url(#weightFill)"></path>
+                <polyline points="34,19.0 89.6,34.0 145.2,28.0 200.8,72.0 256.4,88.0 312,113.0" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                <circle cx="312" cy="113" r="3" fill="hsl(var(--primary))"></circle>
+                <text x="34" y="136" font-size="8" fill="hsl(var(--muted-foreground))">20 juil.</text>
+                <text x="312" y="136" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">24 août</text>
+              </svg>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Tour de taille</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Moyenne glissante en pointillés — c'est elle qui compte, pas le point du jour.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <span class="tnum" style="font-size:30px;font-weight:600">86 cm</span>
+                <span style="font-size:14px;color:hsl(var(--muted-foreground))">−3 cm depuis la première mesure</span>
+              </div>
+              <svg viewBox="0 0 320 140" role="img" aria-label="Tour de taille" style="width:100%">
+                <line x1="34" x2="312" y1="19" y2="19" stroke="hsl(var(--border))" stroke-width="1"></line>
+                <text x="30" y="22" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">89</text>
+                <line x1="34" x2="312" y1="113" y2="113" stroke="hsl(var(--border))" stroke-width="1"></line>
+                <text x="30" y="116" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">86</text>
+                <polyline points="34,19.0 103.5,50.0 173,42.0 242.5,88.0 312,113.0" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                <polyline points="34,26.0 103.5,44.0 173,52.0 242.5,80.0 312,104.0" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1.5" stroke-dasharray="3 3"></polyline>
+                <circle cx="312" cy="113" r="3" fill="hsl(var(--primary))"></circle>
+              </svg>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"></path><path d="m14.5 12.5 2-2"></path><path d="m11.5 9.5 2-2"></path><path d="m8.5 6.5 2-2"></path><path d="m17.5 15.5 2-2"></path></svg>Enregistrer une mesure</button>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Coffre photos</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Redimensionnées sur l'appareil, jamais envoyées nulle part.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div role="radiogroup" aria-label="Angle" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+                <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Face</button>
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Profil</button>
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Dos</button>
+              </div>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Aucune photo pour le moment.</p>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"></path><circle cx="12" cy="13" r="3"></circle></svg>Ajouter une photo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <header style="display:flex;align-items:center;gap:8px;padding:16px 8px 8px">
+          <button type="button" aria-label="Retour" onClick="{{ goToday }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Réglages</h1>
+        </header>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:0 16px">
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Cible de protéines</h2></div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <button type="button" aria-label="-5 g" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+                <p class="tnum" style="margin:0;text-align:center"><span style="font-size:30px;font-weight:600">165</span><span style="margin-left:4px;font-size:14px;color:hsl(var(--muted-foreground))">g par jour</span></p>
+                <button type="button" aria-label="+5 g" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+              </div>
+              <p style="margin:0;text-align:center;font-size:12px;color:hsl(var(--muted-foreground))">Calculé sur 78,4 kg × 1,8 g/kg</p>
+              <p style="margin:0;text-align:center;font-size:12px;color:hsl(var(--muted-foreground))">Modifier la cible la fige : une nouvelle pesée ne la changera plus.</p>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Poids</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Moyenne des dernières pesées, pas le chiffre du jour.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+                <p class="tnum" style="margin:0"><span style="font-size:30px;font-weight:600">78,4</span><span style="margin-left:4px;font-size:14px;color:hsl(var(--muted-foreground))">kg</span></p>
+                <p class="tnum" style="margin:0;display:flex;align-items:center;gap:4px;font-size:14px;color:hsl(var(--muted-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 17h6v-6"></path><path d="m22 17-8.5-8.5-5 5L2 7"></path></svg>−1,2 kg</p>
+              </div>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Dernière pesée : dimanche 24 août 2026, 78,1 kg</p>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Enregistrer une pesée</button>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Cible calorique</h2></div>
+            <div style="display:flex;flex-direction:column;gap:16px;padding:8px 16px 16px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-size:14px;font-weight:500">Taille (cm)</label>
+                <input type="text" value="178" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-size:14px;font-weight:500">Année de naissance</label>
+                <input type="text" value="1990" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-size:14px;font-weight:500">Sexe</label>
+                <div role="radiogroup" aria-label="Sexe" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+                  <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Homme</button>
+                  <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Femme</button>
+                </div>
+                <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">La formule de dépense au repos en dépend. Aucun autre usage dans l'app.</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-size:14px;font-weight:500">Activité</label>
+                <div role="radiogroup" aria-label="Activité" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+                  <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Bureau</button>
+                  <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Bureau + micro-séances</button>
+                  <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Actif</button>
+                </div>
+              </div>
+              <div role="radiogroup" aria-label="Déficit" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Maintien</button>
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">−5 %</button>
+                <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">−10 %</button>
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">−15 %</button>
+              </div>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Un déficit léger protège le muscle pendant que le gras part, et se tient un mauvais jour. Au-delà de 15 %, tu perds du muscle avec.</p>
+              <div style="display:flex;align-items:center;justify-content:center;gap:16px">
+                <button type="button" aria-label="−50 kcal" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+                <p class="tnum" style="margin:0;text-align:center"><span style="font-size:30px;font-weight:600">2 140</span><span style="margin-left:4px;font-size:14px;color:hsl(var(--muted-foreground))">kcal</span></p>
+                <button type="button" aria-label="+50 kcal" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+              </div>
+              <p style="margin:0;text-align:center;font-size:12px;color:hsl(var(--muted-foreground))">Maintien estimé 2 380 kcal, moins 10 %</p>
+              <p style="margin:0;text-align:center;font-size:12px;color:hsl(var(--muted-foreground))">À ajuster après trois semaines, en regardant ce que fait ta courbe de poids. Aucune formule ne connaît ta taille ni ton activité.</p>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Habitudes</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">2 au plancher, 3 empilées</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:20px;padding:8px 16px 16px">
+              <section style="display:flex;flex-direction:column;gap:4px">
+                <h3 style="margin:0;font-size:14px;font-weight:600">Plancher</h3>
+                <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Non négociable. Garde-le ridiculement petit.</p>
+                <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                  <sc-for list="{{ floorHabits }}" as="habit" hint-placeholder-count="2">
+                    <li style="display:flex;align-items:center;gap:4px;border-bottom:1px solid hsl(var(--border) / .6);padding:8px 0">
+                      <div style="display:flex;flex-direction:column">
+                        <button type="button" aria-label="Monter" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button>
+                        <button type="button" aria-label="Descendre" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+                      </div>
+                      <div style="min-width:0;flex:1">
+                        <p style="margin:0;font-size:14px;font-weight:500">{{ habit.title }}</p>
+                        <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">{{ habit.detail }}</p>
+                      </div>
+                      <button type="button" aria-label="Historique" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 0 1 7.38 16.75"></path><path d="M12 6v6l4 2"></path><path d="M2.5 8.875a10 10 0 0 0-.5 3"></path><path d="M2.83 16a10 10 0 0 0 2.43 3.4"></path><path d="M4.636 5.235a10 10 0 0 1 .891-.857"></path><path d="M8.644 21.42a10 10 0 0 0 7.631-.38"></path></svg></button>
+                      <button type="button" aria-label="Modifier" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg></button>
+                      <button type="button" aria-label="Archiver" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </li>
+                  </sc-for>
+                </ul>
+                <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;align-self:flex-start;min-height:48px;margin-top:4px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));padding:0 16px;font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter au plancher</button>
+              </section>
+              <section style="display:flex;flex-direction:column;gap:4px">
+                <h3 style="margin:0;font-size:14px;font-weight:600">Empilées</h3>
+                <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Accrochées à un moment qui existe déjà.</p>
+                <ul style="display:flex;flex-direction:column;margin:0;padding:0;list-style:none">
+                  <sc-for list="{{ stackHabits }}" as="habit" hint-placeholder-count="3">
+                    <li style="display:flex;align-items:center;gap:4px;border-bottom:1px solid hsl(var(--border) / .6);padding:8px 0">
+                      <div style="display:flex;flex-direction:column">
+                        <button type="button" aria-label="Monter" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button>
+                        <button type="button" aria-label="Descendre" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+                      </div>
+                      <div style="min-width:0;flex:1">
+                        <p style="margin:0;font-size:14px;font-weight:500">{{ habit.title }}</p>
+                        <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">{{ habit.detail }}</p>
+                      </div>
+                      <button type="button" aria-label="Historique" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 0 1 7.38 16.75"></path><path d="M12 6v6l4 2"></path><path d="M2.5 8.875a10 10 0 0 0-.5 3"></path><path d="M2.83 16a10 10 0 0 0 2.43 3.4"></path><path d="M4.636 5.235a10 10 0 0 1 .891-.857"></path><path d="M8.644 21.42a10 10 0 0 0 7.631-.38"></path></svg></button>
+                      <button type="button" aria-label="Modifier" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg></button>
+                      <button type="button" aria-label="Archiver" style="display:flex;align-items:center;justify-content:center;height:36px;width:36px;border:0;border-radius:6px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </li>
+                  </sc-for>
+                </ul>
+                <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;align-self:flex-start;min-height:48px;margin-top:4px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));padding:0 16px;font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter une empilée</button>
+              </section>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Analyse photo des repas</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Ta clé reste sur cet appareil. Elle n'est ni dans le code, ni envoyée ailleurs qu'au service que tu choisis.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-size:14px;font-weight:500">Service</label>
+                <div role="radiogroup" aria-label="Service" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+                  <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Groq</button>
+                  <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">OpenAI</button>
+                  <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Custom</button>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-size:14px;font-weight:500">Clé API</label>
+                <input type="text" placeholder="gsk_…" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <label style="font-size:14px;font-weight:500">Modèle</label>
+                <input type="text" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+                <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Vide = llama-3.2-90b-vision-preview</p>
+              </div>
+              <label style="display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;cursor:pointer">
+                <span style="display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">Actif</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">Les services actifs sont essayés dans l'ordre, le premier qui répond gagne.</span></span>
+                <span aria-hidden="true" style="position:relative;height:24px;width:44px;flex-shrink:0;border-radius:9999px;background:hsl(var(--primary))"><span style="position:absolute;left:22px;top:2px;height:20px;width:20px;border-radius:9999px;background:hsl(var(--foreground))"></span></span>
+              </label>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Tester la clé</button>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Si le test échoue en « pas de réponse » alors que la clé est bonne, c'est que le service refuse les appels directs depuis le navigateur. Il faudra passer par un petit relais.</p>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Repas</h2></div>
+            <div style="display:flex;flex-direction:column;gap:8px;padding:8px 16px 16px">
+              <div role="radiogroup" aria-label="Garder les photos" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Aucune</button>
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">7 jours</button>
+                <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">30 jours</button>
+                <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">90 jours</button>
+              </div>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Passé ce délai, les chiffres restent et les photos sont effacées.</p>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Timer de repos par défaut</h2></div>
+            <div style="display:flex;gap:8px;padding:8px 16px 16px">
+              <button type="button" style="min-height:48px;flex:1;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:14px;font-weight:500;cursor:pointer">60 s</button>
+              <button type="button" style="min-height:48px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer">90 s</button>
+              <button type="button" style="min-height:48px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer">Autre</button>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px">
+              <label style="display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:8px 0;cursor:pointer">
+                <span style="font-size:14px;font-weight:500">Retour haptique</span>
+                <span aria-hidden="true" style="position:relative;height:24px;width:44px;flex-shrink:0;border-radius:9999px;background:hsl(var(--primary))"><span style="position:absolute;left:22px;top:2px;height:20px;width:20px;border-radius:9999px;background:hsl(var(--foreground))"></span></span>
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:8px 0;cursor:pointer">
+                <span style="font-size:14px;font-weight:500">Sons</span>
+                <span aria-hidden="true" style="position:relative;height:24px;width:44px;flex-shrink:0;border-radius:9999px;background:hsl(var(--muted))"><span style="position:absolute;left:2px;top:2px;height:20px;width:20px;border-radius:9999px;background:hsl(var(--foreground))"></span></span>
+              </label>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Stockage</h2></div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:8px 16px 16px">
+              <p class="tnum" style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">18,4 Mo utilisés sur 1,9 Go</p>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Stockage persistant accordé</p>
+            </div>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:16px 16px 8px">
+              <h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">Exporter mes données</h2>
+              <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Un fichier JSON, sur ton appareil. À garder quelque part de sûr.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;padding:8px 16px 16px">
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>Exporter mes données</button>
+              <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>Importer une sauvegarde</button>
+              <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Remplace tout ce qui est dans l'app.</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card))">
+            <div style="padding:16px 16px 8px"><h2 style="margin:0;font-size:16px;font-weight:600;line-height:1.25">À propos</h2></div>
+            <div style="display:flex;flex-direction:column;gap:4px;padding:8px 16px 16px;font-size:14px;color:hsl(var(--muted-foreground))">
+              <p style="margin:0">Version 3.0</p>
+              <p style="margin:0">Installée le mardi 15 juillet 2026</p>
+              <p style="margin:8px 0 0;font-size:12px">Tout reste sur cet appareil. Aucun compte, aucun serveur, aucune donnée envoyée nulle part.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ showFab }}" hint-placeholder-val="{{ true }}">
+    <button type="button" aria-label="Action rapide" onClick="{{ toggleFab }}" style="position:absolute;bottom:72px;right:16px;z-index:40;display:flex;align-items:center;justify-content:center;height:56px;width:56px;border:0;border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground));box-shadow:0 10px 15px -3px rgb(0 0 0 / .3);cursor:pointer">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+    </button>
+    </sc-if>
+
+    <nav aria-label="Navigation principale" style="position:absolute;inset-inline:0;bottom:0;z-index:40;border-top:1px solid hsl(var(--border));background:hsl(var(--background) / .95);backdrop-filter:blur(8px)">
+      <ul style="display:flex;margin:0;padding:0;list-style:none">
+        <li style="flex:1"><button type="button" onClick="{{ goToday }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;width:100%;border:0;background:transparent;padding:8px 0;font-size:11px;font-weight:500;color:{{ todayColor }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Aujourd'hui</button></li>
+        <li style="flex:1"><button type="button" onClick="{{ goWorkouts }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;width:100%;border:0;background:transparent;padding:8px 0;font-size:11px;font-weight:500;color:{{ workoutsColor }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg>Séances</button></li>
+        <li style="flex:1"><button type="button" onClick="{{ goNutrition }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;width:100%;border:0;background:transparent;padding:8px 0;font-size:11px;font-weight:500;color:{{ nutritionColor }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21h10"></path><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path><path d="M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1"></path><path d="m13 12 4-4"></path><path d="M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2"></path></svg>Nutrition</button></li>
+        <li style="flex:1"><button type="button" onClick="{{ goTrends }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;width:100%;border:0;background:transparent;padding:8px 0;font-size:11px;font-weight:500;color:{{ trendsColor }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>Tendances</button></li>
+      </ul>
+    </nav>
+
+    <sc-if value="{{ fabOpen }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-label="Action rapide" style="position:absolute;inset:0;z-index:50;display:flex;align-items:flex-end">
+      <button type="button" aria-label="Fermer" onClick="{{ toggleFab }}" style="position:absolute;inset:0;border:0;background:rgb(0 0 0 / .6);backdrop-filter:blur(2px);cursor:pointer"></button>
+      <div style="position:relative;width:100%;border-top:1px solid hsl(var(--border));border-radius:16px 16px 0 0;background:hsl(var(--card));padding:16px">
+        <div style="margin:0 auto 12px;height:4px;width:40px;border-radius:9999px;background:hsl(var(--muted))"></div>
+        <h2 style="margin:0 0 12px;font-size:16px;font-weight:600">Action rapide</h2>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button type="button" style="display:flex;align-items:center;justify-content:flex-start;gap:8px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));padding:0 20px;font-size:16px;font-weight:500;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Valider le plancher</button>
+          <button type="button" style="display:flex;align-items:center;justify-content:flex-start;gap:8px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));padding:0 20px;font-size:16px;font-weight:500;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>+30 g de protéines</button>
+          <button type="button" style="display:flex;align-items:center;justify-content:flex-start;gap:8px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));padding:0 20px;font-size:16px;font-weight:500;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg>+1 série</button>
+          <button type="button" style="display:flex;align-items:center;justify-content:flex-start;gap:8px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));padding:0 20px;font-size:16px;font-weight:500;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>Enregistrer une pesée</button>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:920}}">
+class Component extends DCLogic {
+  state = { tab: 'today', fabOpen: false }
+
+  go(tab) {
+    this.setState({ tab, fabOpen: false })
+    const el = document.getElementById('scroll')
+    if (el) el.scrollTop = 0
+  }
+
+  renderVals() {
+    const { tab, fabOpen } = this.state
+    const on = 'hsl(var(--primary))'
+    const off = 'hsl(var(--muted-foreground))'
+    const zeroCook = [
+      { name: 'Thon en boîte au naturel', serving: '1 boîte 130 g', grams: 26 },
+      { name: 'Whey', serving: '1 dose 30 g', grams: 24 },
+      { name: 'Blanc de poulet en tranches', serving: '100 g', grams: 20 },
+      { name: 'Skyr nature', serving: '1 pot 150 g', grams: 17 },
+      { name: 'Œufs durs prêts à consommer', serving: '2 œufs', grams: 13 },
+      { name: 'Cottage cheese', serving: '100 g', grams: 12 },
+      { name: 'Fromage blanc 0 %', serving: '100 g', grams: 8 },
+    ].map((i) => ({ ...i, stockLabel: i.name + ' en stock' }))
+
+    const labels = ['juin', '', '', '', 'juil.', '', '', '', 'août', '', '', '']
+    const heatmap = Array.from({ length: 12 }, (_, w) => ({
+      label: labels[w],
+      cells: Array.from({ length: 7 }, (_, d) => {
+        const seed = (w * 7 + d * 3) % 10
+        const future = w === 11 && d > 3
+        const done = !future && seed > 2
+        return {
+          bg: future ? 'transparent' : done ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+          ring: future ? 'inset 0 0 0 1px hsl(var(--border) / .5)' : 'none',
+        }
+      }),
+    }))
+
+    const floorHabits = [
+      { title: '5 pompes', detail: '5 pompes' },
+      { title: '1 portion de protéines zéro-cuisson', detail: 'au choix dans le catalogue' },
+    ]
+    const stackHabits = [
+      { title: '10 squats à vide', detail: 'Pendant que le café coule — 10 squats' },
+      { title: '1 série de pompes max', detail: "Avant d'ouvrir le laptop — pompes max" },
+      { title: '2 min de gainage', detail: 'Douche du soir — 2 min' },
+    ]
+    return {
+      zeroCook,
+      heatmap,
+      floorHabits,
+      stackHabits,
+      showFab: tab !== 'settings',
+      isToday: tab === 'today',
+      isWorkouts: tab === 'workouts',
+      isNutrition: tab === 'nutrition',
+      isTrends: tab === 'trends',
+      isSettings: tab === 'settings',
+      todayColor: tab === 'today' ? on : off,
+      workoutsColor: tab === 'workouts' ? on : off,
+      nutritionColor: tab === 'nutrition' ? on : off,
+      trendsColor: tab === 'trends' ? on : off,
+      fabOpen,
+      toggleFab: () => this.setState((s) => ({ fabOpen: !s.fabOpen })),
+      goToday: () => this.go('today'),
+      goWorkouts: () => this.go('workouts'),
+      goNutrition: () => this.go('nutrition'),
+      goTrends: () => this.go('trends'),
+      goSettings: () => this.go('settings'),
+    }
+  }
+}
+</script>
+</body>
+</html>

@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.7 — suivi calorique par photo, exclusion §14 levée |
+| Version | 1.8 — refonte de la navigation et des Réglages (handoff `docs/design`) |
 | Date | 2026-08-27 |
-| Statut | Jalons 1 à 7 livrés |
-| Remplace | v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Statut | Jalons 1 à 7 livrés ; refonte en cours, coquille livrée |
+| Remplace | v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -27,7 +27,7 @@ actionnable en moins de 3 taps, sans deadline, sans culpabilisation, sans cloud.
 
 ## 2. Décisions de cadrage
 
-Les dix arbitrages ci-dessous sont **verrouillés**. Toute remise en question est un changement de PRD, pas
+Les arbitrages ci-dessous sont **verrouillés**. Toute remise en question est un changement de PRD, pas
 une décision d'implémentation.
 
 | # | Sujet | Décision | Conséquence principale |
@@ -49,6 +49,9 @@ une décision d'implémentation.
 | 15 | Suivi calorique | **Autorisé, par photo analysée par un modèle de vision.** Renverse l'exclusion §14, décidé le 27/08/2026 | Voir §6.6. La saisie manuelle d'un tracker payant était le point de friction réel ; une photo la remplace |
 | 16 | Clé API | Saisie par l'utilisateur dans les Réglages, jamais compilée dans le bundle | L'hébergement est statique : une clé embarquée serait lisible par quiconque ouvre la page. Décision n°5 (zéro backend) tient |
 | 17 | Cible calorique | **Mifflin-St Jeor × facteur d'activité, moins un déficit réglable** (10 % par défaut), arrondi à 50, override manuel qui fige. Révisée le 27/08/2026 | Même contrat que les décisions n°11 et n°12. La première version dérivait la cible du poids seul à 30 kcal/kg : c'était le maintien, pas un déficit — voir §6.7 |
+| 18 | Refonte de la navigation | **Onglets Aujourd'hui · Nutrition · Séances · Progression, et Réglages en 6 rubriques menant à des sous-pages.** Décidé le 27/08/2026 sur le handoff `docs/design` | Une seule maison par donnée : la carte de pesée vivait à la fois dans Réglages et dans Progression, elle ne reste que dans Progression. La route `/trends` ne bouge pas malgré le renommage de l'onglet — renommer ne doit pas casser un signet |
+| 19 | Nommage « empilées » | **L'UI garde « Habitudes empilées », contre la proposition « En plus » du handoff** | Écart assumé, pas un oubli d'implémentation : le terme dit le mécanisme, une habitude accrochée à une ancre existante. Le modèle gardait déjà `kind: 'stack'` dans les deux cas |
+| 20 | Numéro de version affiché | **`package.json`, injecté au build**, jamais `SCHEMA_VERSION` | L'écran affichait « Version 3.0 » en beta : c'était le compteur de migrations Dexie déguisé en livraison. Le numéro de schéma reste visible, mais dans Réglages → Données, à côté de l'export, seul endroit où il veut dire quelque chose |
 
 ---
 
@@ -730,16 +733,24 @@ de base ; l'import refuse un bundle de version supérieure à celle du code et m
 ```text
 [ Barre de navigation basse — 4 onglets, cibles tactiles 48×48 px minimum ]
 ├── 🏠 Aujourd'hui   Plancher du jour, anneau protéines, ancres d'habitude, bouton « Séance 20 min »
-├── 🏋️ Séances       Séance rapide, historique, PR et surcharge progressive
-├── 🥗 Nutrition     Compteur 1-tap, cheat sheet livraison, catalogue zéro-cuisson
-└── 📈 Tendances     Force, tour de taille, photos, matrice de consistance
+├── 🥗 Nutrition     Compteur 1-tap, journal du jour, catalogues derrière « Que manger ? »
+├── 🏋️ Séances       Séance rapide, séries du jour, circuit et timer de repos
+└── 📈 Progression   Consistance, poids, force, tour de taille, séances passées, photos
 
 [ Bouton d'action flottant, présent sur les 4 onglets ]
-└── Feuille rapide : « +30 g protéines » · « +1 série » · « Valider le plancher »
+└── Feuille rapide : « +30 g protéines » · « +1 série » · « Valider le plancher » · « Enregistrer une pesée »
 
-[ Réglages ] accessible par l'icône en haut à droite du Dashboard
-└── Profil, cible protéines, habitudes, timer, export/import, à propos
+[ Réglages ] accessible par l'icône en haut à droite du Dashboard — 6 rubriques, une sous-page chacune
+├── Objectifs        Cible protéines, cible calorique et déficit, taille, année, sexe, activité
+├── Habitudes        Plancher et empilées : réordonner, modifier, historique, archiver, restaurer
+├── Séances          Timer de repos, catalogue de mouvements
+├── Analyse photo    Service de vision, clé, modèle, test, rétention des photos de repas
+├── Données          Stockage et persistance, export/import, version de schéma
+└── Application      Haptique, sons, revoir l'introduction, à propos
 ```
+
+L'ordre des onglets suit la fréquence d'usage d'une journée (décision n°18). Le renommage
+« Tendances » → « Progression » ne déplace pas la route `/trends`.
 
 L'onglet Aujourd'hui est la racine. Un retour à froid sur l'app y atterrit toujours.
 

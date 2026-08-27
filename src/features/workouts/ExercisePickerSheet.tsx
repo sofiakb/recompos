@@ -14,8 +14,36 @@ interface ExercisePickerSheetProps {
   /** Restricts the list to one movement pattern, for a circuit block. */
   pattern?: MovementPattern
   selectedId?: string
+  /** Heading of the sheet. Defaults to the picking wording. */
+  title?: string
   onClose: () => void
-  onPick: (exercise: Exercise) => void
+  /**
+   * Omitted when the sheet is opened to manage the catalogue rather than to
+   * choose from it: the rows then stop being buttons instead of offering a tap
+   * that would do nothing.
+   */
+  onPick?: (exercise: Exercise) => void
+}
+
+const ROW_LAYOUT = 'flex min-h-touch flex-1 items-center justify-between gap-3 px-1'
+
+/** Name, custom badge and rep range — identical whether the row is tappable. */
+function ExerciseSummary({ exercise }: { exercise: Exercise }) {
+  return (
+    <>
+      <span className="min-w-0 truncate text-sm font-medium">
+        {exercise.name}
+        {exercise.isCustom ? (
+          <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal uppercase tracking-wide text-muted-foreground">
+            {t.workouts.customBadge}
+          </span>
+        ) : null}
+      </span>
+      <span className="tnum shrink-0 text-xs text-muted-foreground">
+        {exercise.defaultRepRange[0]}–{exercise.defaultRepRange[1]}
+      </span>
+    </>
+  )
 }
 
 export function ExercisePickerSheet({
@@ -23,6 +51,7 @@ export function ExercisePickerSheet({
   exercises,
   pattern,
   selectedId,
+  title,
   onClose,
   onPick,
 }: ExercisePickerSheetProps) {
@@ -36,8 +65,9 @@ export function ExercisePickerSheet({
     setEditorOpen(false)
     showToast(t.workouts.exerciseCreated(created.name))
     // Picking it straight away is what the user came for; a new movement is
-    // almost never added except to log it right now.
-    onPick(created)
+    // almost never added except to log it right now. In manage mode there is
+    // nothing to pick, so the catalogue simply stays open on the new entry.
+    onPick?.(created)
   }
 
   const onDelete = async (exercise: Exercise) => {
@@ -52,30 +82,26 @@ export function ExercisePickerSheet({
       <Sheet
         open={open}
         onClose={onClose}
-        title={t.workouts.pickExercise}
+        title={title ?? t.workouts.pickExercise}
         className="max-h-[80vh] overflow-y-auto"
       >
         <ul className="flex flex-col">
           {list.map((exercise) => (
             <li key={exercise.id} className="flex items-center gap-1 border-b border-border/60">
-              <button
-                type="button"
-                onClick={() => onPick(exercise)}
-                aria-current={exercise.id === selectedId ? 'true' : undefined}
-                className="flex min-h-touch flex-1 items-center justify-between gap-3 px-1 text-left transition-colors hover:bg-accent aria-[current]:text-primary"
-              >
-                <span className="min-w-0 truncate text-sm font-medium">
-                  {exercise.name}
-                  {exercise.isCustom ? (
-                    <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal uppercase tracking-wide text-muted-foreground">
-                      {t.workouts.customBadge}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="tnum shrink-0 text-xs text-muted-foreground">
-                  {exercise.defaultRepRange[0]}–{exercise.defaultRepRange[1]}
-                </span>
-              </button>
+              {onPick ? (
+                <button
+                  type="button"
+                  onClick={() => onPick(exercise)}
+                  aria-current={exercise.id === selectedId ? 'true' : undefined}
+                  className={`${ROW_LAYOUT} text-left transition-colors hover:bg-accent aria-[current]:text-primary`}
+                >
+                  <ExerciseSummary exercise={exercise} />
+                </button>
+              ) : (
+                <div className={ROW_LAYOUT}>
+                  <ExerciseSummary exercise={exercise} />
+                </div>
+              )}
               {exercise.isCustom ? (
                 <button
                   type="button"

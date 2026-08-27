@@ -66,7 +66,7 @@ export function CircuitCard({
               aria-label={t.workouts.changeExercise}
               title={t.workouts.changeExercise}
               onClick={() => onChangeExercise(block.pattern)}
-              className="h-touch w-touch flex items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-touch w-touch items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Repeat size={16} aria-hidden />
             </button>
