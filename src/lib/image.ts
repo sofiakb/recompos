@@ -8,6 +8,17 @@
 export const MAX_EDGE_PX = 1200
 export const WEBP_QUALITY = 0.8
 
+/**
+ * Meal photos are encoded smaller than progress photos.
+ *
+ * They are read once by a vision model and then only ever shown as a thumbnail,
+ * and every byte travels in the request body as base64 — so 1024 px at a lower
+ * quality keeps the upload in the low hundreds of kilobytes without costing the
+ * model anything it needs to see.
+ */
+export const MEAL_MAX_EDGE_PX = 1024
+export const MEAL_WEBP_QUALITY = 0.7
+
 export interface EncodedImage {
   bytes: ArrayBuffer
   mimeType: string
@@ -54,9 +65,13 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
   })
 }
 
-export async function encodePhoto(file: File): Promise<EncodedImage> {
+export async function encodePhoto(
+  file: File,
+  maxEdge = MAX_EDGE_PX,
+  quality = WEBP_QUALITY,
+): Promise<EncodedImage> {
   const image = await loadImage(file)
-  const { width, height } = fitWithin(image.naturalWidth, image.naturalHeight)
+  const { width, height } = fitWithin(image.naturalWidth, image.naturalHeight, maxEdge)
 
   const canvas = document.createElement('canvas')
   canvas.width = width
@@ -67,7 +82,7 @@ export async function encodePhoto(file: File): Promise<EncodedImage> {
 
   // Older Safari silently hands back a PNG when asked for WebP, so the actual
   // type is read off the blob rather than assumed.
-  const blob = await canvasToBlob(canvas, 'image/webp', WEBP_QUALITY)
+  const blob = await canvasToBlob(canvas, 'image/webp', quality)
   const bytes = await blob.arrayBuffer()
 
   return {

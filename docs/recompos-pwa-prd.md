@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.6 — V1 complète, décision n°6 réexaminée |
-| Date | 2026-08-23 |
-| Statut | Jalons 1 à 6 livrés |
-| Remplace | v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Version | 1.7 — suivi calorique par photo, exclusion §14 levée |
+| Date | 2026-08-27 |
+| Statut | Jalons 1 à 7 livrés |
+| Remplace | v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -46,6 +46,9 @@ une décision d'implémentation.
 | 12 | Override manuel | Toute modification à la main fige la cible | Une nouvelle pesée ne réécrit jamais un chiffre choisi par l'utilisateur ; retour à l'auto en un tap |
 | 13 | Suivi du poids | Pesée hebdomadaire suggérée, moyenne glissante sur 4 points | L'app n'affiche jamais la pesée brute comme un résultat |
 | 14 | Plancher nutrition | « 1 portion de protéines zéro-cuisson », choisie dans le catalogue | Le plancher apporte de vrais grammes au total du jour, au prix d'un tap de plus |
+| 15 | Suivi calorique | **Autorisé, par photo analysée par un modèle de vision.** Renverse l'exclusion §14, décidé le 27/08/2026 | Voir §6.6. La saisie manuelle d'un tracker payant était le point de friction réel ; une photo la remplace |
+| 16 | Clé API | Saisie par l'utilisateur dans les Réglages, jamais compilée dans le bundle | L'hébergement est statique : une clé embarquée serait lisible par quiconque ouvre la page. Décision n°5 (zéro backend) tient |
+| 17 | Cible calorique | Dérivée du poids lissé à 30 kcal/kg, arrondie à 50, override manuel qui fige | Même contrat que les décisions n°11 et n°12. Assumée comme un point de départ, pas une prescription |
 
 ---
 
@@ -82,9 +85,10 @@ une décision d'implémentation.
 | Tests | Vitest + Testing Library + jsdom | Logique métier couverte en priorité |
 | Qualité | ESLint, Prettier, `tsc --noEmit` | Bloquants en CI |
 | CI/CD | GitHub Actions → GitHub Pages | Déploiement sur push `main` |
+| Vision | Endpoints OpenAI-compatibles (Groq, OpenRouter, libre) | Appelés depuis la page avec la clé de l'utilisateur. Aucun SDK : `fetch` et un parseur maison |
 
 **Contraintes de bundle** : app shell sous 200 Ko gzip, vérifié à chaque build. Aucun découpage en
-chunks n'a été nécessaire : au jalon 6, l'app complète pèse ~145 Ko gzip.
+chunks n'a été nécessaire : au jalon 7, l'app complète pèse ~159 Ko gzip.
 
 ---
 
@@ -157,6 +161,12 @@ l'import — sinon restaurer une sauvegarde ferait réapparaître des entrées s
    `ArrayBuffer` de façon identique dans toutes les implémentations d'IndexedDB, ce qui n'est pas vrai
    du `Blob` (Safari a livré des bugs, et `fake-indexeddb` le réduit à un objet vide, rendant la
    sauvegarde intestable). Le `Blob` n'est reconstruit qu'au moment de l'affichage.
+
+**Jalon 7 — Repas photographiés**
+
+Suivi calorique par photo : capture, analyse par un modèle de vision configuré par l'utilisateur,
+correction ligne par ligne, cible calorique dérivée du poids, file d'attente hors ligne, rétention des
+photos et export. Lève l'exclusion §14 (décision n°15).
 
 ---
 
@@ -320,6 +330,82 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
   en base64 dans un fichier séparé si le volume dépasse 5 Mo), et un import avec écran de confirmation
   explicite avant écrasement.
 
+### 6.6 Module Repas — suivi calorique par photo (jalon 7)
+
+**Pourquoi cette exclusion a été levée**
+
+Le PRD refusait le suivi calorique pour une raison qui tient toujours : compter ses calories est la
+mécanique la plus abandonnée des applications de fitness, parce qu'elle transforme chaque repas en
+tâche comptable — exactement la friction que les principes n°1 et n°2 combattent.
+
+Ce qui a changé n'est pas l'analyse, c'est le constat d'usage : la friction n'était pas *le comptage*,
+c'était *la saisie*. Un tracker payant déjà utilisé au quotidien imposait de décrire chaque plat à la
+main. Une photo supprime la saisie sans supprimer le comptage. Et si le suivi calorique est abandonné
+dans trois mois, le reste de l'app continue sans lui : ce module est additif, aucun autre écran n'en
+dépend.
+
+**La boucle**
+
+1. Photo de l'assiette, redimensionnée à 1024 px et encodée en WebP qualité 0,7 sur l'appareil.
+2. Écriture immédiate en base, statut `pending`, **avant tout appel réseau**.
+3. Analyse par le premier service configuré qui répond. Les octets partent en base64 dans le corps de
+   la requête — la photo n'est hébergée nulle part.
+4. Résultat validé, ligne par ligne, puis écrit sur le repas.
+5. Correction humaine à un tap, ligne par ligne.
+
+**Le détail plutôt que le total**
+
+La réponse du modèle est stockée aliment par aliment, et c'est le détail qui est éditable. « Le riz
+c'était 200 g pas 300 » est une correction qu'un humain peut faire ; « ce repas fait 620 et pas 780 »
+est une deuxième supposition. Les totaux sont **toujours recalculés depuis le détail**, jamais lus
+dans la réponse : les modèles rendent régulièrement une décomposition qui ne somme pas à leur propre
+total.
+
+**Où va l'effort de précision**
+
+La littérature sur l'évaluation diététique par image situe l'erreur dominante dans l'**estimation de
+la portion**, pas dans la reconnaissance de l'aliment. Le prompt dépense donc ses consignes là :
+repères d'échelle visibles, matières grasses de cuisson comptées même invisibles, cohérence 4/4/9
+entre macros et kcal, et une confiance annoncée qui retombe sur `low` au moindre doute. Une estimation
+qui dit qu'elle est large reste utilisable ; une fausse précision, non.
+
+**Protéines comptées une seule fois**
+
+Le compteur de protéines existe déjà, avec son anneau, son habitude plancher et son total du jour. Un
+repas ne tient donc **pas** un compte parallèle : il possède exactement un `ProteinLog` et le maintient
+à jour. Créer en écrit un, corriger le met à jour, supprimer le retire, et un repas sans protéine n'en
+garde aucun. Tout ce qui est branché en aval de `refreshProteinTotal` continue de fonctionner sans
+savoir que les repas existent.
+
+**Hors ligne**
+
+C'est la seule fonction de l'app qui a besoin du réseau, et elle est construite pour s'en passer le
+temps qu'il faut. La photo est enregistrée avant l'appel ; la file d'attente reprend au montage, au
+retour de l'onglet et au retour du réseau. Une photo prise dans un sous-sol est un repas qui a eu
+lieu : elle doit survivre à la fermeture de l'app. La saisie manuelle reste disponible sans clé, sans
+réseau et sans photo.
+
+**Rétention des photos**
+
+Les octets d'un repas sont effacés après 30 jours par défaut (réglable : aucune, 7, 30, 90 jours) ;
+les chiffres restent. Trois repas par jour à ~50 Ko font environ 55 Mo par an, ce qu'IndexedDB tient
+sans difficulté — mais une assiette photographiée en mars ne vaut pas la place en décembre. **Aucun
+stockage distant n'a été ajouté** : les photos n'ont jamais transité par localStorage, et un service
+d'hébergement d'images aurait imposé un compte, une configuration dans le bundle et un second chemin
+de sauvegarde pour un problème qui ne se pose pas.
+
+**Sauvegarde**
+
+Les repas partent dans l'export JSON ; leurs photos non, pour la même raison que la rétention les
+efface. Un import restaure les chiffres et laisse les vignettes derrière.
+
+**Chaîne de services**
+
+Plusieurs services peuvent être configurés et sont essayés dans l'ordre. Un quota atteint devient une
+pause de quelques secondes plutôt qu'un repas perdu. Le cumul sert au **repli**, pas à la moyenne :
+deux modèles ne divergent pas sur *quoi*, ils divergent sur *combien*, et moyenner deux estimations de
+portion ne corrige pas un biais — ça double le coût pour une impression de rigueur.
+
 ---
 
 ## 7. Architecture applicative
@@ -336,7 +422,9 @@ src/
 │   ├── floor/                  # module 1 : composants, store, logique, tests
 │   ├── nutrition/              # module 3
 │   ├── workouts/               # module 2
-│   └── trends/                 # module 4
+│   ├── trends/                 # module 4
+│   ├── meals/                  # module 5 — capture, correction, calories du jour
+│   └── vision/                 # réglages de service et de clé
 ├── db/
 │   ├── dexie.ts                # déclaration de la base et des migrations
 │   └── repositories/           # accès typé par table, jamais de Dexie brut dans un composant
@@ -347,7 +435,11 @@ src/
 │   ├── date.ts                 # journée logique, rollover 04h00, clés YYYY-MM-DD
 │   ├── consistency.ts          # calcul des scores élastiques
 │   ├── overload.ts             # règles de surcharge progressive
-│   └── image.ts                # redimensionnement et conversion WebP
+│   ├── image.ts                # redimensionnement et conversion WebP
+│   └── vision/
+│       ├── prompt.ts           # consignes d'analyse d'une assiette
+│       ├── schema.ts           # validation stricte de la réponse du modèle
+│       └── providers.ts        # chaîne d'endpoints OpenAI-compatibles
 ├── i18n/
 │   └── fr.ts                   # tous les textes utilisateur, clé → chaîne
 └── types/
@@ -362,6 +454,8 @@ src/
   de l'anglais mécanique (décision n°4).
 - La logique métier pure (`lib/`) ne dépend ni de React ni de Dexie, et est couverte par des tests
   unitaires.
+- Toute réponse d'un service externe passe par un parseur avant d'atteindre la base. `lib/vision/schema.ts`
+  est la seule porte d'entrée : rien n'est casté, tout est validé.
 
 **Répartition du stockage** (décision n°3)
 
@@ -373,6 +467,9 @@ src/
 | Logs quotidiens, protéines, séances, séries | Dexie / IndexedDB | Croissance illimitée, requêtes par plage de dates |
 | Mesures | Dexie / IndexedDB | Historique long |
 | Photos | Dexie / IndexedDB (`ArrayBuffer`) | Volumineux, incompatible localStorage |
+| Repas et leurs macros | Dexie / IndexedDB | Croissance illimitée, requêtes par plage de dates |
+| Photos de repas | Dexie / IndexedDB, table séparée | Lues à l'ouverture d'un repas, pas à chaque rendu ; effacées par la rétention sans toucher aux chiffres |
+| Clés API des services de vision | Zustand persist / localStorage | Jamais dans le bundle (décision n°16) ; lues au moment de l'appel |
 
 ---
 
@@ -642,11 +739,15 @@ Sur push `main` et CI verte : build puis publication sur GitHub Pages.
 
 Explicitement exclu, pour éviter la dérive :
 
-- Synchronisation cloud, comptes utilisateurs, backend de quelque nature.
+- Synchronisation cloud, comptes utilisateurs, backend de quelque nature. L'analyse de photo appelle
+  un service tiers depuis la page avec la clé de l'utilisateur — c'est un appel sortant, pas un
+  backend : rien de l'app n'est hébergé ailleurs, et l'app entière fonctionne sans lui.
 - Notifications push ou locales (décision n°6). Réexaminé le 23/08/2026 : maintenu, avec deux
   contournements sans serveur documentés en annexe B.
 - Chiffrement des photos et code PIN (décision n°7).
-- Suivi calorique complet, base alimentaire, scan de code-barres.
+- ~~Suivi calorique complet~~ — **levé le 27/08/2026, voir décision n°15 et §6.6.** Reste exclu :
+  base alimentaire embarquée et scan de code-barres. Les calories viennent d'une photo analysée, pas
+  d'une table nutritionnelle à maintenir.
 - Intégrations santé (Apple Health, Google Fit), objets connectés, balances.
 - Fonctions sociales, partage, classements.
 - Portage React Native ou Expo (conséquence de la décision n°2).
@@ -663,6 +764,10 @@ Explicitement exclu, pour éviter la dérive :
 | Abandon après 3 semaines (le cycle burnout que l'app combat) | L'app ne sert plus | Score élastique sans reset, plancher volontairement ridicule (5 pompes), aucune notification qui transforme l'app en source de culpabilité |
 | Une bibliothèque de graphiques alourdit le démarrage | Ouverture lente | Courbes SVG écrites à la main, aucune dépendance ajoutée |
 | Dérive de périmètre jalon après jalon | V1 jamais livrée | Section 14 opposable, critères de sortie par jalon |
+| Estimation calorique fausse et crue sur parole | Décisions alimentaires sur un mauvais chiffre | Confiance affichée, détail corrigible ligne par ligne, totaux recalculés depuis le détail. L'erreur dominante est la portion : le prompt y consacre ses consignes |
+| Le service de vision refuse les appels depuis le navigateur (CORS) | Fonction inutilisable | Bouton « tester la clé » qui l'établit en un tap ; repli documenté sur un relais minimal, sans toucher au reste |
+| Clé API exposée | Facturation détournée | Jamais dans le bundle ni dans git (décision n°16). Saisie locale, retirable en un tap |
+| Abandon du suivi calorique | Module mort dans l'app | Additif par construction : aucun autre écran n'en dépend, et la saisie manuelle survit sans clé |
 
 ---
 

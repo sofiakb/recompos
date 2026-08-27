@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ToggleRow } from '@/components/ui/toggle-row'
 import { BackupCard } from '@/features/backup/BackupCard'
+import { CalorieTargetEditor } from '@/features/meals/CalorieTargetEditor'
+import { MealPhotoRetention } from '@/features/meals/MealPhotoRetention'
 import { HabitManagerCard } from '@/features/habits/HabitManagerCard'
 import { ProteinTargetEditor } from '@/features/nutrition/ProteinTargetEditor'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
@@ -77,9 +79,27 @@ export function SettingsScreen() {
 
         <WeightCard weight={weight} onLog={() => setWeighInOpen(true)} />
 
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.meals.targetTitle}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CalorieTargetEditor />
+          </CardContent>
+        </Card>
+
         <HabitManagerCard />
 
         <VisionSettingsCard />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.meals.title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MealPhotoRetention />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
