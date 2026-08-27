@@ -21,6 +21,7 @@
 import { createServer } from 'node:http'
 
 const PORT = 4319
+const HOST = '127.0.0.1'
 let lastRequest = null
 let lastProbe = null
 
@@ -36,30 +37,28 @@ const ANSWER = {
 }
 
 /**
- * Only the local preview and dev servers may call this.
+ * The single origin allowed to call this, fixed when the process starts.
  *
- * A wildcard would let any page open in the same browser post to a server that
- * echoes back what it received, including an Authorization header. It costs
- * nothing to name the two origins that actually need it.
+ * Deliberately NOT derived from the request. A wildcard would let any page open
+ * in the same browser post to a server that echoes back what it received,
+ * Authorization header included — and reflecting the caller's own `Origin` back
+ * at it, allowlist or not, still builds the policy out of what the caller sent.
+ * Whoever runs the tool decides; the caller never does.
+ *
+ *   MOCK_ORIGIN=http://localhost:5173 node tools/mock-vision.mjs
  */
-const ALLOWED_ORIGINS = new Set([
-  'http://localhost:4173',
-  'http://127.0.0.1:4173',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-])
+const ALLOWED_ORIGIN = process.env.MOCK_ORIGIN ?? 'http://localhost:4173'
 
 /** Well under the 20 MB the real service accepts, and enough for any meal photo. */
 const MAX_BODY_BYTES = 24 * 1024 * 1024
 
+const cors = {
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Headers': 'authorization,content-type',
+  'Access-Control-Allow-Methods': 'POST,OPTIONS',
+}
+
 createServer((req, res) => {
-  const origin = req.headers.origin ?? ''
-  const cors = {
-    ...(ALLOWED_ORIGINS.has(origin) ? { 'Access-Control-Allow-Origin': origin } : {}),
-    Vary: 'Origin',
-    'Access-Control-Allow-Headers': 'authorization,content-type',
-    'Access-Control-Allow-Methods': 'POST,OPTIONS',
-  }
   if (req.method === 'OPTIONS') {
     res.writeHead(204, cors)
     res.end()
@@ -163,4 +162,7 @@ createServer((req, res) => {
       }),
     )
   })
-}).listen(PORT, () => console.log(`mock vision on ${PORT}`))
+  // Loopback only. Without a host argument Node binds every interface, which on a
+  // shared network offers a stranger a server that echoes back what it is sent.
+  // Nothing here needs to be reachable from outside this machine.
+}).listen(PORT, HOST, () => console.log(`mock vision on ${HOST}:${PORT} for ${ALLOWED_ORIGIN}`))
