@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ToggleRow } from '@/components/ui/toggle-row'
-import { SettingsPage } from '@/screens/settings/SettingsPage'
+import { SubPage } from '@/components/shared/SubPage'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { formatCalendarDate, toLogicalDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
@@ -13,7 +13,7 @@ export function AppSettingsScreen() {
   const replayOnboarding = useSettingsStore((state) => state.replayOnboarding)
 
   return (
-    <SettingsPage title={t.settings.sections.app.title} backTo="/settings">
+    <SubPage title={t.settings.sections.app.title} backTo="/settings">
       <Card>
         <CardContent className="pt-4">
           <ToggleRow
@@ -53,6 +53,6 @@ export function AppSettingsScreen() {
           <p className="mt-2 text-xs">{t.settings.dataNotice}</p>
         </CardContent>
       </Card>
-    </SettingsPage>
+    </SubPage>
   )
 }

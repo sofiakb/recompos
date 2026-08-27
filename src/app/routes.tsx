@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router-dom'
 import { AppLayout } from '@/app/AppLayout'
 import { NutritionScreen } from '@/screens/NutritionScreen'
+import { CataloguesScreen } from '@/screens/nutrition/CataloguesScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
 import { AppSettingsScreen } from '@/screens/settings/AppSettingsScreen'
 import { DataSettingsScreen } from '@/screens/settings/DataSettingsScreen'
@@ -29,6 +30,7 @@ export const appRoutes: RouteObject[] = [
       { index: true, element: <TodayScreen /> },
       { path: 'workouts', element: <WorkoutsScreen /> },
       { path: 'nutrition', element: <NutritionScreen /> },
+      { path: 'nutrition/catalogues', element: <CataloguesScreen /> },
       { path: 'trends', element: <TrendsScreen /> },
       { path: 'settings', element: <SettingsScreen /> },
       { path: 'settings/objectifs', element: <GoalsSettingsScreen /> },

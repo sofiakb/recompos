@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MealPhotoRetention } from '@/features/meals/MealPhotoRetention'
 import { VisionSettingsCard } from '@/features/vision/VisionSettingsCard'
-import { SettingsPage } from '@/screens/settings/SettingsPage'
+import { SubPage } from '@/components/shared/SubPage'
 import { t } from '@/i18n/fr'
 
 /**
@@ -10,7 +10,7 @@ import { t } from '@/i18n/fr'
  */
 export function VisionSettingsScreen() {
   return (
-    <SettingsPage title={t.settings.sections.vision.title} backTo="/settings">
+    <SubPage title={t.settings.sections.vision.title} backTo="/settings">
       <VisionSettingsCard />
 
       <Card>
@@ -21,6 +21,6 @@ export function VisionSettingsScreen() {
           <MealPhotoRetention />
         </CardContent>
       </Card>
-    </SettingsPage>
+    </SubPage>
   )
 }

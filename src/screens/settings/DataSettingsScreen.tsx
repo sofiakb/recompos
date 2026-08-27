@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BackupCard } from '@/features/backup/BackupCard'
-import { SettingsPage } from '@/screens/settings/SettingsPage'
+import { SubPage } from '@/components/shared/SubPage'
 import { formatBytes } from '@/lib/format'
 import { SCHEMA_VERSION } from '@/types/models'
 import { t } from '@/i18n/fr'
@@ -35,7 +35,7 @@ export function DataSettingsScreen() {
   const storage = useStorageInfo()
 
   return (
-    <SettingsPage title={t.settings.sections.data.title} backTo="/settings">
+    <SubPage title={t.settings.sections.data.title} backTo="/settings">
       <Card>
         <CardHeader>
           <CardTitle>{t.settings.storage}</CardTitle>
@@ -59,6 +59,6 @@ export function DataSettingsScreen() {
       </Card>
 
       <BackupCard />
-    </SettingsPage>
+    </SubPage>
   )
 }

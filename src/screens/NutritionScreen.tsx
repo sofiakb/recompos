@@ -1,27 +1,50 @@
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Camera, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
+import { Sheet } from '@/components/ui/sheet'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { CalorieCard } from '@/features/meals/CalorieCard'
-import { MealsCard } from '@/features/meals/MealsCard'
+import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
-import { ProteinLogList } from '@/features/nutrition/ProteinLogList'
+import { DayJournal } from '@/features/nutrition/DayJournal'
+import { buildDayJournal } from '@/features/nutrition/journal'
 import { ProteinRing } from '@/features/nutrition/ProteinRing'
 import { QuickAddRow } from '@/features/nutrition/QuickAddRow'
-import { TakeoutCheatSheet } from '@/features/nutrition/TakeoutCheatSheet'
-import { ZeroCookCatalog } from '@/features/nutrition/ZeroCookCatalog'
 import { useMeals } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
+import { formatLongDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
-import type { ProteinLog, ProteinSource } from '@/types/models'
+import type { MealEntry, ProteinLog, ProteinSource } from '@/types/models'
 
+const SOURCES: ProteinSource[] = ['meal', 'zero_cook', 'takeout', 'shake']
+
+/**
+ * Where the day stands, how to add to it, and what has been added.
+ *
+ * The catalogues moved to a sub-page: they answer « what can I eat », which is
+ * a question asked when deciding, not every time the tab is opened.
+ */
 export function NutritionScreen() {
   const protein = useProtein()
   const meals = useMeals()
   const target = useProteinTarget()
   const showToast = useUiStore((state) => state.showToast)
+
+  const fileInput = useRef<HTMLInputElement>(null)
   const [customOpen, setCustomOpen] = useState(false)
+  const [capturing, setCapturing] = useState(false)
+  const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
+  const [mealSheetOpen, setMealSheetOpen] = useState(false)
+  const [editingLog, setEditingLog] = useState<ProteinLog | null>(null)
+
+  const journal = useMemo(
+    () => buildDayJournal(protein.logs, meals.meals),
+    [protein.logs, meals.meals],
+  )
 
   /** Every add is undoable for a few seconds — a mistyped 300 g is one tap away. */
   const addWithUndo = async (grams: number, source: ProteinSource, note?: string) => {
@@ -32,61 +55,103 @@ export function NutritionScreen() {
     })
   }
 
+  const onFile = async (file: File | undefined) => {
+    if (!file) return
+    setCapturing(true)
+    try {
+      await meals.capture(file)
+    } catch {
+      showToast(t.photos.failed)
+    } finally {
+      setCapturing(false)
+    }
+  }
+
+  const openMeal = (meal: MealEntry | null) => {
+    setEditingMeal(meal)
+    setMealSheetOpen(true)
+  }
+
   return (
     <>
-      <ScreenHeader title={t.nav.nutrition} />
+      <ScreenHeader eyebrow={formatLongDate(protein.today)} title={t.nav.nutrition} />
 
-      <div className="flex flex-col gap-3 px-4">
-        <Card>
-          <CardContent className="flex flex-col gap-4 pt-4">
-            <ProteinRing
-              totalGrams={protein.totalGrams}
-              targetGrams={protein.targetGrams}
-              remainingGrams={protein.remainingGrams}
-            />
+      <div className="flex flex-col gap-7 px-5 pt-2">
+        <div className="flex flex-col gap-4">
+          <ProteinRing
+            totalGrams={protein.totalGrams}
+            targetGrams={protein.targetGrams}
+            remainingGrams={protein.remainingGrams}
+          />
+          <p className="text-center text-xs text-muted-foreground">
+            {target.mode === 'auto' && target.smoothedWeightKg !== null
+              ? t.nutrition.targetFromWeight(target.smoothedWeightKg, target.gramsPerKg)
+              : null}
+            {target.mode === 'manual' ? t.nutrition.targetManual : null}
+            {target.isFallback ? t.nutrition.targetNoWeight : null}
+          </p>
+        </div>
 
-            <p className="text-center text-xs text-muted-foreground">
-              {target.mode === 'auto' && target.smoothedWeightKg !== null
-                ? t.nutrition.targetFromWeight(target.smoothedWeightKg, target.gramsPerKg)
-                : null}
-              {target.mode === 'manual' ? t.nutrition.targetManual : null}
-              {target.isFallback ? t.nutrition.targetNoWeight : null}
-            </p>
+        <QuickAddRow
+          onAdd={(grams) => void addWithUndo(grams, 'meal')}
+          onCustom={() => setCustomOpen(true)}
+        />
 
-            <QuickAddRow
-              onAdd={(grams) => void addWithUndo(grams, 'meal')}
-              onCustom={() => setCustomOpen(true)}
-            />
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-2 gap-2">
+          {/* A link, not a button: it navigates, so it should behave like one
+              (middle-click, long-press) while wearing the button's clothes. */}
+          <Link
+            to="/nutrition/catalogues"
+            className={buttonVariants({ variant: 'outline', size: 'lg' })}
+          >
+            {t.nutrition.whatToEat}
+          </Link>
+          <Button
+            variant="secondary"
+            size="lg"
+            disabled={!meals.canAnalyse || capturing}
+            onClick={() => fileInput.current?.click()}
+          >
+            <Camera size={18} aria-hidden />
+            {capturing ? t.meals.capturing : t.nutrition.aMeal}
+          </Button>
+        </div>
+
+        {!meals.canAnalyse ? (
+          <p className="-mt-4 text-xs text-muted-foreground">{t.meals.noProvider}</p>
+        ) : null}
 
         <CalorieCard macros={meals.macros} />
 
-        <MealsCard meals={meals} />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.nutrition.todayTitle}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProteinLogList
-              logs={protein.logs}
-              onRemove={(id) => void protein.remove(id)}
-              onSetSource={(id, source) => void protein.setSource(id, source)}
-            />
-          </CardContent>
-        </Card>
-
-        <ZeroCookCatalog
-          onLog={(item) => void addWithUndo(item.proteinPerServingGrams, 'zero_cook', item.name)}
-        />
-
-        <TakeoutCheatSheet
-          onLog={(option) =>
-            void addWithUndo(option.estimatedProteinGrams ?? 0, 'takeout', option.cuisine)
-          }
-        />
+        <section className="flex flex-col gap-2">
+          <h2 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+            {t.nutrition.journalTitle}
+          </h2>
+          <DayJournal
+            entries={journal}
+            analysing={meals.analysing}
+            onOpenProtein={setEditingLog}
+            onOpenMeal={openMeal}
+          />
+          <Button variant="ghost" className="self-start" onClick={() => openMeal(null)}>
+            {t.meals.addManual}
+          </Button>
+        </section>
       </div>
+
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/*"
+        // `capture` opens the camera straight away on a phone, while still
+        // allowing the library on a desktop that has no camera.
+        capture="environment"
+        className="sr-only"
+        onChange={(event) => {
+          void onFile(event.target.files?.[0])
+          event.target.value = ''
+        }}
+      />
 
       <CustomAmountSheet
         open={customOpen}
@@ -96,6 +161,66 @@ export function NutritionScreen() {
           void addWithUndo(grams, 'meal')
         }}
       />
+
+      <MealEditorSheet
+        open={mealSheetOpen}
+        meal={editingMeal}
+        photoUrlFor={meals.photoUrlFor}
+        onClose={() => setMealSheetOpen(false)}
+        onSave={async (label, slot, items) => {
+          const kcal = items.reduce((total, item) => total + item.kcal, 0)
+          if (editingMeal) await meals.correct(editingMeal.id, { label, slot, items })
+          else await meals.addManual(label, items, slot)
+          setMealSheetOpen(false)
+          showToast(t.meals.saved(kcal))
+        }}
+        onDelete={async (id) => {
+          if (editingMeal) await meals.remove(id)
+          setMealSheetOpen(false)
+          if (editingMeal) showToast(t.meals.deleted)
+        }}
+        onRetry={(id, hint) => {
+          // The sheet closes: the row shows « Analyse en cours… » and the result
+          // arrives in place, rather than under a sheet frozen on stale numbers.
+          setMealSheetOpen(false)
+          void meals.retry(id, hint)
+        }}
+      />
+
+      <Sheet
+        open={editingLog !== null}
+        onClose={() => setEditingLog(null)}
+        title={editingLog ? t.nutrition.editLog(editingLog.grams) : undefined}
+      >
+        <p className="mb-2 text-sm text-muted-foreground">{t.nutrition.sourceLabel}</p>
+        <div className="grid grid-cols-2 gap-2">
+          {SOURCES.map((source) => (
+            <Button
+              key={source}
+              variant={editingLog?.sourceType === source ? 'primary' : 'secondary'}
+              onClick={() => {
+                if (editingLog) void protein.setSource(editingLog.id, source)
+                setEditingLog((current) => (current ? { ...current, sourceType: source } : null))
+              }}
+            >
+              {t.nutrition.source[source]}
+            </Button>
+          ))}
+        </div>
+
+        <Button
+          variant="ghost"
+          block
+          className="mt-4 text-destructive"
+          onClick={() => {
+            if (editingLog) void protein.remove(editingLog.id)
+            setEditingLog(null)
+          }}
+        >
+          <Trash2 size={18} aria-hidden />
+          {t.nutrition.removeLog}
+        </Button>
+      </Sheet>
     </>
   )
 }

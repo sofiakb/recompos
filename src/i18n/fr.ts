@@ -61,6 +61,13 @@ export const fr = {
     addGrams: (grams: number) => `Ajouter ${grams} g`,
     deleteDigit: 'Effacer un chiffre',
     todayTitle: 'Aujourd’hui',
+    journalTitle: 'Le journal du jour',
+    journalEmpty: 'Rien de logué pour le moment.',
+    whatToEat: 'Que manger ?',
+    aMeal: 'Un repas',
+    inFridge: 'Dans le frigo',
+    delivery: 'En livraison',
+    catalogues: 'Que manger ?',
     noLogYet: 'Rien de logué pour le moment.',
     editLog: (grams: number) => `Entrée de ${grams} g`,
     sourceLabel: 'Type de source',
@@ -377,6 +384,8 @@ export const fr = {
     dayOf: (current: number, target: number) => `${current} kcal sur ${target} kcal`,
     dayRemaining: (kcal: number) => `encore ${kcal} kcal`,
     dayOver: (kcal: number) => `${kcal} kcal au-dessus`,
+    macrosShort: (proteinG: number, carbsG: number, fatG: number) =>
+      `P ${proteinG} g · G ${carbsG} g · L ${fatG} g`,
     targetFromWeight: (maintenance: number, deficit: number) =>
       deficit === 0
         ? `Maintien estimé : ${maintenance} kcal`

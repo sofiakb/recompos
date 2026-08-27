@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
 import { Segmented } from '@/components/ui/segmented'
 import { Sheet } from '@/components/ui/sheet'
+import { MealPhoto } from '@/features/meals/MealPhoto'
 import { totalsFromItems } from '@/lib/vision/schema'
 import { t } from '@/i18n/fr'
 import type { MealEntry, MealItem, MealSlot } from '@/types/models'
@@ -16,6 +17,11 @@ interface MealEditorSheetProps {
   onDelete: (id: string) => void
   /** Re-runs the analysis on the same photo with a correction. */
   onRetry: (id: string, hint: string) => void
+  /**
+   * Loads the meal's photo. Absent on the blank « saisir à la main » sheet,
+   * which has no photo to show.
+   */
+  photoUrlFor?: (id: string) => Promise<string | null>
 }
 
 const SLOTS: Array<{ value: MealSlot; label: string }> = [
@@ -47,6 +53,7 @@ export function MealEditorSheet({
   onSave,
   onDelete,
   onRetry,
+  photoUrlFor,
 }: MealEditorSheetProps) {
   const [label, setLabel] = useState('')
   const [slot, setSlot] = useState<MealSlot>('lunch')
@@ -83,6 +90,18 @@ export function MealEditorSheet({
           placeholder={t.meals.editLabel}
           onChange={(event) => setLabel(event.target.value)}
         />
+
+        {/* The plate, facing the numbers it produced. It used to be a 48px
+            thumbnail in the day's list and nowhere else, which made a stored
+            photo something you could never actually look at. */}
+        {meal?.photoId && photoUrlFor ? (
+          <MealPhoto
+            mealId={meal.id}
+            alt={meal.label || t.meals.title}
+            load={photoUrlFor}
+            className="h-40 w-full"
+          />
+        ) : null}
 
         <Segmented label={t.meals.slotLabel} value={slot} options={SLOTS} onChange={setSlot} />
 
