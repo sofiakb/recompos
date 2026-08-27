@@ -48,7 +48,6 @@ export function WaistCard({ waist, onLog }: WaistCardProps) {
               value,
             }))}
             overlay={waist.smoothedCm}
-            formatValue={(value) => `${Math.round(value)}`}
           />
         ) : null}
 

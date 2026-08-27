@@ -174,6 +174,9 @@ export const fr = {
       core: 'Gainage',
       other: 'Autre',
     },
+    circuitPlan: 'Au programme',
+    circuitPlanHint: 'Un bloc par groupe. Tu peux changer un mouvement avant de démarrer.',
+    repRangeSummary: (min: number, max: number) => `${min} à ${max} reps`,
     changeExercise: 'Changer de mouvement',
     pickExercise: 'Choisir un mouvement',
     addExercise: 'Ajouter un mouvement',
@@ -220,8 +223,18 @@ export const fr = {
     restDone: 'Repos terminé',
   },
   strength: {
-    title: 'Index de force',
-    hint: 'Volume hebdomadaire, base 100 sur ta première semaine de séries.',
+    title: 'Force',
+    hint: 'Le volume de tes séries, semaine par semaine.',
+    baseline: 'Ta première semaine de séries vaut 100.',
+    baselineWeek: 'C’est ta semaine de référence : tout se compare à elle.',
+    vsStart: (delta: number) =>
+      delta === 0
+        ? 'Au niveau de ta première semaine'
+        : `${delta > 0 ? '+' : '−'}${Math.abs(delta)} % de volume vs ta première semaine`,
+    explainOpen: 'Comment c’est calculé',
+    explainClose: 'Masquer le calcul',
+    explainBody:
+      'On additionne les répétitions de toutes tes séries de la semaine. Une série au poids du corps compte 1 par rep ; avec une charge ajoutée elle compte un peu plus, à hauteur de ce que la charge ajoute à ton poids (8 kg sur 80 kg = 1,1 par rep). Ce total est ramené à 100 sur ta première semaine : 130 = tu fais 30 % de volume en plus qu’au départ. C’est un repère de progression, pas une charge maximale.',
     index: (value: number) => `${value}`,
     weeks: (n: number) => `${n} semaines`,
     setsThisWeek: (n: number) => `${n} série${n > 1 ? 's' : ''} cette semaine`,
@@ -293,6 +306,7 @@ export const fr = {
     validateFloor: 'Valider le plancher',
     addProtein: '+30 g de protéines',
     addSet: '+1 série',
+    logWeight: 'Enregistrer une pesée',
     close: 'Fermer',
   },
   onboarding: {

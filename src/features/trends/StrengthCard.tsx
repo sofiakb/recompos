@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart } from '@/components/charts/LineChart'
 import { Segmented } from '@/components/ui/segmented'
@@ -22,18 +23,22 @@ function shortDate(date: string): string {
 
 export function StrengthCard({ exerciseById }: StrengthCardProps) {
   const [weeks, setWeeks] = useState<StrengthWindow>(12)
+  const [explained, setExplained] = useState(false)
   const strength = useStrength(weeks)
 
   const lastWeek = strength.points[strength.points.length - 1]
+  const weeksLogged = strength.points.filter((point) => point.volume > 0).length
   // One week of sets is a number, not a line: say so rather than leaving a blank
   // where a chart is expected.
-  const chartable = strength.points.filter((point) => point.volume > 0).length > 1
+  const chartable = weeksLogged > 1
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t.strength.title}</CardTitle>
-        <CardDescription>{t.strength.hint}</CardDescription>
+        <CardDescription>
+          {t.strength.hint} {t.strength.baseline}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <Segmented
@@ -45,11 +50,20 @@ export function StrengthCard({ exerciseById }: StrengthCardProps) {
 
         {strength.hasData ? (
           <>
-            <div className="flex items-baseline justify-between">
-              <span className="tnum text-3xl font-semibold">{lastWeek?.index ?? 0}</span>
-              <span className="text-sm text-muted-foreground">
-                {t.strength.setsThisWeek(lastWeek?.setCount ?? 0)}
-              </span>
+            <div>
+              <div className="flex items-baseline justify-between">
+                <span className="tnum text-3xl font-semibold">{lastWeek?.index ?? 0}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t.strength.setsThisWeek(lastWeek?.setCount ?? 0)}
+                </span>
+              </div>
+              {/* The index alone reads as an arbitrary number; the same figure said in
+                  percent is the sentence the user actually wants. */}
+              <p className="text-sm text-muted-foreground">
+                {weeksLogged > 1
+                  ? t.strength.vsStart((lastWeek?.index ?? 100) - 100)
+                  : t.strength.baselineWeek}
+              </p>
             </div>
             {chartable ? (
               <LineChart
@@ -68,6 +82,27 @@ export function StrengthCard({ exerciseById }: StrengthCardProps) {
         ) : (
           <p className="text-sm text-muted-foreground">{t.strength.empty}</p>
         )}
+
+        <div>
+          <button
+            type="button"
+            aria-expanded={explained}
+            onClick={() => setExplained((open) => !open)}
+            className="flex min-h-touch w-full items-center justify-between gap-2 text-left text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {explained ? t.strength.explainClose : t.strength.explainOpen}
+            {explained ? (
+              <ChevronUp size={16} aria-hidden />
+            ) : (
+              <ChevronDown size={16} aria-hidden />
+            )}
+          </button>
+          {explained ? (
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {t.strength.explainBody}
+            </p>
+          ) : null}
+        </div>
 
         <div>
           <h3 className="mb-1 text-sm font-semibold">{t.strength.bestSets}</h3>

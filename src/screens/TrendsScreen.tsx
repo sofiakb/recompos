@@ -71,7 +71,6 @@ export function TrendsScreen() {
                   label: shortDate(entry.date),
                   value: entry.weightKg ?? null,
                 }))}
-                formatValue={(value) => `${Math.round(value)}`}
               />
             </CardContent>
           </Card>
