@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Check } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProteinTargetEditor } from '@/features/nutrition/ProteinTargetEditor'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
@@ -26,6 +26,18 @@ export function OnboardingScreen() {
   const completeOnboarding = useSettingsStore((state) => state.completeOnboarding)
 
   const floorHabits = selectHabits(habits, 'floor')
+
+  // Seeded once, and only from an existing weigh-in: replaying the intro from
+  // the settings must not ask again for something already known. A first
+  // install has nothing to seed from, so the placeholder stands.
+  const seeded = useRef(false)
+  useEffect(() => {
+    if (seeded.current) return
+    const kg = weight.latest?.weightKg
+    if (kg === null || kg === undefined) return
+    seeded.current = true
+    setWeightInput(String(kg).replace('.', ','))
+  }, [weight.latest])
 
   const finish = () => completeOnboarding()
   const next = () => (step === TOTAL_STEPS - 1 ? finish() : setStep((s) => s + 1))
@@ -124,11 +136,11 @@ export function OnboardingScreen() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      aria-label={`Retirer ${habit.title}`}
+                      aria-label={t.onboarding.removeHabit(habit.title)}
                       onClick={() => archiveHabit(habit.id)}
                       className="text-muted-foreground"
                     >
-                      ×
+                      <X size={18} aria-hidden />
                     </Button>
                   ) : null}
                 </li>

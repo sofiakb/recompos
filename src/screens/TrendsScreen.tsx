@@ -15,6 +15,7 @@ import { useWeight } from '@/features/weight/useWeight'
 import { useWorkouts } from '@/features/workouts/useWorkouts'
 import { useUiStore } from '@/stores/uiStore'
 import { formatCalendarDate, formatLongDate, parseIsoDate } from '@/lib/date'
+import { formatDecimal } from '@/lib/format'
 import { t } from '@/i18n/fr'
 
 function shortDate(date: string): string {
@@ -23,7 +24,7 @@ function shortDate(date: string): string {
 
 function signed(value: number, unit: string): string {
   const sign = value > 0 ? '+' : value < 0 ? '−' : ''
-  return `${sign}${Math.abs(value)} ${unit}`
+  return `${sign}${formatDecimal(Math.abs(value))} ${unit}`
 }
 
 /**
@@ -81,10 +82,12 @@ export function TrendsScreen() {
         >
           {weight.hasWeight ? (
             <>
-              <p className="tnum text-3xl font-semibold">
-                {weight.smoothedKg}
-                <span className="ml-1 text-sm font-normal text-muted-foreground">kg</span>
-              </p>
+              {weight.smoothedKg !== null ? (
+                <p className="tnum text-3xl font-semibold">
+                  {formatDecimal(weight.smoothedKg)}
+                  <span className="ml-1 text-sm font-normal text-muted-foreground">kg</span>
+                </p>
+              ) : null}
               {weightSeries.length > 1 ? (
                 <LineChart
                   ariaLabel={t.weight.title}
@@ -113,10 +116,10 @@ export function TrendsScreen() {
           hint={t.waist.hint}
           aside={waist.totalChangeCm !== null ? signed(waist.totalChangeCm, 'cm') : null}
         >
-          {waist.latest ? (
+          {waist.latest?.waistCm !== undefined && waist.latest !== null ? (
             <>
               <p className="tnum text-3xl font-semibold">
-                {waist.latest.waistCm}
+                {formatDecimal(waist.latest.waistCm)}
                 <span className="ml-1 text-sm font-normal text-muted-foreground">cm</span>
               </p>
               {waist.seriesCm.length > 1 ? (

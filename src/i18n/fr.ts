@@ -1,3 +1,5 @@
+import { formatDecimal } from '@/lib/format'
+
 /**
  * Every user-facing string lives here (PRD §7).
  *
@@ -50,7 +52,7 @@ export const fr = {
     pickPortion: 'Quelle source de protéines ?',
     pickPortionHint: 'Le choix est ajouté au total du jour.',
     targetFromWeight: (weightKg: number, perKg: number) =>
-      `Calculé sur ${weightKg} kg × ${String(perKg).replace('.', ',')} g/kg`,
+      `Calculé sur ${formatDecimal(weightKg)} kg × ${formatDecimal(perKg)} g/kg`,
     targetManual: 'Cible ajustée à la main',
     targetNoWeight: 'Cible provisoire — ajoute ton poids pour la calculer',
     addedGrams: (grams: number) => `+${grams} g ajoutés`,
@@ -119,8 +121,8 @@ export const fr = {
     logCta: 'Enregistrer une pesée',
     logTitle: 'Ton poids',
     logHint: 'À jeun de préférence, mais la régularité compte plus que le moment.',
-    lastEntry: (date: string, kg: number) => `Dernière pesée : ${date}, ${kg} kg`,
-    saved: (kg: number) => `${kg} kg enregistrés`,
+    lastEntry: (date: string, kg: number) => `Dernière pesée : ${date}, ${formatDecimal(kg)} kg`,
+    saved: (kg: number) => `${formatDecimal(kg)} kg enregistrés`,
     history: 'Historique',
     empty: 'Aucune pesée enregistrée.',
   },
@@ -277,11 +279,11 @@ export const fr = {
     logCta: 'Enregistrer une mesure',
     logTitle: 'Ton tour de taille',
     logHint: 'Au nombril, sans rentrer le ventre, le matin de préférence.',
-    saved: (cm: number) => `${cm} cm enregistrés`,
+    saved: (cm: number) => `${formatDecimal(cm)} cm enregistrés`,
     empty: 'Aucune mesure enregistrée.',
     history: 'Historique',
-    trendDown: (cm: number) => `−${cm} cm depuis la première mesure`,
-    trendUp: (cm: number) => `+${cm} cm depuis la première mesure`,
+    trendDown: (cm: number) => `−${formatDecimal(cm)} cm depuis la première mesure`,
+    trendUp: (cm: number) => `+${formatDecimal(cm)} cm depuis la première mesure`,
     trendFlat: 'Stable depuis la première mesure',
   },
   photos: {
@@ -493,6 +495,7 @@ export const fr = {
       body: 'Modifiable à tout moment dans les réglages.',
       unit: 'g par jour',
     },
+    removeHabit: (title: string) => `Retirer ${title}`,
     floor: {
       title: 'Ton plancher quotidien',
       body: "Garde-le assez petit pour être fait un mauvais jour. C'est tout l'intérêt.",
@@ -513,7 +516,8 @@ export const fr = {
     exercises: 'Mes mouvements',
     exercisesHint: 'Ajouter ou retirer un mouvement du catalogue.',
     replayOnboarding: "Revoir l'introduction",
-    replayOnboardingHint: "Rien n'est effacé : tes réglages et ton historique restent en place.",
+    replayOnboardingHint:
+      "Rien n'est effacé, et tout est pré-rempli : tes réglages et ton historique restent en place.",
     proteinTarget: 'Cible de protéines',
     proteinAuto: 'Calculée sur ton poids',
     proteinManual: 'Ajustée à la main',
