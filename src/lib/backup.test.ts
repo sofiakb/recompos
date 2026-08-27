@@ -21,6 +21,8 @@ const SETTINGS: AppSettings = {
   hapticsEnabled: true,
   soundEnabled: true,
   calorieTargetMode: 'auto',
+  calorieDeficitPercent: 10,
+  activityLevel: 'light',
   mealPhotoRetentionDays: 30,
 }
 

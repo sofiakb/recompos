@@ -48,7 +48,7 @@ une décision d'implémentation.
 | 14 | Plancher nutrition | « 1 portion de protéines zéro-cuisson », choisie dans le catalogue | Le plancher apporte de vrais grammes au total du jour, au prix d'un tap de plus |
 | 15 | Suivi calorique | **Autorisé, par photo analysée par un modèle de vision.** Renverse l'exclusion §14, décidé le 27/08/2026 | Voir §6.6. La saisie manuelle d'un tracker payant était le point de friction réel ; une photo la remplace |
 | 16 | Clé API | Saisie par l'utilisateur dans les Réglages, jamais compilée dans le bundle | L'hébergement est statique : une clé embarquée serait lisible par quiconque ouvre la page. Décision n°5 (zéro backend) tient |
-| 17 | Cible calorique | Dérivée du poids lissé à 30 kcal/kg, arrondie à 50, override manuel qui fige | Même contrat que les décisions n°11 et n°12. Assumée comme un point de départ, pas une prescription |
+| 17 | Cible calorique | **Mifflin-St Jeor × facteur d'activité, moins un déficit réglable** (10 % par défaut), arrondi à 50, override manuel qui fige. Révisée le 27/08/2026 | Même contrat que les décisions n°11 et n°12. La première version dérivait la cible du poids seul à 30 kcal/kg : c'était le maintien, pas un déficit — voir §6.7 |
 
 ---
 
@@ -430,6 +430,49 @@ Plusieurs services peuvent être configurés et sont essayés dans l'ordre. Un q
 pause de quelques secondes plutôt qu'un repas perdu. Le cumul sert au **repli**, pas à la moyenne :
 deux modèles ne divergent pas sur *quoi*, ils divergent sur *combien*, et moyenner deux estimations de
 portion ne corrige pas un biais — ça double le coût pour une impression de rigueur.
+
+### 6.7 Cible calorique (jalon 7)
+
+**Deux erreurs, et pourquoi elles étaient invisibles**
+
+La première version calculait `poids_lissé × 30 kcal/kg`. Deux choses clochaient, et un coefficient
+unique les cachait toutes les deux :
+
+1. **30 kcal/kg pour quelqu'un de sédentaire, c'est le maintien**, pas un déficit — alors que la
+   documentation du module en revendiquait un.
+2. **Un coefficient qui ne connaît que le poids ne peut pas savoir**. Pour 78,3 kg il donnait 2400 ;
+   Mifflin-St Jeor avec taille et âge donne 2050 à 2250 selon l'activité. L'écart, ~300 kcal/jour,
+   **fait la taille du déficit lui-même**.
+
+D'où la forme actuelle : trois nombres visibles à l'écran plutôt qu'un coefficient opaque.
+
+```
+dépense au repos  = Mifflin-St Jeor(poids, taille, âge, sexe)
+maintien          = dépense au repos × facteur d'activité
+cible             = arrondi_50(maintien × (1 − déficit))
+```
+
+**Repli assumé** — sans taille ni année de naissance, l'app retombe sur `poids × 27 kcal/kg` et
+**l'écrit à l'écran, en nommant les champs manquants**. 27 plutôt que 30 : une estimation trop haute
+annule le déficit en silence, ce qui est précisément la panne d'origine. Le repli est délibérément
+conservateur.
+
+**Déficit** — 10 % par défaut, réglable (0, 10, 15, 20 %). Pas les 20–25 % d'une application
+d'amaigrissement : l'objectif est la recomposition (§3.3), et un déficit marqué est la façon la plus
+fiable d'arrêter de construire du muscle. C'est aussi le déficit qui tient un mauvais jour, ce qui est
+toute la prémisse de l'app. Changer le déficit rebascule la cible en mode automatique — le régler et
+le voir sans effet serait un piège.
+
+**Le calcul est arrondi une seule fois**, à la fin. Retirer le déficit d'un maintien déjà arrondi
+arrondit deux fois et dérive de 25 kcal sans raison.
+
+**Profil facultatif** — taille, année de naissance et sexe ne sont demandés qu'une fois, dans les
+réglages, et ne servent qu'à cette formule. Le sexe n'a **aucune valeur pré-sélectionnée** : un
+contrôle qui affiche « Homme » sans l'avoir enregistré laisse le profil incomplet tout en paraissant
+rempli — c'est arrivé, et le test de bout en bout le vérifie maintenant.
+
+Rien de tout cela ne remplace le vrai calibrage, que l'écran rappelle : ajuster après trois semaines,
+en regardant ce que fait la courbe de poids.
 
 ---
 

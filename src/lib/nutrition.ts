@@ -14,15 +14,129 @@ export const MAX_PROTEIN_TARGET_GRAMS = 250
 export const MAX_PROTEIN_LOG_GRAMS = 300
 
 /**
- * Starting point for the daily calorie target, in kcal per kg of body weight.
+ * Resting metabolic rate, Mifflin-St Jeor.
  *
- * 30 kcal/kg sits just under maintenance for someone sedentary who trains a
- * little — a slight deficit rather than a diet. It is deliberately a *starting
- * point*: no formula that only knows body weight can know height, age or how
- * much the day actually moves. The real target is the one adjusted after three
- * weeks of watching the weight trend, and the UI says so.
+ *   homme  : 10·kg + 6,25·cm − 5·âge + 5
+ *   femme  : 10·kg + 6,25·cm − 5·âge − 161
+ *
+ * Height and age are what a weight-only coefficient cannot guess, and the gap is
+ * not academic: guessing cost roughly 300 kcal/day on an 78 kg body — the size
+ * of the entire deficit. So the formula is used whenever the profile is filled
+ * in, and the crude coefficient below is only a fallback that says it is one.
  */
-export const CALORIES_PER_KG = 30
+export function basalMetabolicRateKcal(profile: BodyProfile): number {
+  const base = 10 * profile.weightKg + 6.25 * profile.heightCm - 5 * profile.ageYears
+  return Math.round(base + (profile.sex === 'female' ? -161 : 5))
+}
+
+export interface BodyProfile {
+  weightKg: number
+  heightCm: number
+  ageYears: number
+  sex: BiologicalSex
+}
+
+export type BiologicalSex = 'male' | 'female'
+
+/**
+ * Fallback maintenance, in kcal per kg, used only until height and age exist.
+ *
+ * A resting rate near 22 kcal/kg times a factor a touch above sedentary. It is
+ * deliberately conservative: an estimate that is too high quietly cancels the
+ * deficit, which is exactly the failure this replaced.
+ */
+export const FALLBACK_MAINTENANCE_KCAL_PER_KG = 27
+
+/**
+ * Multipliers on the resting rate. Standard values, named for what a day looks
+ * like rather than for a gym schedule the app has no way to verify.
+ */
+export const ACTIVITY_FACTORS = {
+  sedentary: 1.2,
+  light: 1.3,
+  moderate: 1.45,
+} as const
+
+export type ActivityLevel = keyof typeof ACTIVITY_FACTORS
+
+/** A desk job with the app's micro-workouts — what this app is built around. */
+export const DEFAULT_ACTIVITY_LEVEL: ActivityLevel = 'light'
+
+export function clampHeightCm(cm: number): number {
+  if (!Number.isFinite(cm)) return 0
+  return Math.min(250, Math.max(120, Math.round(cm)))
+}
+
+export function clampAgeYears(years: number): number {
+  if (!Number.isFinite(years)) return 0
+  return Math.min(100, Math.max(14, Math.round(years)))
+}
+
+/**
+ * How far under maintenance the target sits, in percent.
+ *
+ * 10 % rather than the 20–25 % a weight-loss app would pick: the goal here is
+ * recomposition (PRD §3.3), and a large deficit is the reliable way to stop
+ * building muscle while losing fat. It is also the deficit that survives a bad
+ * week, which is the whole premise of the app.
+ */
+export const DEFAULT_DEFICIT_PERCENT = 10
+
+/** Offered in Settings. 0 is maintenance — a legitimate choice, not an absence. */
+export const DEFICIT_CHOICES = [0, 10, 15, 20] as const
+
+export type DeficitPercent = (typeof DEFICIT_CHOICES)[number]
+
+export function clampDeficitPercent(percent: number): number {
+  if (!Number.isFinite(percent)) return DEFAULT_DEFICIT_PERCENT
+  return Math.min(30, Math.max(0, Math.round(percent)))
+}
+
+export interface MaintenanceInput {
+  weightKg: number
+  activityLevel?: ActivityLevel
+  /** Absent until the user fills them in; the estimate says so when they are. */
+  heightCm?: number
+  ageYears?: number
+  sex?: BiologicalSex
+}
+
+export interface MaintenanceEstimate {
+  kcal: number
+  /** False while height or age are missing and the crude coefficient is in use. */
+  fromProfile: boolean
+}
+
+/**
+ * Maintenance before any deficit, rounded to the nearest 50.
+ *
+ * Rounded for the same reason the protein target rounds to 5 g: every input is
+ * an estimate, so a figure ending in 7 would be false precision.
+ */
+function rawMaintenance(input: MaintenanceInput): MaintenanceEstimate {
+  const factor = ACTIVITY_FACTORS[input.activityLevel ?? DEFAULT_ACTIVITY_LEVEL]
+  const complete = Boolean(input.heightCm && input.ageYears && input.sex)
+
+  const kcal = complete
+    ? basalMetabolicRateKcal({
+        weightKg: input.weightKg,
+        heightCm: input.heightCm as number,
+        ageYears: input.ageYears as number,
+        sex: input.sex as BiologicalSex,
+      }) * factor
+    : input.weightKg * FALLBACK_MAINTENANCE_KCAL_PER_KG
+
+  return { kcal, fromProfile: complete }
+}
+
+export function estimateMaintenance(input: MaintenanceInput): MaintenanceEstimate {
+  const raw = rawMaintenance(input)
+  return { kcal: round50(raw.kcal), fromProfile: raw.fromProfile }
+}
+
+function round50(value: number): number {
+  return Math.round(value / 50) * 50
+}
 
 export const MIN_CALORIE_TARGET_KCAL = 1200
 export const MAX_CALORIE_TARGET_KCAL = 5000
@@ -34,13 +148,21 @@ export const MAX_MEAL_KCAL = 4000
 export const DEFAULT_MEAL_PHOTO_RETENTION_DAYS = 30
 
 /**
- * Rounds to the nearest 50 kcal, for the same reason the protein target rounds
- * to 5 g: the input is a smoothed weight and the coefficient is an estimate, so
- * a figure ending in 7 would be false precision.
+ * Maintenance minus the deficit, rounded to the nearest 50 kcal.
+ *
+ * Rounded for the same reason the protein target rounds to 5 g: the input is a
+ * smoothed weight and the coefficient is an estimate, so a figure ending in 7
+ * would be false precision.
  */
-export function computeCalorieTargetKcal(weightKg: number): number {
-  const rounded = Math.round((weightKg * CALORIES_PER_KG) / 50) * 50
-  return clampCalorieTargetKcal(rounded)
+export function computeCalorieTargetKcal(
+  input: MaintenanceInput,
+  deficitPercent: number = DEFAULT_DEFICIT_PERCENT,
+): number {
+  const deficit = clampDeficitPercent(deficitPercent)
+  // Rounded once, at the end: taking the deficit off an already-rounded
+  // maintenance rounds twice and drifts by up to 25 kcal for no reason.
+  const { kcal } = rawMaintenance(input)
+  return clampCalorieTargetKcal(round50(kcal * (1 - deficit / 100)))
 }
 
 export function clampCalorieTargetKcal(kcal: number): number {
