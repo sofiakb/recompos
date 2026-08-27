@@ -319,9 +319,18 @@ export const fr = {
     errorFutureVersion:
       'Cette sauvegarde vient d’une version plus récente de l’app. Mets à jour avant de l’importer.',
   },
+  trends: {
+    since: (date: string) => `Depuis le ${date}`,
+    pastSessions: 'Séances passées',
+    photoVaultHint: 'Face, profil, dos — sur l’appareil uniquement.',
+  },
   consistency: {
     rolling7: '7 jours',
     rolling30: '30 jours',
+    summary: (band: string) => `de consistance sur 7 jours · ${band}`,
+    over30: (percent: number) => `${percent} % sur 30 j`,
+    explain:
+      'Une fenêtre glissante, jamais une série : une semaine ratée fait baisser le chiffre, elle ne remet rien à zéro.',
     band: {
       restart: 'à relancer',
       onTrack: 'en route',

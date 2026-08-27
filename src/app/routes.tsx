@@ -11,6 +11,7 @@ import { VisionSettingsScreen } from '@/screens/settings/VisionSettingsScreen'
 import { WorkoutsSettingsScreen } from '@/screens/settings/WorkoutsSettingsScreen'
 import { TodayScreen } from '@/screens/TodayScreen'
 import { TrendsScreen } from '@/screens/TrendsScreen'
+import { PhotoVaultScreen } from '@/screens/trends/PhotoVaultScreen'
 import { WorkoutsScreen } from '@/screens/WorkoutsScreen'
 
 /**
@@ -32,6 +33,7 @@ export const appRoutes: RouteObject[] = [
       { path: 'nutrition', element: <NutritionScreen /> },
       { path: 'nutrition/catalogues', element: <CataloguesScreen /> },
       { path: 'trends', element: <TrendsScreen /> },
+      { path: 'trends/photos', element: <PhotoVaultScreen /> },
       { path: 'settings', element: <SettingsScreen /> },
       { path: 'settings/objectifs', element: <GoalsSettingsScreen /> },
       { path: 'settings/habitudes', element: <HabitsSettingsScreen /> },
