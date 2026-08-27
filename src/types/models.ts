@@ -157,6 +157,101 @@ export interface ZeroCookItem {
   isCustom: boolean
 }
 
+/**
+ * A meal captured from a photo (PRD §6.6).
+ *
+ * The photo is analysed by a vision model and comes back as a list of foods with
+ * their macros. Everything is editable afterwards — the model is a first draft,
+ * not an authority — which is why the per-item breakdown is stored rather than
+ * only the totals.
+ */
+export interface MealItem {
+  name: string
+  /** Free text as the model saw it: « 150 g », « 1 bol », « 2 tranches ». */
+  quantity: string
+  kcal: number
+  proteinG: number
+  carbsG: number
+  fatG: number
+}
+
+/**
+ * `pending` covers both « just captured » and « the network was gone » — the
+ * queue retries either way, so one state is enough.
+ */
+export type MealAnalysisStatus = 'pending' | 'analysing' | 'done' | 'failed'
+
+export type MealSource = 'ai' | 'manual' | 'corrected'
+
+export type MealConfidence = 'low' | 'medium' | 'high'
+
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+
+export interface MealEntry {
+  id: string
+  date: IsoDate
+  timestamp: IsoDateTime
+  slot: MealSlot
+  /** Short human label, e.g. « Poulet, riz, brocolis ». */
+  label: string
+  items: MealItem[]
+  kcal: number
+  proteinG: number
+  carbsG: number
+  fatG: number
+  /** The model's own hedge. Shown, never hidden — a guess that says so is usable. */
+  confidence: MealConfidence
+  source: MealSource
+  status: MealAnalysisStatus
+  /** Provider id that produced the analysis, for when two disagree over time. */
+  analysedBy?: string
+  /** Human-readable failure, kept so a retry can explain what went wrong before. */
+  error?: string
+  /** Thumbnail row in `mealPhotos`. Absent once retention has cleared it. */
+  photoId?: string
+  /**
+   * The `ProteinLog` this meal owns.
+   *
+   * Protein already has a counter, a ring and a floor habit hanging off it. A
+   * meal therefore writes into that same ledger instead of running a parallel
+   * total, and owns exactly one row so an edit is an update, never a duplicate.
+   */
+  proteinLogId?: string
+  createdAt: IsoDateTime
+  updatedAt: IsoDateTime
+}
+
+/**
+ * Meal photo bytes, kept apart from the entry.
+ *
+ * A meal row is read on every dashboard paint; its photo is read when the user
+ * opens it. Splitting them keeps the hot query small, and lets retention delete
+ * the bytes while the numbers stay.
+ */
+export interface MealPhoto {
+  id: string
+  mealId: string
+  date: IsoDate
+  bytes: ArrayBuffer
+  mimeType: string
+  byteSize: number
+  createdAt: IsoDateTime
+}
+
+/** Providers speaking the OpenAI chat-completions dialect. */
+export type VisionProviderId = 'groq' | 'openrouter' | 'custom'
+
+export interface VisionProviderSettings {
+  apiKey: string
+  /** Overrides the provider default; required for `custom`. */
+  model?: string
+  /** Only read for `custom`. */
+  baseUrl?: string
+  enabled: boolean
+}
+
+export type CalorieTargetMode = 'auto' | 'manual'
+
 export type ProteinTargetMode = 'auto' | 'manual'
 
 export interface AppSettings {
@@ -183,6 +278,20 @@ export interface AppSettings {
   restTimerDefaultSeconds: number
   hapticsEnabled: boolean
   soundEnabled: boolean
+  /**
+   * Vision providers, tried in the order listed by `VISION_PROVIDER_ORDER`.
+   *
+   * Keys are typed by the user into Settings and never ship in the bundle: this
+   * is a single-user app served from static hosting, so a build-time key would
+   * be readable by anyone who opens the page.
+   */
+  visionProviders?: Partial<Record<VisionProviderId, VisionProviderSettings>>
+  /** `auto` derives the daily calorie target from smoothed body weight. */
+  calorieTargetMode: CalorieTargetMode
+  /** Only meaningful in `manual` mode. */
+  manualCalorieTargetKcal?: number
+  /** Days a meal photo is kept before its bytes are dropped. 0 keeps none. */
+  mealPhotoRetentionDays: number
 }
 
 export interface ExportBundle {
@@ -199,7 +308,8 @@ export interface ExportBundle {
   takeoutOptions: TakeoutOption[]
   zeroCookItems: ZeroCookItem[]
   photos?: Array<Omit<ProgressPhoto, 'bytes'> & { dataUrl: string }>
+  meals?: MealEntry[]
 }
 
 /** Bumped whenever the shape above changes. Guards Dexie and import. */
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3

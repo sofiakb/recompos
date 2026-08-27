@@ -20,6 +20,8 @@ const SETTINGS: AppSettings = {
   restTimerDefaultSeconds: 60,
   hapticsEnabled: true,
   soundEnabled: true,
+  calorieTargetMode: 'auto',
+  mealPhotoRetentionDays: 30,
 }
 
 const HABITS: FloorHabitDefinition[] = [
