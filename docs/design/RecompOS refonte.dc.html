@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/recompos-design-system-6768cd54-6702-4006-a552-970ab7ba03d6/_ds_bundle.css">
+<link rel="stylesheet" href="_ds/recompos-design-system-6768cd54-6702-4006-a552-970ab7ba03d6/styles.css">
+<script src="_ds/recompos-design-system-6768cd54-6702-4006-a552-970ab7ba03d6/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:#09090b}
+.tnum{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="min-height:100vh;background:hsl(var(--background));color:hsl(var(--foreground));font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0 0">
+  <p style="margin:0;width:390px;padding:0 4px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Refonte — mêmes features, une seule maison par donnée</p>
+
+  <div style="position:relative;width:390px;height:844px;overflow:hidden;border:1px solid hsl(var(--border));border-radius:24px;background:hsl(var(--background))">
+    <div id="scroll" style="height:100%;overflow-y:auto;padding-bottom:140px">
+
+      <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:28px;padding:24px 20px 0">
+        <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+          <div>
+            <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Jeudi 27 août</p>
+            <h1 style="margin:4px 0 0;font-size:28px;font-weight:600;letter-spacing:-.02em">Jour 42</h1>
+          </div>
+          <button type="button" aria-label="Réglages" onClick="{{ goSettings }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </header>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+            <p class="tnum" style="margin:0;font-size:56px;font-weight:600;line-height:.9;letter-spacing:-.03em">{{ doneCount }}<span style="font-size:24px;font-weight:500;color:hsl(var(--muted-foreground))"> / {{ floorTotal }}</span></p>
+            <p style="margin:0;padding-bottom:6px;max-width:150px;text-align:right;font-size:13px;color:hsl(var(--muted-foreground));text-wrap:pretty">habitudes du plancher validées</p>
+          </div>
+          <div style="display:flex;gap:6px">
+            <sc-for list="{{ floorBars }}" as="bar" hint-placeholder-count="2">
+              <span style="flex:1;height:6px;border-radius:9999px;background:{{ bar.bg }}"></span>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{ hasNext }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:14px;border:1px solid hsl(var(--primary) / .4);border-radius:var(--radius);background:hsl(var(--card));padding:16px">
+          <p style="margin:0;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--primary))">Maintenant</p>
+          <div>
+            <p style="margin:0;font-size:18px;font-weight:600;line-height:1.25;text-wrap:pretty">{{ nextTitle }}</p>
+            
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; flex-direction: column">
+            <button type="button" onClick="{{ completeNext }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; flex: 1; border: 0; border-radius: var(--radius); background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 15px; font-weight: 600; cursor: pointer; width: 100%" style-active="transform:scale(.98)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Fait
+            </button>
+            
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px;border:1px solid hsl(var(--primary) / .4);border-radius:var(--radius);background:hsl(var(--card));padding:24px 20px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="display:flex;align-items:center;justify-content:center;height:32px;width:32px;flex-shrink:0;border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+            <p style="margin:0;font-size:20px;font-weight:600">Journée validée</p>
+          </div>
+          <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground));text-wrap:pretty">La journée compte. Tout le reste est du bonus.</p>
+        </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <sc-for list="{{ floorList }}" as="habit" hint-placeholder-count="2">
+            <button type="button" onClick="{{ habit.toggle }}" style="display:flex;align-items:center;gap:12px;min-height:48px;width:100%;border:0;border-bottom:1px solid hsl(var(--border));border-radius:0;background:transparent;padding:4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+              <span style="display:flex;align-items:center;justify-content:center;height:22px;width:22px;flex-shrink:0;border-radius:9999px;border:2px solid {{ habit.ring }};background:{{ habit.fill }};color:hsl(var(--primary-foreground))">
+                <sc-if value="{{ habit.done }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+              </span>
+              <span style="min-width:0;flex:1;font-size:15px;color:{{ habit.color }};text-decoration:{{ habit.strike }}">{{ habit.title }}</span>
+              <span style="flex-shrink:0;font-size:12px;color:hsl(var(--muted-foreground))">{{ habit.state }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">En plus</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ stackList }}" as="habit" hint-placeholder-count="3">
+              <button type="button" onClick="{{ habit.toggle }}" style="display:flex;align-items:center;gap:8px;min-height:48px;border:1px solid {{ habit.ring }};border-radius:9999px;background:{{ habit.chipBg }};padding:0 16px;font-size:14px;color:{{ habit.color }};cursor:pointer" style-hover="background:hsl(var(--accent))">
+                <sc-if value="{{ habit.done }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+                {{ habit.title }}
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <button type="button" onClick="{{ goNutrition }}" style="display:flex;align-items:center;gap:12px;min-height:64px;width:100%;border:0;border-bottom:1px solid hsl(var(--border));background:transparent;padding:8px 4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+            <span style="display:flex;min-width:0;flex:1;flex-direction:column;gap:6px">
+              <span style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+                <span style="font-size:14px;color:hsl(var(--muted-foreground))">Protéines</span>
+                <span class="tnum" style="font-size:15px;font-weight:600">{{ proteinTotal }} <span style="font-weight:400;color:hsl(var(--muted-foreground))">/ 165 g</span></span>
+              </span>
+              <span style="display:block;height:4px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted))"><span style="display:block;height:100%;width:{{ proteinPercent }};border-radius:9999px;background:hsl(var(--primary))"></span></span>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+          <button type="button" onClick="{{ goProgress }}" style="display:flex;align-items:center;gap:12px;min-height:56px;width:100%;border:0;background:transparent;padding:8px 4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+            <span style="min-width:0;flex:1;font-size:14px;color:hsl(var(--muted-foreground))">Consistance</span>
+            <span class="tnum" style="font-size:15px;font-weight:600">86 %<span style="font-weight:400;color:hsl(var(--muted-foreground))"> sur 7 j</span></span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+        </div>
+
+        <button type="button" onClick="{{ goWorkouts }}" style="display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;width:100%;margin-bottom:8px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:16px;font-weight:500;cursor:pointer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg>
+          Démarrer le circuit 20 min
+        </button>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isNutrition }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:28px;padding:24px 20px 0">
+        <header>
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Jeudi 27 août</p>
+          <h1 style="margin:4px 0 0;font-size:28px;font-weight:600;letter-spacing:-.02em">Nutrition</h1>
+        </header>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:18px">
+          <div style="position:relative;width:200px;height:200px">
+            <svg width="200" height="200" viewBox="0 0 200 200" style="transform:rotate(-90deg)" aria-hidden="true">
+              <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--muted))" stroke-width="12"></circle>
+              <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--primary))" stroke-width="12" stroke-linecap="round" stroke-dasharray="565.5" stroke-dashoffset="{{ ringOffset }}"></circle>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <p class="tnum" style="margin:0;font-size:44px;font-weight:600;line-height:1">{{ proteinTotal }}</p>
+              <p class="tnum" style="margin:6px 0 0;font-size:14px;color:hsl(var(--muted-foreground))">sur 165 g</p>
+              <p class="tnum" style="margin:10px 0 0;font-size:13px;color:hsl(var(--primary))">{{ proteinRemaining }}</p>
+            </div>
+          </div>
+          <p style="margin:0;text-align:center;font-size:12px;color:hsl(var(--muted-foreground))">Calculé sur 78,4 kg × 1,8 g/kg</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <button type="button" class="tnum" onClick="{{ add20 }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60px;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));cursor:pointer"><span style="font-size:17px;font-weight:600">+20</span><span style="font-size:11px;opacity:.8">g</span></button>
+          <button type="button" class="tnum" onClick="{{ add30 }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60px;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));cursor:pointer"><span style="font-size:17px;font-weight:600">+30</span><span style="font-size:11px;opacity:.8">g</span></button>
+          <button type="button" class="tnum" onClick="{{ add40 }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60px;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));cursor:pointer"><span style="font-size:17px;font-weight:600">+40</span><span style="font-size:11px;opacity:.8">g</span></button>
+          <button type="button" aria-label="Montant libre" onClick="{{ openAmount }}" style="display:flex;align-items:center;justify-content:center;min-height:60px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button type="button" onClick="{{ goCatalogues }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:15px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Que manger ?</button>
+          <button type="button" onClick="{{ openMealEditor }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;flex:1;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:15px;font-weight:500;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"></path><circle cx="12" cy="13" r="3"></circle></svg>Un repas</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+            <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Calories</p>
+            <p class="tnum" style="margin:0;font-size:15px;font-weight:600">1 620 <span style="font-weight:400;color:hsl(var(--muted-foreground))">/ 2 140 kcal</span></p>
+          </div>
+          <div style="height:6px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted))"><div style="height:100%;width:75.7%;border-radius:9999px;background:hsl(var(--primary))"></div></div>
+          <div style="display:flex;gap:16px">
+            <p class="tnum" style="margin:0;font-size:13px;color:hsl(var(--muted-foreground))">P 128 g</p>
+            <p class="tnum" style="margin:0;font-size:13px;color:hsl(var(--muted-foreground))">G 152 g</p>
+            <p class="tnum" style="margin:0;font-size:13px;color:hsl(var(--muted-foreground))">L 54 g</p>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:8px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Le journal du jour</p>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ journal }}" as="entry" hint-placeholder-count="5">
+              <button type="button" style="display:flex;align-items:center;gap:12px;min-height:56px;width:100%;border:0;border-bottom:1px solid hsl(var(--border));background:transparent;padding:8px 4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+                <span class="tnum" style="width:44px;flex-shrink:0;font-size:12px;color:hsl(var(--muted-foreground))">{{ entry.time }}</span>
+                <span style="display:flex;min-width:0;flex:1;flex-direction:column">
+                  <span style="font-size:15px;font-weight:500">{{ entry.label }}</span>
+                  <span style="font-size:12px;color:hsl(var(--muted-foreground))">{{ entry.meta }}</span>
+                </span>
+                <span class="tnum" style="flex-shrink:0;font-size:14px;font-weight:600">{{ entry.value }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isCatalogues }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:24px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goNutrition }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Que manger ?</h1>
+        </header>
+
+        <div role="radiogroup" aria-label="Catalogue" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+          <button type="button" role="radio" aria-checked="{{ fridgeChecked }}" onClick="{{ showFridge }}" style="min-height:48px;flex:1;border:0;border-radius:8px;background:{{ fridgeBg }};font-size:14px;font-weight:500;color:{{ fridgeColor }};cursor:pointer">Dans le frigo</button>
+          <button type="button" role="radio" aria-checked="{{ takeoutChecked }}" onClick="{{ showTakeout }}" style="min-height:48px;flex:1;border:0;border-radius:8px;background:{{ takeoutBg }};font-size:14px;font-weight:500;color:{{ takeoutColor }};cursor:pointer">En livraison</button>
+        </div>
+
+        <sc-if value="{{ isFridge }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:8px">
+          <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground));text-wrap:pretty">Ce qu'il y a dans le frigo, et ce que ça rapporte. Décoche ce qui manque.</p>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ zeroCook }}" as="item" hint-placeholder-count="7">
+              <div style="display:flex;align-items:center;gap:12px;border-bottom:1px solid hsl(var(--border));padding:4px 0">
+                <button type="button" aria-label="{{ item.stockLabel }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:32px;flex-shrink:0;border:0;background:transparent;cursor:pointer">
+                  <span style="display:flex;align-items:center;justify-content:center;height:22px;width:22px;border:2px solid hsl(var(--primary));border-radius:6px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+                </button>
+                <span style="display:flex;min-width:0;flex:1;flex-direction:column">
+                  <span style="font-size:15px;font-weight:500">{{ item.name }}</span>
+                  <span style="font-size:12px;color:hsl(var(--muted-foreground))">{{ item.serving }}</span>
+                </span>
+                <button type="button" class="tnum" onClick="{{ item.log }}" style="display:flex;align-items:center;gap:4px;min-height:48px;flex-shrink:0;border:0;border-radius:9999px;background:hsl(var(--secondary));padding:0 14px;font-size:14px;font-weight:600;color:hsl(var(--primary));cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>{{ item.grams }} g</button>
+              </div>
+            </sc-for>
+          </div>
+          <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter une source</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isTakeout }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:8px">
+          <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground));text-wrap:pretty">Quoi commander quand tu ne cuisines pas. Grammes estimés.</p>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ takeout }}" as="option" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:10px;border:1px solid hsl(var(--border));border-radius:var(--radius);padding:16px">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                  <p style="margin:0;font-size:15px;font-weight:600">{{ option.cuisine }}</p>
+                  <button type="button" class="tnum" onClick="{{ option.log }}" style="display:flex;align-items:center;gap:4px;min-height:48px;flex-shrink:0;border:0;border-radius:9999px;background:hsl(var(--secondary));padding:0 14px;font-size:14px;font-weight:600;color:hsl(var(--primary));cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>~{{ option.grams }} g</button>
+                </div>
+                <p style="margin:0;display:flex;gap:10px;font-size:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:3px;flex-shrink:0" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>{{ option.pick }}</p>
+                <p style="margin:0;display:flex;gap:10px;font-size:14px;color:hsl(var(--muted-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:3px;flex-shrink:0" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>{{ option.avoid }}</p>
+              </div>
+            </sc-for>
+          </div>
+          <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter une cuisine</button>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isWorkouts }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:28px;padding:24px 20px 0">
+        <header>
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Jeudi 27 août</p>
+          <h1 style="margin:4px 0 0;font-size:28px;font-weight:600;letter-spacing:-.02em">Séances</h1>
+        </header>
+
+        <div style="display:flex;flex-direction:column;gap:20px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card));padding:20px">
+          <div>
+            <p style="margin:0;font-size:20px;font-weight:600">Circuit 20 min</p>
+            <p style="margin:6px 0 0;font-size:14px;color:hsl(var(--muted-foreground));text-wrap:pretty">Trois blocs. Le chrono est un repère, pas un compte à rebours.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;border-bottom:1px solid hsl(var(--border));padding:10px 0">
+                <span style="width:96px;flex-shrink:0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:hsl(var(--muted-foreground))">{{ block.pattern }}</span>
+                <span style="display:flex;min-width:0;flex:1;flex-direction:column">
+                  <span style="font-size:15px;font-weight:500">{{ block.exercise }}</span>
+                  <span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">{{ block.range }}</span>
+                </span>
+                <button type="button" aria-label="Changer de mouvement" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg></button>
+              </div>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ goSession }}" style="display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:600;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg>Démarrer le circuit</button>
+        </div>
+
+        <button type="button" style="display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:15px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>Une série isolée, sans séance</button>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Séries du jour</p>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:12px;border-bottom:1px solid hsl(var(--border));padding:12px 4px">
+              <span style="display:flex;min-width:0;flex:1;flex-direction:column">
+                <span style="font-size:15px;font-weight:500">Pompes</span>
+                <span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">12 reps — Poids du corps · Cible</span>
+              </span>
+              <button type="button" aria-label="Supprimer cette série" style="display:flex;align-items:center;justify-content:center;height:40px;width:40px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;border-bottom:1px solid hsl(var(--border));padding:12px 4px">
+              <span style="display:flex;min-width:0;flex:1;flex-direction:column">
+                <span style="font-size:15px;font-weight:500">Rowing élastique</span>
+                <span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">15 reps — Élastique noir · Facile</span>
+              </span>
+              <button type="button" aria-label="Supprimer cette série" style="display:flex;align-items:center;justify-content:center;height:40px;width:40px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" onClick="{{ goProgress }}" style="display:flex;align-items:center;gap:12px;min-height:56px;width:100%;margin-bottom:8px;border:0;border-top:1px solid hsl(var(--border));background:transparent;padding:8px 4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+          <span style="min-width:0;flex:1;font-size:15px">Séances passées et index de force</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+        </button>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSession }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:24px;padding:24px 20px 0">
+        <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+          <div>
+            <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--primary))">Séance en cours</p>
+            <p class="tnum" style="margin:6px 0 0;font-size:52px;font-weight:600;line-height:1;letter-spacing:-.03em">07:24</p>
+          </div>
+          <button type="button" onClick="{{ goWorkouts }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;flex-shrink:0;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));padding:0 14px;font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg>Terminer</button>
+        </header>
+
+        <div style="display:flex;flex-direction:column;gap:12px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card));padding:16px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="10" x2="14" y1="2" y2="2"></line><line x1="12" x2="15" y1="14" y2="11"></line><circle cx="12" cy="14" r="8"></circle></svg>
+            <span style="font-size:14px;color:hsl(var(--muted-foreground))">Repos</span>
+            <span class="tnum" style="margin-left:auto;font-size:22px;font-weight:600">00:38</span>
+          </div>
+          <div style="height:8px;width:100%;overflow:hidden;border-radius:9999px;background:hsl(var(--muted))"><div style="height:100%;width:37%;border-radius:9999px;background:hsl(var(--primary))"></div></div>
+          <div style="display:flex;gap:8px">
+            <button type="button" style="min-height:48px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">+30 s</button>
+            <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;flex:1;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:14px;font-weight:500;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>Passer</button>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ sessionBlocks }}" as="block" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;border:1px solid hsl(var(--border));border-radius:var(--radius);padding:14px 16px">
+              <span style="display:flex;min-width:0;flex:1;flex-direction:column;gap:2px">
+                <span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:hsl(var(--muted-foreground))">{{ block.pattern }}</span>
+                <span style="font-size:16px;font-weight:500">{{ block.exercise }}</span>
+                <span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">{{ block.suggestion }}</span>
+              </span>
+              <span class="tnum" style="flex-shrink:0;font-size:13px;color:hsl(var(--primary))">{{ block.count }}</span>
+              <button type="button" onClick="{{ openSetLogger }}" style="min-height:48px;flex-shrink:0;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));padding:0 16px;font-size:14px;font-weight:500;cursor:pointer">Logguer</button>
+            </div>
+          </sc-for>
+        </div>
+
+        <p style="margin:0 0 8px;font-size:13px;color:hsl(var(--muted-foreground));text-wrap:pretty">Les suggestions de surcharge viennent de tes dernières séries. Haut de la fourchette atteint : le mouvement suivant est proposé.</p>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:32px;padding:24px 20px 0">
+        <header>
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Depuis le 15 juillet</p>
+          <h1 style="margin:4px 0 0;font-size:28px;font-weight:600;letter-spacing:-.02em">Progression</h1>
+        </header>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+            <div>
+              <p class="tnum" style="margin:0;font-size:44px;font-weight:600;line-height:1;letter-spacing:-.02em">86 %</p>
+              <p style="margin:6px 0 0;font-size:13px;color:hsl(var(--muted-foreground))">de consistance sur 7 jours · solide</p>
+            </div>
+            <p class="tnum" style="margin:0;padding-bottom:4px;font-size:13px;color:hsl(var(--muted-foreground))">71 % sur 30 j</p>
+          </div>
+          <div style="display:flex;gap:4px;overflow-x:auto;padding-bottom:4px">
+            <sc-for list="{{ heatmap }}" as="week" hint-placeholder-count="12">
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <span style="height:12px;font-size:10px;line-height:12px;color:hsl(var(--muted-foreground))">{{ week.label }}</span>
+                <sc-for list="{{ week.cells }}" as="cell" hint-placeholder-count="7">
+                  <span style="height:13px;width:13px;border-radius:3px;background:{{ cell.bg }};box-shadow:{{ cell.ring }}"></span>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground));text-wrap:pretty">Un pourcentage glissant, jamais une série. Une semaine ratée le fait plier, rien ne repart de zéro.</p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+            <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Poids</p>
+            <p class="tnum" style="margin:0;font-size:13px;color:hsl(var(--muted-foreground))">−1,2 kg</p>
+          </div>
+          <p class="tnum" style="margin:0"><span style="font-size:32px;font-weight:600">78,4</span><span style="margin-left:6px;font-size:14px;color:hsl(var(--muted-foreground))">kg lissés</span></p>
+          <svg viewBox="0 0 320 140" role="img" aria-label="Poids" style="width:100%">
+            <defs><linearGradient id="wFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(var(--primary))" stop-opacity="0.28"></stop><stop offset="100%" stop-color="hsl(var(--primary))" stop-opacity="0"></stop></linearGradient></defs>
+            <line x1="34" x2="312" y1="19" y2="19" stroke="hsl(var(--border))" stroke-width="1"></line>
+            <text x="30" y="22" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">79,6</text>
+            <line x1="34" x2="312" y1="113" y2="113" stroke="hsl(var(--border))" stroke-width="1"></line>
+            <text x="30" y="116" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">78,1</text>
+            <path d="M 34,122 L 34,19.0 89.6,34.0 145.2,28.0 200.8,72.0 256.4,88.0 312,113.0 L 312,122 Z" fill="url(#wFill)"></path>
+            <polyline points="34,19.0 89.6,34.0 145.2,28.0 200.8,72.0 256.4,88.0 312,113.0" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <circle cx="312" cy="113" r="3" fill="hsl(var(--primary))"></circle>
+            <text x="34" y="136" font-size="8" fill="hsl(var(--muted-foreground))">20 juil.</text>
+            <text x="312" y="136" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">24 août</text>
+          </svg>
+          <button type="button" onClick="{{ openWeight }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Enregistrer une pesée</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Force</p>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+            <p class="tnum" style="margin:0;font-size:32px;font-weight:600">118</p>
+            <p style="margin:0;font-size:13px;color:hsl(var(--muted-foreground))">+18 % de volume vs ta première semaine</p>
+          </div>
+          <svg viewBox="0 0 320 140" role="img" aria-label="Force" style="width:100%">
+            <defs><linearGradient id="sFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(var(--primary))" stop-opacity="0.28"></stop><stop offset="100%" stop-color="hsl(var(--primary))" stop-opacity="0"></stop></linearGradient></defs>
+            <line x1="34" x2="312" y1="19" y2="19" stroke="hsl(var(--border))" stroke-width="1"></line>
+            <text x="30" y="22" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">122</text>
+            <line x1="34" x2="312" y1="113" y2="113" stroke="hsl(var(--border))" stroke-width="1"></line>
+            <text x="30" y="116" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">100</text>
+            <path d="M 34,122 L 34,113.0 59.3,104.0 84.5,109.0 109.8,88.0 135.1,77.0 160.4,80.0 185.6,62.0 210.9,52.0 236.2,55.0 261.5,36.0 286.7,30.0 312,19.0 L 312,122 Z" fill="url(#sFill)"></path>
+            <polyline points="34,113.0 59.3,104.0 84.5,109.0 109.8,88.0 135.1,77.0 160.4,80.0 185.6,62.0 210.9,52.0 236.2,55.0 261.5,36.0 286.7,30.0 312,19.0" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <circle cx="312" cy="19" r="3" fill="hsl(var(--primary))"></circle>
+            <text x="34" y="136" font-size="8" fill="hsl(var(--muted-foreground))">8 juin</text>
+            <text x="312" y="136" text-anchor="end" font-size="8" fill="hsl(var(--muted-foreground))">24 août</text>
+          </svg>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <p style="margin:0 0 4px;font-size:13px;font-weight:600">Meilleures séries</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid hsl(var(--border));padding:10px 0;font-size:14px"><span>Rowing élastique</span><span class="tnum" style="color:hsl(var(--muted-foreground))">18 reps — Élastique noir</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid hsl(var(--border));padding:10px 0;font-size:14px"><span>Pompes</span><span class="tnum" style="color:hsl(var(--muted-foreground))">15 reps — Poids du corps</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;font-size:14px"><span>Fentes bulgares</span><span class="tnum" style="color:hsl(var(--muted-foreground))">12 reps — 12 kg</span></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+            <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Tour de taille</p>
+            <p class="tnum" style="margin:0;font-size:13px;color:hsl(var(--muted-foreground))">−3 cm</p>
+          </div>
+          <p class="tnum" style="margin:0;font-size:32px;font-weight:600">86 cm</p>
+          <svg viewBox="0 0 320 100" role="img" aria-label="Tour de taille" style="width:100%">
+            <polyline points="34,14.0 103.5,40.0 173,34.0 242.5,66.0 312,84.0" fill="none" stroke="hsl(var(--primary))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <polyline points="34,20.0 103.5,36.0 173,42.0 242.5,60.0 312,76.0" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="1.5" stroke-dasharray="3 3"></polyline>
+            <circle cx="312" cy="84" r="3" fill="hsl(var(--primary))"></circle>
+          </svg>
+          <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Enregistrer une mesure</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Séances passées</p>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid hsl(var(--border));padding:12px 0;font-size:14px"><span style="color:hsl(var(--muted-foreground))">mardi 25 août</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">Circuit 20 min</span><span class="tnum" style="font-weight:500">22 min</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid hsl(var(--border));padding:12px 0;font-size:14px"><span style="color:hsl(var(--muted-foreground))">samedi 22 août</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">Micro-séries</span><span class="tnum" style="font-weight:500">6 min</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;font-size:14px"><span style="color:hsl(var(--muted-foreground))">jeudi 20 août</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">Circuit 20 min</span><span class="tnum" style="font-weight:500">19 min</span></div>
+          </div>
+        </div>
+
+        <button type="button" onClick="{{ goPhotos }}" style="display:flex;align-items:center;gap:12px;min-height:64px;width:100%;margin-bottom:8px;border:0;border-top:1px solid hsl(var(--border));background:transparent;padding:8px 4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+          <span style="display:flex;min-width:0;flex:1;flex-direction:column">
+            <span style="font-size:15px">Coffre photos</span>
+            <span style="font-size:12px;color:hsl(var(--muted-foreground))">Face, profil, dos — sur l'appareil uniquement</span>
+          </span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+        </button>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isPhotos }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:24px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goProgress }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Coffre photos</h1>
+        </header>
+        <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground));text-wrap:pretty">Redimensionnées sur l'appareil, jamais envoyées nulle part.</p>
+        <div role="radiogroup" aria-label="Angle" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+          <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Face</button>
+          <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Profil</button>
+          <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Dos</button>
+        </div>
+        <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground))">Aucune photo pour le moment.</p>
+        <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;width:100%;margin-bottom:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:15px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"></path><circle cx="12" cy="13" r="3"></circle></svg>Ajouter une photo</button>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSettingsHome }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:24px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goToday }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Réglages</h1>
+        </header>
+
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <sc-for list="{{ settingsRubrics }}" as="rubric" hint-placeholder-count="6">
+            <button type="button" onClick="{{ rubric.open }}" style="display:flex;align-items:center;gap:12px;min-height:68px;width:100%;border:0;border-bottom:1px solid hsl(var(--border));background:transparent;padding:12px 4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+              <span style="display:flex;min-width:0;flex:1;flex-direction:column;gap:3px">
+                <span style="font-size:16px;font-weight:500">{{ rubric.title }}</span>
+                <span style="font-size:12px;color:hsl(var(--muted-foreground))">{{ rubric.hint }}</span>
+              </span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+            </button>
+          </sc-for>
+        </div>
+
+        <p style="margin:0 0 8px;font-size:12px;color:hsl(var(--muted-foreground));text-wrap:pretty">Version 3.0 · installée le 15 juillet 2026. Tout reste sur cet appareil. Aucun compte, aucun serveur.</p>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isObjectifs }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:32px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goSettings }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Objectifs</h1>
+        </header>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Protéines</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <button type="button" aria-label="-5 g" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+            <p class="tnum" style="margin:0;text-align:center"><span style="font-size:32px;font-weight:600">165</span><span style="margin-left:6px;font-size:14px;color:hsl(var(--muted-foreground))">g par jour</span></p>
+            <button type="button" aria-label="+5 g" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+          </div>
+          <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground));text-wrap:pretty">Calculé sur 78,4 kg × 1,8 g/kg. Modifier la cible la fige : une nouvelle pesée ne la changera plus.</p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Calories</p>
+          <div role="radiogroup" aria-label="Déficit" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Maintien</button>
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">−5 %</button>
+            <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:13px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">−10 %</button>
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">−15 %</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <button type="button" aria-label="−50 kcal" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+            <p class="tnum" style="margin:0;text-align:center"><span style="font-size:32px;font-weight:600">2 140</span><span style="margin-left:6px;font-size:14px;color:hsl(var(--muted-foreground))">kcal</span></p>
+            <button type="button" aria-label="+50 kcal" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+          </div>
+          <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground));text-wrap:pretty">Maintien estimé 2 380 kcal, moins 10 %. À ajuster après trois semaines, en regardant ce que fait ta courbe de poids.</p>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Ton corps</p>
+          <div style="display:flex;gap:8px">
+            <div style="display:flex;flex:1;flex-direction:column;gap:6px">
+              <label style="font-size:13px;font-weight:500">Taille (cm)</label>
+              <input type="text" value="178" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+            </div>
+            <div style="display:flex;flex:1;flex-direction:column;gap:6px">
+              <label style="font-size:13px;font-weight:500">Naissance</label>
+              <input type="text" value="1990" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+            </div>
+          </div>
+          <div role="radiogroup" aria-label="Sexe" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+            <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Homme</button>
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Femme</button>
+          </div>
+          <div role="radiogroup" aria-label="Activité" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:12px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Bureau</button>
+            <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:12px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">+ micro-séances</button>
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:12px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Actif</button>
+          </div>
+          <p style="margin:0 0 8px;font-size:12px;color:hsl(var(--muted-foreground));text-wrap:pretty">Taille, âge et sexe servent uniquement au calcul de la dépense au repos. Ils ne sortent pas de l'appareil.</p>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isHabitudes }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:28px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goSettings }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Habitudes</h1>
+        </header>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Plancher</p>
+            <p style="margin:6px 0 0;font-size:13px;color:hsl(var(--muted-foreground))">Non négociable. Garde-le ridiculement petit.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ floorSettings }}" as="habit" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:4px;border-bottom:1px solid hsl(var(--border));padding:8px 0">
+                <button type="button" aria-label="Réordonner" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 9-6-6-6 6"></path><path d="m6 15 6 6 6-6"></path></svg></button>
+                <div style="min-width:0;flex:1">
+                  <p style="margin:0;font-size:15px;font-weight:500">{{ habit.title }}</p>
+                  <p style="margin:2px 0 0;font-size:12px;color:hsl(var(--muted-foreground))">{{ habit.detail }}</p>
+                </div>
+                <button type="button" aria-label="Modifier l'habitude" onClick="{{ openHabitEditor }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg></button>
+              </div>
+            </sc-for>
+          </div>
+          <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;align-self:flex-start;min-height:48px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));padding:0 16px;font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter au plancher</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">En plus</p>
+            <p style="margin:6px 0 0;font-size:13px;color:hsl(var(--muted-foreground))">Accrochées à un moment qui existe déjà.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ stackSettings }}" as="habit" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:4px;border-bottom:1px solid hsl(var(--border));padding:8px 0">
+                <button type="button" aria-label="Réordonner" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 9-6-6-6 6"></path><path d="m6 15 6 6 6-6"></path></svg></button>
+                <div style="min-width:0;flex:1">
+                  <p style="margin:0;font-size:15px;font-weight:500">{{ habit.title }}</p>
+                  <p style="margin:2px 0 0;font-size:12px;color:hsl(var(--muted-foreground))">{{ habit.detail }}</p>
+                </div>
+                <button type="button" aria-label="Modifier l'habitude" onClick="{{ openHabitEditor }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg></button>
+              </div>
+            </sc-for>
+          </div>
+          <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;align-self:flex-start;min-height:48px;margin-bottom:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));padding:0 16px;font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter une habitude</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSeances }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:28px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goSettings }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Séances</h1>
+        </header>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Timer de repos par défaut</p>
+          <div style="display:flex;gap:8px">
+            <button type="button" style="min-height:48px;flex:1;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:14px;font-weight:500;cursor:pointer">60 s</button>
+            <button type="button" style="min-height:48px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">90 s</button>
+            <button type="button" style="min-height:48px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Autre</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Mouvements</p>
+          <button type="button" style="display:flex;align-items:center;gap:12px;min-height:60px;width:100%;border:0;border-bottom:1px solid hsl(var(--border));background:transparent;padding:8px 4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+            <span style="min-width:0;flex:1;font-size:15px">12 mouvements, dont 0 perso</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+          <p style="margin:0 0 8px;font-size:12px;color:hsl(var(--muted-foreground));text-wrap:pretty">Les trois blocs du circuit se règlent au moment de démarrer la séance, pas ici.</p>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isVision }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:24px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goSettings }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Analyse photo</h1>
+        </header>
+        <p style="margin:0;font-size:14px;color:hsl(var(--muted-foreground));text-wrap:pretty">Ta clé reste sur cet appareil. Elle n'est ni dans le code, ni envoyée ailleurs qu'au service que tu choisis.</p>
+        <div role="radiogroup" aria-label="Service" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+          <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Groq</button>
+          <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">OpenAI</button>
+          <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Autre</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:13px;font-weight:500">Clé API</label>
+          <input type="text" placeholder="gsk_…" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:13px;font-weight:500">Modèle</label>
+          <input type="text" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+          <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Vide = le modèle par défaut du service</p>
+        </div>
+        <label style="display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;cursor:pointer">
+          <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500">Actif</span><span style="font-size:12px;color:hsl(var(--muted-foreground))">Les services actifs sont essayés dans l'ordre.</span></span>
+          <span aria-hidden="true" style="position:relative;height:24px;width:44px;flex-shrink:0;border-radius:9999px;background:hsl(var(--primary))"><span style="position:absolute;left:22px;top:2px;height:20px;width:20px;border-radius:9999px;background:hsl(var(--foreground))"></span></span>
+        </label>
+        <button type="button" style="display:flex;align-items:center;justify-content:center;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Tester la clé</button>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:hsl(var(--muted-foreground))">Garder les photos de repas</p>
+          <div role="radiogroup" aria-label="Garder les photos" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Aucune</button>
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">7 j</button>
+            <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:13px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">30 j</button>
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">90 j</button>
+          </div>
+          <p style="margin:0 0 8px;font-size:12px;color:hsl(var(--muted-foreground))">Passé ce délai, les chiffres restent et les photos sont effacées.</p>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isDonnees }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:24px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goSettings }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Données</h1>
+        </header>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p class="tnum" style="margin:0;font-size:15px">18,4 Mo utilisés sur 1,9 Go</p>
+          <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Stockage persistant accordé</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:15px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>Exporter mes données</button>
+          <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:15px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>Importer une sauvegarde</button>
+        </div>
+        <p style="margin:0 0 8px;font-size:12px;color:hsl(var(--muted-foreground));text-wrap:pretty">L'import remplace tout ce qui est dans l'app : habitudes, historique, séries, mesures et photos. Une confirmation est demandée avant l'écrasement.</p>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:24px;padding:16px 20px 0">
+        <header style="display:flex;align-items:center;gap:8px;margin-left:-12px">
+          <button type="button" aria-label="Retour" onClick="{{ goSettings }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent));color:hsl(var(--foreground))"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button>
+          <h1 style="margin:0;font-size:24px;font-weight:600;letter-spacing:-.02em">Application</h1>
+        </header>
+        <div>
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;border-bottom:1px solid hsl(var(--border));cursor:pointer">
+            <span style="font-size:15px;font-weight:500">Retour haptique</span>
+            <span aria-hidden="true" style="position:relative;height:24px;width:44px;flex-shrink:0;border-radius:9999px;background:hsl(var(--primary))"><span style="position:absolute;left:22px;top:2px;height:20px;width:20px;border-radius:9999px;background:hsl(var(--foreground))"></span></span>
+          </label>
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;cursor:pointer">
+            <span style="font-size:15px;font-weight:500">Sons</span>
+            <span aria-hidden="true" style="position:relative;height:24px;width:44px;flex-shrink:0;border-radius:9999px;background:hsl(var(--muted))"><span style="position:absolute;left:2px;top:2px;height:20px;width:20px;border-radius:9999px;background:hsl(var(--foreground))"></span></span>
+          </label>
+        </div>
+        <button type="button" onClick="{{ goOnboarding }}" style="display:flex;align-items:center;gap:12px;min-height:60px;width:100%;border:0;border-bottom:1px solid hsl(var(--border));background:transparent;padding:8px 0;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+          <span style="min-width:0;flex:1;font-size:15px">Revoir l'introduction</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+        </button>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:14px;color:hsl(var(--muted-foreground))">
+          <p style="margin:0">Version 3.0</p>
+          <p style="margin:0">Installée le mardi 15 juillet 2026</p>
+          <p style="margin:8px 0 8px;font-size:12px;text-wrap:pretty">Tout reste sur cet appareil. Aucun compte, aucun serveur, aucune donnée envoyée nulle part. Aucune notification, par choix.</p>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;min-height:820px;flex-direction:column;padding:32px 24px 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <span class="tnum" style="font-size:12px;color:hsl(var(--muted-foreground))">{{ stepLabel }}</span>
+          <button type="button" onClick="{{ onboardSkip }}" style="display:flex;align-items:center;justify-content:center;min-height:48px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));padding:0 16px;font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Passer</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px" aria-hidden="true">
+          <sc-for list="{{ onboardBars }}" as="bar" hint-placeholder-count="3">
+            <span style="height:4px;flex:1;border-radius:9999px;background:{{ bar.bg }}"></span>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex:1;flex-direction:column;justify-content:center;padding:32px 0">
+          <sc-if value="{{ isStep0 }}" hint-placeholder-val="{{ true }}">
+          <section>
+            <p style="margin:0;font-size:14px;font-weight:500;color:hsl(var(--primary))">Le système, pas la motivation.</p>
+            <h1 style="margin:12px 0 0;font-size:30px;font-weight:600;line-height:1.15;letter-spacing:-.02em;text-wrap:pretty">Pas de deadline. Pas de série à ne pas casser.</h1>
+            <p style="margin:20px 0 0;font-size:15px;color:hsl(var(--muted-foreground));text-wrap:pretty">Une semaine ratée ne remet rien à zéro. L'app mesure un pourcentage glissant, pas une performance.</p>
+          </section>
+          </sc-if>
+
+          <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ false }}">
+          <section>
+            <h1 style="margin:0;font-size:30px;font-weight:600;line-height:1.15;letter-spacing:-.02em">Ton poids</h1>
+            <p style="margin:14px 0 0;font-size:15px;color:hsl(var(--muted-foreground));text-wrap:pretty">Il sert à calculer ta cible de protéines, et rien d'autre. L'app suit la tendance, jamais le chiffre du jour.</p>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:24px">
+              <input type="text" inputmode="decimal" aria-label="Ton poids" placeholder="80,5" class="tnum" style="min-height:56px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card));color:hsl(var(--foreground));padding:0 16px;font-size:24px;font-weight:600">
+              <span style="font-size:18px;color:hsl(var(--muted-foreground))">kg</span>
+            </div>
+            <div style="margin-top:32px">
+              <p style="margin:0 0 12px;text-align:center;font-size:14px;font-weight:500">Ta cible de protéines</p>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <button type="button" aria-label="-5 g" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+                <p class="tnum" style="margin:0;text-align:center"><span style="font-size:30px;font-weight:600">165</span><span style="margin-left:6px;font-size:14px;color:hsl(var(--muted-foreground))">g par jour</span></p>
+                <button type="button" aria-label="+5 g" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+              </div>
+              <p style="margin:12px 0 0;text-align:center;font-size:12px;color:hsl(var(--muted-foreground))">Modifiable à tout moment dans les réglages.</p>
+            </div>
+          </section>
+          </sc-if>
+
+          <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+          <section>
+            <h1 style="margin:0;font-size:30px;font-weight:600;line-height:1.15;letter-spacing:-.02em">Ton plancher quotidien</h1>
+            <p style="margin:14px 0 0;font-size:15px;color:hsl(var(--muted-foreground));text-wrap:pretty">Garde-le assez petit pour être fait un mauvais jour. C'est tout l'intérêt.</p>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:24px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="display:flex;align-items:center;justify-content:center;height:28px;width:28px;flex-shrink:0;border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+                <input aria-label="5 pompes" value="5 pompes" style="min-height:48px;flex:1;border:1px solid hsl(var(--border));border-radius:8px;background:hsl(var(--card));color:hsl(var(--foreground));padding:0 12px;font-size:14px">
+                <button type="button" aria-label="Retirer 5 pompes" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="display:flex;align-items:center;justify-content:center;height:28px;width:28px;flex-shrink:0;border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></span>
+                <input aria-label="1 portion de protéines zéro-cuisson" value="1 portion de protéines zéro-cuisson" style="min-height:48px;flex:1;border:1px solid hsl(var(--border));border-radius:8px;background:hsl(var(--card));color:hsl(var(--foreground));padding:0 12px;font-size:14px">
+                <button type="button" aria-label="Retirer 1 portion de protéines zéro-cuisson" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+              </div>
+            </div>
+          </section>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{ onboardBack }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));padding:0 20px;font-size:16px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Retour</button>
+          </sc-if>
+          <button type="button" onClick="{{ onboardNext }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;flex:1;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:600;cursor:pointer">{{ nextLabel }}</button>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ showFab }}" hint-placeholder-val="{{ true }}">
+    <button type="button" aria-label="Action rapide" onClick="{{ toggleFab }}" style="position:absolute;bottom:72px;right:16px;z-index:40;display:flex;align-items:center;justify-content:center;height:56px;width:56px;border:0;border-radius:9999px;background:hsl(var(--primary));color:hsl(var(--primary-foreground));box-shadow:0 10px 15px -3px rgb(0 0 0 / .3);cursor:pointer">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+    </button>
+    </sc-if>
+
+    <sc-if value="{{ showChrome }}" hint-placeholder-val="{{ true }}">
+    <nav aria-label="Navigation principale" style="position:absolute;inset-inline:0;bottom:0;z-index:40;border-top:1px solid hsl(var(--border));background:hsl(var(--background) / .95);backdrop-filter:blur(8px)">
+      <ul style="display:flex;margin:0;padding:0;list-style:none">
+        <li style="flex:1"><button type="button" onClick="{{ goToday }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px;width:100%;border:0;background:transparent;padding:8px 0;font-size:11px;font-weight:500;color:{{ todayColor }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Aujourd'hui</button></li>
+        <li style="flex:1"><button type="button" onClick="{{ goNutrition }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px;width:100%;border:0;background:transparent;padding:8px 0;font-size:11px;font-weight:500;color:{{ nutritionColor }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21h10"></path><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path><path d="M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1"></path><path d="m13 12 4-4"></path><path d="M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2"></path></svg>Nutrition</button></li>
+        <li style="flex:1"><button type="button" onClick="{{ goWorkouts }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px;width:100%;border:0;background:transparent;padding:8px 0;font-size:11px;font-weight:500;color:{{ workoutsColor }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg>Séances</button></li>
+        <li style="flex:1"><button type="button" onClick="{{ goProgress }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px;width:100%;border:0;background:transparent;padding:8px 0;font-size:11px;font-weight:500;color:{{ progressColor }};cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>Progression</button></li>
+      </ul>
+    </nav>
+    </sc-if>
+
+    <sc-if value="{{ fabOpen }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-label="Action rapide" style="position:absolute;inset:0;z-index:50;display:flex;align-items:flex-end">
+      <button type="button" aria-label="Fermer" onClick="{{ toggleFab }}" style="position:absolute;inset:0;border:0;background:rgb(0 0 0 / .6);backdrop-filter:blur(2px);cursor:pointer"></button>
+      <div style="position:relative;width:100%;border-top:1px solid hsl(var(--border));border-radius:16px 16px 0 0;background:hsl(var(--card));padding:16px 16px 24px">
+        <div style="margin:0 auto 16px;height:4px;width:40px;border-radius:9999px;background:hsl(var(--muted))"></div>
+        <h2 style="margin:0 0 16px;font-size:16px;font-weight:600">Action rapide</h2>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button type="button" onClick="{{ validateFloor }}" style="display:flex;align-items:center;gap:12px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));padding:0 20px;font-size:16px;font-weight:600;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Valider le plancher</button>
+          <button type="button" onClick="{{ quickProtein }}" style="display:flex;align-items:center;gap:12px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));padding:0 20px;font-size:16px;font-weight:500;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>+30 g de protéines</button>
+          <button type="button" onClick="{{ goSession }}" style="display:flex;align-items:center;gap:12px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));padding:0 20px;font-size:16px;font-weight:500;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg>+1 série</button>
+          <button type="button" onClick="{{ openWeight }}" style="display:flex;align-items:center;gap:12px;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));padding:0 20px;font-size:16px;font-weight:500;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg>Enregistrer une pesée</button>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" style="position:absolute;inset:0;z-index:50;display:flex;align-items:flex-end">
+      <button type="button" aria-label="Fermer" onClick="{{ closeSheet }}" style="position:absolute;inset:0;border:0;background:rgb(0 0 0 / .6);backdrop-filter:blur(2px);cursor:pointer"></button>
+      <div style="position:relative;width:100%;max-height:88%;overflow-y:auto;border-top:1px solid hsl(var(--border));border-radius:16px 16px 0 0;background:hsl(var(--card));padding:16px 16px 24px">
+        <div style="margin:0 auto 16px;height:4px;width:40px;border-radius:9999px;background:hsl(var(--muted))"></div>
+
+        <sc-if value="{{ isPortionSheet }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h2 style="margin:0 0 6px;font-size:16px;font-weight:600">Quelle source de protéines ?</h2>
+          <p style="margin:0 0 12px;font-size:14px;color:hsl(var(--muted-foreground))">Le choix est ajouté au total du jour.</p>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ portions }}" as="item" hint-placeholder-count="7">
+              <button type="button" onClick="{{ item.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;width:100%;border:0;border-bottom:1px solid hsl(var(--border));background:transparent;padding:8px 4px;text-align:left;color:inherit;cursor:pointer" style-hover="background:hsl(var(--accent))">
+                <span style="display:flex;min-width:0;flex-direction:column">
+                  <span style="font-size:15px;font-weight:500">{{ item.name }}</span>
+                  <span style="font-size:12px;color:hsl(var(--muted-foreground))">{{ item.serving }}</span>
+                </span>
+                <span class="tnum" style="flex-shrink:0;border-radius:9999px;background:hsl(var(--secondary));padding:6px 12px;font-size:14px;font-weight:600;color:hsl(var(--primary))">{{ item.grams }} g</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isAmountSheet }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h2 style="margin:0 0 12px;font-size:16px;font-weight:600">Montant libre</h2>
+          <p class="tnum" style="margin:0 0 20px;text-align:center;font-size:48px;font-weight:600;line-height:1">{{ amountValue }}<span style="margin-left:6px;font-size:18px;color:hsl(var(--muted-foreground))">g</span></p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <sc-for list="{{ keypad }}" as="k" hint-placeholder-count="9">
+              <button type="button" onClick="{{ k.press }}" class="tnum" style="display:flex;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:18px;font-weight:500;cursor:pointer">{{ k.key }}</button>
+            </sc-for>
+            <button type="button" aria-label="Annuler" onClick="{{ clearAmount }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));font-size:18px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">C</button>
+            <button type="button" onClick="{{ pressZero }}" class="tnum" style="display:flex;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:18px;font-weight:500;cursor:pointer">0</button>
+            <button type="button" aria-label="Effacer un chiffre" onClick="{{ backspace }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:var(--radius);background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+          </div>
+          <button type="button" onClick="{{ submitAmount }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;width:100%;margin-top:12px;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:600;cursor:pointer">{{ amountLabel }}</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isWeightSheet }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h2 style="margin:0 0 6px;font-size:16px;font-weight:600">Ton poids</h2>
+          <p style="margin:0 0 12px;font-size:14px;color:hsl(var(--muted-foreground));text-wrap:pretty">À jeun de préférence, mais la régularité compte plus que le moment.</p>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="text" inputmode="decimal" aria-label="Ton poids" value="78,1" class="tnum" style="min-height:56px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:0 16px;font-size:24px;font-weight:600">
+            <span style="font-size:18px;color:hsl(var(--muted-foreground))">kg</span>
+          </div>
+          <button type="button" onClick="{{ saveWeight }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;width:100%;margin-top:12px;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:600;cursor:pointer">Enregistrer</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isSetSheet }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <h2 style="margin:0;font-size:16px;font-weight:600">Pompes</h2>
+          <div style="border-radius:var(--radius);background:hsl(var(--muted) / .6);padding:12px;font-size:14px">
+            <p style="margin:0;color:hsl(var(--muted-foreground))">La dernière fois : 12 reps, Poids du corps</p>
+            <p style="margin:6px 0 0;color:hsl(var(--primary))">Suggestion : 13 reps</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:14px;font-weight:500">Répétitions</span>
+            <div style="display:flex;align-items:center;gap:12px">
+              <button type="button" aria-label="-1" onClick="{{ lessReps }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+              <p class="tnum" style="margin:0;display:flex;align-items:center;justify-content:center;min-height:48px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));font-size:30px;font-weight:600">{{ reps }}</p>
+              <button type="button" aria-label="+1" onClick="{{ moreReps }}" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-size:14px;font-weight:500">Charge ou élastique</label>
+            <input type="text" value="Poids du corps" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:14px;font-weight:500">C'était comment ?</span>
+            <div role="radiogroup" aria-label="C'était comment ?" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+              <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Facile</button>
+              <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Cible</button>
+              <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Difficile</button>
+            </div>
+          </div>
+          <button type="button" onClick="{{ saveSet }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:600;cursor:pointer">Enregistrer la série</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isMealSheet }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <h2 style="margin:0;font-size:16px;font-weight:600">Détail du repas</h2>
+          <input type="text" aria-label="Nom du repas" value="Poulet grillé, riz, salade" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+          <div role="radiogroup" aria-label="Moment" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Petit-déj</button>
+            <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:13px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Déjeuner</button>
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Dîner</button>
+            <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Collation</button>
+          </div>
+
+          <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);padding:12px">
+            <h3 style="margin:0;font-size:14px;font-weight:600">Ce n'est pas ça ?</h3>
+            <p style="margin:6px 0 10px;font-size:12px;color:hsl(var(--muted-foreground));text-wrap:pretty">Dis ce que c'est vraiment. Le modèle te croit sur les aliments et refait l'estimation des portions depuis la photo.</p>
+            <textarea aria-label="Ce n'est pas ça ?" placeholder="couscous, bœuf, lben, carottes" style="min-height:80px;width:100%;resize:vertical;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px;font-family:inherit"></textarea>
+            <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;margin-top:8px;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:14px;font-weight:500;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>Relancer avec cette précision</button>
+          </div>
+
+          <sc-for list="{{ mealItems }}" as="item" hint-placeholder-count="2">
+            <div style="border:1px solid hsl(var(--border));border-radius:var(--radius);padding:12px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="text" aria-label="Aliment" value="{{ item.name }}" style="min-height:48px;min-width:0;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+                <button type="button" aria-label="Retirer cet aliment" style="display:flex;align-items:center;justify-content:center;height:48px;width:48px;flex-shrink:0;border:0;border-radius:8px;background:transparent;color:hsl(var(--muted-foreground));cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+              </div>
+              <input type="text" aria-label="Portion" value="{{ item.quantity }}" style="min-height:48px;width:100%;margin-top:8px;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">
+                <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;color:hsl(var(--muted-foreground))">kcal</span><input type="text" inputmode="numeric" aria-label="kcal" value="{{ item.kcal }}" class="tnum" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px;text-align:center;font-size:16px"></label>
+                <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;color:hsl(var(--muted-foreground))">Prot.</span><input type="text" inputmode="numeric" aria-label="Protéines (g)" value="{{ item.protein }}" class="tnum" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px;text-align:center;font-size:16px"></label>
+                <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;color:hsl(var(--muted-foreground))">Gluc.</span><input type="text" inputmode="numeric" aria-label="Glucides (g)" value="{{ item.carbs }}" class="tnum" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px;text-align:center;font-size:16px"></label>
+                <label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;color:hsl(var(--muted-foreground))">Lip.</span><input type="text" inputmode="numeric" aria-label="Lipides (g)" value="{{ item.fat }}" class="tnum" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px;text-align:center;font-size:16px"></label>
+              </div>
+            </div>
+          </sc-for>
+
+          <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--secondary));color:hsl(var(--secondary-foreground));font-size:14px;font-weight:500;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Ajouter un aliment</button>
+
+          <div style="display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid hsl(var(--border));padding-top:12px">
+            <span style="font-size:14px;color:hsl(var(--muted-foreground))">Total du repas</span>
+            <span class="tnum" style="font-size:18px;font-weight:600">620 kcal</span>
+          </div>
+          <p class="tnum" style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">P 45 · G 62 · L 18</p>
+          <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground))">Les protéines de ce repas sont comptées dans le total du jour.</p>
+          <button type="button" onClick="{{ saveMeal }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;width:100%;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:600;cursor:pointer">Enregistrer</button>
+          <button type="button" onClick="{{ closeSheet }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:14px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>Supprimer ce repas</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isHabitSheet }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <h2 style="margin:0;font-size:16px;font-weight:600">Modifier l'habitude</h2>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:14px;font-weight:500">Intitulé</label>
+            <input type="text" value="5 pompes" placeholder="10 squats" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:14px;font-weight:500">Action visée</label>
+            <input type="text" value="5 pompes" placeholder="10 squats à vide" style="min-height:48px;width:100%;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--background));color:hsl(var(--foreground));padding:8px 12px;font-size:16px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:14px;font-weight:500">Type</span>
+            <div role="radiogroup" aria-label="Type" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+              <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Plancher</button>
+              <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">En plus</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:14px;font-weight:500">Catégorie</span>
+            <div role="radiogroup" aria-label="Catégorie" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+              <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:14px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Séance</button>
+              <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Nutrition</button>
+              <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Mobilité</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:14px;font-weight:500">Validation</span>
+            <div role="radiogroup" aria-label="Validation" style="display:flex;gap:4px;border-radius:var(--radius);background:hsl(var(--muted));padding:4px">
+              <button type="button" role="radio" aria-checked="true" style="min-height:48px;flex:1;border:0;border-radius:8px;background:hsl(var(--primary));font-size:13px;font-weight:500;color:hsl(var(--primary-foreground));cursor:pointer">Case à cocher</button>
+              <button type="button" role="radio" aria-checked="false" style="min-height:48px;flex:1;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:hsl(var(--muted-foreground));cursor:pointer">Portion de protéines</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid hsl(var(--border));padding-top:16px">
+            <button type="button" style="display:flex;align-items:center;gap:12px;min-height:48px;width:100%;border:0;background:transparent;padding:0 4px;text-align:left;color:inherit;font-size:14px;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 0 1 7.38 16.75"></path><path d="M12 6v6l4 2"></path><path d="M2.5 8.875a10 10 0 0 0-.5 3"></path><path d="M2.83 16a10 10 0 0 0 2.43 3.4"></path><path d="M4.636 5.235a10 10 0 0 1 .891-.857"></path><path d="M8.644 21.42a10 10 0 0 0 7.631-.38"></path></svg>Historique — 38 validations au total</button>
+            <button type="button" style="display:flex;align-items:center;gap:12px;min-height:48px;width:100%;border:0;background:transparent;padding:0 4px;text-align:left;color:inherit;font-size:14px;cursor:pointer" style-hover="background:hsl(var(--accent))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--muted-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>Archiver cette habitude</button>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button type="button" onClick="{{ closeSheet }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;flex:1;border:1px solid hsl(var(--border));border-radius:var(--radius);background:transparent;color:hsl(var(--foreground));font-size:16px;font-weight:500;cursor:pointer" style-hover="background:hsl(var(--accent))">Annuler</button>
+            <button type="button" onClick="{{ saveHabit }}" style="display:flex;align-items:center;justify-content:center;min-height:56px;flex:1;border:0;border-radius:var(--radius);background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:16px;font-weight:600;cursor:pointer">Enregistrer</button>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" aria-live="polite" style="position:absolute;inset-inline:0;bottom:140px;z-index:50;display:flex;justify-content:center;padding:0 16px;pointer-events:none">
+      <div style="display:flex;align-items:center;gap:12px;border:1px solid hsl(var(--border));border-radius:9999px;background:hsl(var(--card));padding:8px 8px 8px 16px;box-shadow:0 10px 15px -3px rgb(0 0 0 / .4)">
+        <p style="margin:0;font-size:14px">{{ toastMessage }}</p>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:920}}">
+const FLOOR = [
+  { id: 'pompes', title: '5 pompes', hint: 'Au réveil, avant le café' },
+  { id: 'proteine', title: '1 portion de protéines zéro-cuisson', hint: 'Au choix dans le catalogue' },
+]
+const STACK = [
+  { id: 'squats', title: '10 squats à vide' },
+  { id: 'pompesmax', title: '1 série de pompes max' },
+  { id: 'gainage', title: '2 min de gainage' },
+]
+
+class Component extends DCLogic {
+  state = {
+    view: 'today',
+    catalogue: 'fridge',
+    done: [],
+    stackDone: ['squats'],
+    protein: 128,
+    fabOpen: false,
+    toast: null,
+    sheet: null,
+    step: 0,
+    reps: 13,
+    amount: '',
+  }
+
+  go(view) {
+    this.setState({ view, fabOpen: false })
+    const el = document.getElementById('scroll')
+    if (el) el.scrollTop = 0
+  }
+
+  say(message) {
+    this.setState({ toast: message })
+    window.clearTimeout(this._toast)
+    this._toast = window.setTimeout(() => this.setState({ toast: null }), 2600)
+  }
+
+  toggle(key, id) {
+    this.setState((s) => {
+      const list = s[key]
+      return { [key]: list.includes(id) ? list.filter((x) => x !== id) : [...list, id] }
+    })
+  }
+
+  addProtein(grams, label) {
+    this.setState((s) => ({ protein: s.protein + grams, fabOpen: false }))
+    this.say(label || '+' + grams + ' g ajoutés')
+  }
+
+  renderVals() {
+    const s = this.state
+    const on = 'hsl(var(--primary))'
+    const off = 'hsl(var(--muted-foreground))'
+    const muted = 'hsl(var(--muted-foreground))'
+    const next = FLOOR.find((h) => !s.done.includes(h.id))
+    const allDone = !next
+    const target = 165
+    const remaining = Math.max(0, target - s.protein)
+
+    return {
+      isToday: s.view === 'today',
+      isNutrition: s.view === 'nutrition',
+      isCatalogues: s.view === 'catalogues',
+      isWorkouts: s.view === 'workouts',
+      isSession: s.view === 'session',
+      isProgress: s.view === 'progress',
+      isPhotos: s.view === 'photos',
+      isSettingsHome: s.view === 'settings',
+      isObjectifs: s.view === 'settings-objectifs',
+      isHabitudes: s.view === 'settings-habitudes',
+      isSeances: s.view === 'settings-seances',
+      isVision: s.view === 'settings-vision',
+      isDonnees: s.view === 'settings-donnees',
+      isApp: s.view === 'settings-app',
+      goPhotos: () => this.go('photos'),
+      settingsRubrics: [
+        { title: 'Objectifs', hint: 'Protéines, calories, ton corps', view: 'settings-objectifs' },
+        { title: 'Habitudes', hint: '2 au plancher, 3 en plus', view: 'settings-habitudes' },
+        { title: 'Séances', hint: 'Timer de repos, mouvements', view: 'settings-seances' },
+        { title: 'Analyse photo', hint: 'Clé API, modèle, rétention des photos', view: 'settings-vision' },
+        { title: 'Données', hint: 'Stockage, export, import', view: 'settings-donnees' },
+        { title: 'Application', hint: 'Haptique, sons, à propos', view: 'settings-app' },
+      ].map((r) => ({ ...r, open: () => this.go(r.view) })),
+      blocks: [
+        { pattern: 'Poussée', exercise: 'Pompes', range: '8 à 15 reps' },
+        { pattern: 'Tirage', exercise: 'Rowing élastique', range: '10 à 15 reps' },
+        { pattern: 'Bas du corps', exercise: 'Fentes bulgares', range: '8 à 12 reps' },
+      ],
+      sessionBlocks: [
+        { pattern: 'Poussée', exercise: 'Pompes', suggestion: 'Suggestion : 13 reps · la dernière fois 12', count: '×1' },
+        { pattern: 'Tirage', exercise: 'Rowing élastique', suggestion: 'Suggestion : 15 reps · élastique noir', count: '×1' },
+        { pattern: 'Bas du corps', exercise: 'Fentes bulgares', suggestion: 'Suggestion : 10 reps · 12 kg', count: '' },
+      ],
+      floorSettings: [
+        { title: '5 pompes', detail: '5 pompes' },
+        { title: '1 portion de protéines zéro-cuisson', detail: 'au choix dans le catalogue' },
+      ],
+      stackSettings: [
+        { title: '10 squats à vide', detail: 'Pendant que le café coule' },
+        { title: '1 série de pompes max', detail: "Avant d'ouvrir le laptop" },
+        { title: '2 min de gainage', detail: 'Douche du soir' },
+      ],
+      heatmap: (() => {
+        const labels = ['juin', '', '', '', 'juil.', '', '', '', 'août', '', '', '']
+        return Array.from({ length: 12 }, (_, w) => ({
+          label: labels[w],
+          cells: Array.from({ length: 7 }, (_, d) => {
+            const seed = (w * 7 + d * 3) % 10
+            const future = w === 11 && d > 3
+            const done = !future && seed > 2
+            return {
+              bg: future ? 'transparent' : done ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+              ring: future ? 'inset 0 0 0 1px hsl(var(--border) / .5)' : 'none',
+            }
+          }),
+        }))
+      })(),
+      isSettings: s.view.indexOf('settings') === 0,
+      todayColor: s.view === 'today' ? on : off,
+      nutritionColor: s.view === 'nutrition' || s.view === 'catalogues' ? on : off,
+      workoutsColor: s.view === 'workouts' || s.view === 'session' ? on : off,
+      progressColor: s.view === 'progress' ? on : off,
+      showFab:
+        s.view.indexOf('settings') !== 0 &&
+        s.view !== 'session' &&
+        s.view !== 'onboarding' &&
+        s.sheet === null,
+      showChrome: s.view !== 'onboarding',
+
+      doneCount: s.done.length,
+      floorTotal: FLOOR.length,
+      floorBars: FLOOR.map((h) => ({
+        bg: s.done.includes(h.id) ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+      })),
+      hasNext: !allDone,
+      allDone,
+      nextTitle: next ? next.title : '',
+      nextHint: next ? next.hint : '',
+      completeNext: () => {
+        if (!next) return
+        if (next.id === 'proteine') {
+          this.setState({ sheet: 'portion' })
+          return
+        }
+        this.toggle('done', next.id)
+        this.say(FLOOR.length - s.done.length === 1 ? 'Plancher validé' : next.title + ' — fait')
+      },
+      skipNext: () => this.say('Gardé pour plus tard'),
+      floorList: FLOOR.map((h) => {
+        const done = s.done.includes(h.id)
+        return {
+          title: h.title,
+          done,
+          state: done ? 'fait' : 'à faire',
+          ring: done ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / .4)',
+          fill: done ? 'hsl(var(--primary))' : 'transparent',
+          color: done ? muted : 'hsl(var(--foreground))',
+          strike: done ? 'line-through' : 'none',
+          toggle: () => this.toggle('done', h.id),
+        }
+      }),
+      stackList: STACK.map((h) => {
+        const done = s.stackDone.includes(h.id)
+        return {
+          title: h.title,
+          done,
+          ring: done ? 'hsl(var(--primary) / .35)' : 'hsl(var(--border))',
+          chipBg: done ? 'hsl(var(--primary) / .08)' : 'transparent',
+          color: done ? 'hsl(var(--foreground))' : muted,
+          toggle: () => this.toggle('stackDone', h.id),
+        }
+      }),
+
+      proteinTotal: s.protein,
+      proteinPercent: Math.min(100, (s.protein / target) * 100) + '%',
+      proteinRemaining: remaining > 0 ? 'encore ' + remaining + ' g' : 'Cible atteinte',
+      ringOffset: 565.5 * (1 - Math.min(1, s.protein / target)),
+      add20: () => this.addProtein(20),
+      add30: () => this.addProtein(30),
+      add40: () => this.addProtein(40),
+
+      journal: [
+        { time: '20:15', label: 'Dîner', meta: 'Repas · 640 kcal', value: '+40 g' },
+        { time: '16:40', label: 'Thon en boîte au naturel', meta: 'Zéro-cuisson', value: '+26 g' },
+        { time: '13:05', label: 'Poulet grillé, riz, salade', meta: 'Déjeuner · 620 kcal · corrigé', value: '+45 g' },
+        { time: '08:12', label: 'Skyr nature', meta: 'Zéro-cuisson', value: '+17 g' },
+      ],
+
+      isFridge: s.catalogue === 'fridge',
+      isTakeout: s.catalogue === 'takeout',
+      fridgeChecked: s.catalogue === 'fridge',
+      takeoutChecked: s.catalogue === 'takeout',
+      fridgeBg: s.catalogue === 'fridge' ? 'hsl(var(--primary))' : 'transparent',
+      takeoutBg: s.catalogue === 'takeout' ? 'hsl(var(--primary))' : 'transparent',
+      fridgeColor: s.catalogue === 'fridge' ? 'hsl(var(--primary-foreground))' : muted,
+      takeoutColor: s.catalogue === 'takeout' ? 'hsl(var(--primary-foreground))' : muted,
+      showFridge: () => this.setState({ catalogue: 'fridge' }),
+      showTakeout: () => this.setState({ catalogue: 'takeout' }),
+
+      zeroCook: [
+        { name: 'Thon en boîte au naturel', serving: '1 boîte 130 g', grams: 26 },
+        { name: 'Whey', serving: '1 dose 30 g', grams: 24 },
+        { name: 'Blanc de poulet en tranches', serving: '100 g', grams: 20 },
+        { name: 'Skyr nature', serving: '1 pot 150 g', grams: 17 },
+        { name: 'Œufs durs prêts à consommer', serving: '2 œufs', grams: 13 },
+        { name: 'Cottage cheese', serving: '100 g', grams: 12 },
+        { name: 'Fromage blanc 0 %', serving: '100 g', grams: 8 },
+      ].map((i) => ({
+        ...i,
+        stockLabel: i.name + ' en stock',
+        log: () => this.addProtein(i.grams, '+' + i.grams + ' g — ' + i.name),
+      })),
+
+      takeout: [
+        {
+          cuisine: 'Shawarma / libanais',
+          grams: 55,
+          pick: 'Assiette poulet grillé, viande en supplément, salade',
+          avoid: 'Frites, sauce blanche à volonté, galette',
+        },
+        {
+          cuisine: 'Rôtisserie',
+          grams: 60,
+          pick: 'Demi-poulet rôti, haricots verts',
+          avoid: 'Gratin, pommes de terre à la graisse',
+        },
+        {
+          cuisine: 'Japonais',
+          grams: 45,
+          pick: 'Yakitori (poulet, bœuf), sashimi, edamame',
+          avoid: 'Tempura, bowls sauce sucrée, California rolls',
+        },
+      ].map((o) => ({ ...o, log: () => this.addProtein(o.grams, '+' + o.grams + ' g — ' + o.cuisine) })),
+
+      fabOpen: s.fabOpen,
+      toggleFab: () => this.setState((st) => ({ fabOpen: !st.fabOpen })),
+      closeFab: () => this.setState({ fabOpen: false }),
+      validateFloor: () => {
+        this.setState({ done: FLOOR.map((h) => h.id), fabOpen: false, view: 'today' })
+        this.say('Plancher validé')
+      },
+      quickProtein: () => this.addProtein(30),
+      goSession: () => this.go('session'),
+
+      isOnboarding: s.view === 'onboarding',
+      goOnboarding: () => this.setState({ view: 'onboarding', step: 0, fabOpen: false }),
+      step: s.step,
+      stepLabel: s.step + 1 + ' / 3',
+      isStep0: s.step === 0,
+      isStep1: s.step === 1,
+      isStep2: s.step === 2,
+      hasBack: s.step > 0,
+      nextLabel: s.step === 2 ? 'Commencer' : 'Suivant',
+      onboardBars: [0, 1, 2].map((i) => ({
+        bg: i <= s.step ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+      })),
+      onboardBack: () => this.setState((st) => ({ step: Math.max(0, st.step - 1) })),
+      onboardNext: () => {
+        if (s.step === 2) this.go('today')
+        else this.setState({ step: s.step + 1 })
+      },
+      onboardSkip: () => this.go('today'),
+
+      mealItems: [
+        { name: 'Blanc de poulet grillé', quantity: '180 g', kcal: 300, protein: 38, carbs: 0, fat: 14 },
+        { name: 'Riz basmati cuit', quantity: '200 g', kcal: 260, protein: 5, carbs: 56, fat: 1 },
+        { name: 'Salade, huile d\u2019olive', quantity: '1 bol', kcal: 60, protein: 2, carbs: 6, fat: 3 },
+      ],
+      sheetOpen: s.sheet !== null,
+      isHabitSheet: s.sheet === 'habit',
+      isSetSheet: s.sheet === 'set',
+      isMealSheet: s.sheet === 'meal',
+      isWeightSheet: s.sheet === 'weight',
+      isAmountSheet: s.sheet === 'amount',
+      isPortionSheet: s.sheet === 'portion',
+      closeSheet: () => this.setState({ sheet: null }),
+      openHabitEditor: () => this.setState({ sheet: 'habit' }),
+      openSetLogger: () => this.setState({ sheet: 'set', reps: 13 }),
+      openMealEditor: () => this.setState({ sheet: 'meal' }),
+      openWeight: () => this.setState({ sheet: 'weight', fabOpen: false }),
+      openAmount: () => this.setState({ sheet: 'amount', amount: '' }),
+      saveSheet: (message) => {
+        this.setState({ sheet: null })
+        this.say(message)
+      },
+      saveHabit: () => {
+        this.setState({ sheet: null })
+        this.say('Habitude modifiée')
+      },
+      saveWeight: () => {
+        this.setState({ sheet: null })
+        this.say('78,1 kg enregistrés')
+      },
+      saveMeal: () => {
+        this.setState((st) => ({ sheet: null, protein: st.protein + 45 }))
+        this.say('620 kcal enregistrées')
+      },
+      reps: s.reps,
+      moreReps: () => this.setState((st) => ({ reps: st.reps + 1 })),
+      lessReps: () => this.setState((st) => ({ reps: Math.max(1, st.reps - 1) })),
+      saveSet: () => {
+        this.setState({ sheet: null })
+        this.say(s.reps + ' reps de Pompes enregistrées')
+      },
+      amountValue: s.amount === '' ? '0' : s.amount,
+      amountLabel: 'Ajouter ' + (s.amount === '' ? 0 : Number(s.amount)) + ' g',
+      keypad: ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((k) => ({
+        key: k,
+        press: () => this.setState((st) => ({ amount: (st.amount + k).replace(/^0+/, '') })),
+      })),
+      pressZero: () => this.setState((st) => ({ amount: (st.amount + '0').replace(/^0+/, '') })),
+      clearAmount: () => this.setState({ amount: '' }),
+      backspace: () => this.setState((st) => ({ amount: st.amount.slice(0, -1) })),
+      submitAmount: () => {
+        const grams = Number(s.amount || '0')
+        if (grams > 0) this.addProtein(grams)
+        this.setState({ sheet: null })
+      },
+      portions: [
+        { name: 'Thon en boîte au naturel', serving: '1 boîte 130 g', grams: 26 },
+        { name: 'Whey', serving: '1 dose 30 g', grams: 24 },
+        { name: 'Blanc de poulet en tranches', serving: '100 g', grams: 20 },
+        { name: 'Skyr nature', serving: '1 pot 150 g', grams: 17 },
+        { name: 'Œufs durs prêts à consommer', serving: '2 œufs', grams: 13 },
+        { name: 'Cottage cheese', serving: '100 g', grams: 12 },
+        { name: 'Fromage blanc 0 %', serving: '100 g', grams: 8 },
+      ].map((p) => ({
+        ...p,
+        pick: () => {
+          this.setState((st) => ({
+            sheet: null,
+            protein: st.protein + p.grams,
+            done: st.done.includes('proteine') ? st.done : [...st.done, 'proteine'],
+          }))
+          this.say('+' + p.grams + ' g ajoutés')
+        },
+      })),
+
+      toast: s.toast !== null,
+      toastMessage: s.toast,
+      goToday: () => this.go('today'),
+      goNutrition: () => this.go('nutrition'),
+      goCatalogues: () => this.go('catalogues'),
+      goWorkouts: () => this.go('workouts'),
+      goProgress: () => this.go('progress'),
+      goSettings: () => this.go('settings'),
+    }
+  }
+}
+</script>
+</body>
+</html>
