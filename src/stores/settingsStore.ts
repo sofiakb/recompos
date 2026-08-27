@@ -10,8 +10,13 @@ import { DEFAULT_HABITS } from '@/db/seed'
 import { createId } from '@/lib/utils'
 import { toLogicalDate } from '@/lib/date'
 import {
+  clampAgeYears,
   clampCalorieTargetKcal,
+  clampDeficitPercent,
+  clampHeightCm,
   clampProteinTargetGrams,
+  DEFAULT_ACTIVITY_LEVEL,
+  DEFAULT_DEFICIT_PERCENT,
   DEFAULT_MEAL_PHOTO_RETENTION_DAYS,
 } from '@/lib/nutrition'
 import { clampRestSeconds } from '@/lib/timer'
@@ -46,6 +51,8 @@ function initialSettings(): AppSettings {
     hapticsEnabled: true,
     soundEnabled: true,
     calorieTargetMode: 'auto',
+    calorieDeficitPercent: DEFAULT_DEFICIT_PERCENT,
+    activityLevel: DEFAULT_ACTIVITY_LEVEL,
     mealPhotoRetentionDays: DEFAULT_MEAL_PHOTO_RETENTION_DAYS,
   }
 }
@@ -61,6 +68,12 @@ interface SettingsState {
   /** Freezes the calorie target on a human-chosen number, like the protein one. */
   setManualCalorieTarget: (kcal: number) => void
   resetCalorieTargetToAuto: () => void
+  /** Moves the automatic target relative to estimated maintenance. */
+  setCalorieDeficitPercent: (percent: number) => void
+  /** Height, birth year, sex and activity — what the resting-rate formula needs. */
+  setBodyProfile: (
+    patch: Partial<Pick<AppSettings, 'heightCm' | 'birthYear' | 'biologicalSex' | 'activityLevel'>>,
+  ) => void
   setMealPhotoRetentionDays: (days: number) => void
   setVisionProvider: (id: VisionProviderId, patch: Partial<VisionProviderSettings>) => void
   clearVisionProvider: (id: VisionProviderId) => void
@@ -120,6 +133,39 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => {
           const { manualCalorieTargetKcal: _dropped, ...settings } = state.settings
           return { settings: { ...settings, calorieTargetMode: 'auto' } }
+        }),
+
+      setCalorieDeficitPercent: (percent) =>
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            calorieDeficitPercent: clampDeficitPercent(percent),
+            // Changing the deficit is a request for the calculation to apply, so
+            // it hands the target back to auto rather than sitting inert behind
+            // a frozen manual number.
+            calorieTargetMode: 'auto',
+          },
+        })),
+
+      setBodyProfile: (patch) =>
+        set((state) => {
+          const currentYear = new Date().getFullYear()
+          return {
+            settings: {
+              ...state.settings,
+              ...patch,
+              ...(patch.heightCm !== undefined
+                ? { heightCm: patch.heightCm ? clampHeightCm(patch.heightCm) : undefined }
+                : {}),
+              ...(patch.birthYear !== undefined
+                ? {
+                    birthYear: patch.birthYear
+                      ? currentYear - clampAgeYears(currentYear - patch.birthYear)
+                      : undefined,
+                  }
+                : {}),
+            },
+          }
         }),
 
       setMealPhotoRetentionDays: (days) =>
@@ -271,6 +317,8 @@ export function migrateSettings(persisted: unknown, fromVersion: number): Persis
       // their defaults rather than being left undefined, so nothing downstream
       // has to guard for a settings object that predates the meal module.
       calorieTargetMode: settings.calorieTargetMode ?? 'auto',
+      calorieDeficitPercent: settings.calorieDeficitPercent ?? DEFAULT_DEFICIT_PERCENT,
+      activityLevel: settings.activityLevel ?? DEFAULT_ACTIVITY_LEVEL,
       mealPhotoRetentionDays: settings.mealPhotoRetentionDays ?? DEFAULT_MEAL_PHOTO_RETENTION_DAYS,
       proteinTargetMode: proteinTargetGrams ? 'manual' : 'auto',
       ...(proteinTargetGrams

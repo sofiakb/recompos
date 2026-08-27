@@ -85,7 +85,7 @@ export function CalorieCard({ macros }: CalorieCardProps) {
             ? t.meals.targetManual
             : target.isFallback
               ? t.meals.targetProvisional
-              : t.meals.targetFromWeight(target.smoothedWeightKg ?? 0, target.kcalPerKg)}
+              : t.meals.targetFromWeight(target.maintenanceKcal ?? 0, target.deficitPercent)}
         </p>
       </CardContent>
     </Card>

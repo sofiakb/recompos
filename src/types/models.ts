@@ -288,6 +288,25 @@ export interface AppSettings {
   visionProviders?: Partial<Record<VisionProviderId, VisionProviderSettings>>
   /** `auto` derives the daily calorie target from smoothed body weight. */
   calorieTargetMode: CalorieTargetMode
+  /**
+   * How far under estimated maintenance the automatic target sits, in percent.
+   *
+   * Held apart from the maintenance coefficient so the deficit is a number the
+   * user can see and change, rather than an assumption buried in a constant.
+   */
+  calorieDeficitPercent: number
+  /**
+   * Body facts the resting-rate formula needs.
+   *
+   * Optional: the app works without them, on a cruder weight-only estimate that
+   * says so on screen. Asked for once, never again — and a birth year rather
+   * than an age so the figure does not quietly go stale.
+   */
+  heightCm?: number
+  birthYear?: number
+  biologicalSex?: 'male' | 'female'
+  /** Multiplier on the resting rate. Defaults to a desk job with micro-workouts. */
+  activityLevel: 'sedentary' | 'light' | 'moderate'
   /** Only meaningful in `manual` mode. */
   manualCalorieTargetKcal?: number
   /** Days a meal photo is kept before its bytes are dropped. 0 keeps none. */

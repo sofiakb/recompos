@@ -356,12 +356,34 @@ export const fr = {
     dayOf: (current: number, target: number) => `${current} kcal sur ${target} kcal`,
     dayRemaining: (kcal: number) => `encore ${kcal} kcal`,
     dayOver: (kcal: number) => `${kcal} kcal au-dessus`,
-    targetFromWeight: (weightKg: number, perKg: number) =>
-      `Estimation de départ : ${weightKg} kg × ${perKg} kcal/kg`,
+    targetFromWeight: (maintenance: number, deficit: number) =>
+      deficit === 0
+        ? `Maintien estimé : ${maintenance} kcal`
+        : `Maintien estimé ${maintenance} kcal, moins ${deficit} %`,
+    profileTitle: 'Ton corps',
+    profileHint:
+      'Taille, âge et sexe servent uniquement au calcul de la dépense au repos. Ils ne sortent pas de l’appareil.',
+    profileMissing: (fields: string[]) =>
+      `Estimation approximative, calculée sur le poids seul. Il manque : ${fields.join(', ')}.`,
+    missing: { height: 'la taille', birthYear: 'l’année de naissance', sex: 'le sexe' },
+    profileComplete: 'Calculé avec ta dépense au repos (Mifflin-St Jeor).',
+    heightLabel: 'Taille (cm)',
+    birthYearLabel: 'Année de naissance',
+    sexLabel: 'Sexe',
+    sex: { male: 'Homme', female: 'Femme' },
+    sexHint: 'La formule de dépense au repos en dépend. Aucun autre usage dans l’app.',
+    sexUnset: 'Non renseigné',
+    activityLabel: 'Activité',
+    activity: { sedentary: 'Bureau', light: 'Bureau + micro-séances', moderate: 'Actif' },
+    activityHint: 'Ce que fait ta journée, pas ce que tu voudrais qu’elle fasse.',
     targetManual: 'Cible ajustée à la main',
     targetProvisional: 'Cible provisoire — ajoute ton poids pour l’estimer',
     targetHint:
       'À ajuster après trois semaines, en regardant ce que fait ta courbe de poids. Aucune formule ne connaît ta taille ni ton activité.',
+    deficitLabel: 'Déficit',
+    deficitValue: (percent: number) => (percent === 0 ? 'Maintien' : `−${percent} %`),
+    deficitHint:
+      'Un déficit léger protège le muscle pendant que le gras part, et se tient un mauvais jour. Au-delà de 15 %, tu perds du muscle avec.',
     targetTitle: 'Cible calorique',
     retention: 'Garder les photos',
     retentionValue: (days: number) => (days === 0 ? 'Aucune' : `${days} jours`),
