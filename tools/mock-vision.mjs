@@ -35,9 +35,28 @@ const ANSWER = {
   notes: 'La matière grasse de cuisson est estimée.',
 }
 
+/**
+ * Only the local preview and dev servers may call this.
+ *
+ * A wildcard would let any page open in the same browser post to a server that
+ * echoes back what it received, including an Authorization header. It costs
+ * nothing to name the two origins that actually need it.
+ */
+const ALLOWED_ORIGINS = new Set([
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+])
+
+/** Well under the 20 MB the real service accepts, and enough for any meal photo. */
+const MAX_BODY_BYTES = 24 * 1024 * 1024
+
 createServer((req, res) => {
+  const origin = req.headers.origin ?? ''
   const cors = {
-    'Access-Control-Allow-Origin': '*',
+    ...(ALLOWED_ORIGINS.has(origin) ? { 'Access-Control-Allow-Origin': origin } : {}),
+    Vary: 'Origin',
     'Access-Control-Allow-Headers': 'authorization,content-type',
     'Access-Control-Allow-Methods': 'POST,OPTIONS',
   }
@@ -52,8 +71,21 @@ createServer((req, res) => {
     return
   }
   let body = ''
-  req.on('data', (chunk) => (body += chunk))
+  let aborted = false
+  req.on('data', (chunk) => {
+    if (aborted) return
+    body += chunk
+    // Bounded on the way in: an unbounded accumulator is a memory leak waiting
+    // for a bad client, even on a local tool.
+    if (Buffer.byteLength(body) > MAX_BODY_BYTES) {
+      aborted = true
+      res.writeHead(413, cors)
+      res.end()
+      req.destroy()
+    }
+  })
   req.on('end', () => {
+    if (aborted) return
     let parsed = null
     try {
       parsed = JSON.parse(body)
