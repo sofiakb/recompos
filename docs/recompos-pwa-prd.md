@@ -412,6 +412,18 @@ Ces modèles raisonnent avant de répondre, ce qui a deux conséquences : le bud
 équilibrés de la réponse plutôt que du premier `{` au dernier `}` — un préambule de raisonnement
 contient ses propres accolades.
 
+**Contraintes du fournisseur, tenues par un faux service**
+
+L'appel réel n'est pas joignable depuis l'environnement de développement, ce qui a laissé passer deux
+requêtes malformées jusqu'au téléphone. `tools/mock-vision.mjs` répond donc au même format **et refuse
+ce que le vrai service refuse** : mode JSON sans le mot « json » dans les messages, identifiant de
+modèle inconnu, requête au-delà de 20 Mo, plus de trois images. Chaque contrainte de la documentation
+a par ailleurs son test unitaire, pour qu'aucune ne reparte en silence.
+
+Valeurs suivies : `temperature` à 0,5 — bas de la fourchette 0,5–0,7 documentée, la constance étant ce
+qu'on cherche pour lire une assiette — et `max_completion_tokens` à 2048, le double du défaut, parce
+que ces modèles raisonnent avant de répondre et qu'une réponse tronquée est illisible.
+
 **Chaîne de services**
 
 Plusieurs services peuvent être configurés et sont essayés dans l'ordre. Un quota atteint devient une
