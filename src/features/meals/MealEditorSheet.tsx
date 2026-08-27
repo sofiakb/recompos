@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input, Textarea } from '@/components/ui/input'
 import { Segmented } from '@/components/ui/segmented'
 import { Sheet } from '@/components/ui/sheet'
 import { totalsFromItems } from '@/lib/vision/schema'
@@ -14,6 +14,8 @@ interface MealEditorSheetProps {
   onClose: () => void
   onSave: (label: string, slot: MealSlot, items: MealItem[]) => void
   onDelete: (id: string) => void
+  /** Re-runs the analysis on the same photo with a correction. */
+  onRetry: (id: string, hint: string) => void
 }
 
 const SLOTS: Array<{ value: MealSlot; label: string }> = [
@@ -38,13 +40,22 @@ function toNumber(text: string): number {
  * et pas 780 » is another guess. The total is recomputed live underneath so the
  * effect of a fix is visible while typing.
  */
-export function MealEditorSheet({ open, meal, onClose, onSave, onDelete }: MealEditorSheetProps) {
+export function MealEditorSheet({
+  open,
+  meal,
+  onClose,
+  onSave,
+  onDelete,
+  onRetry,
+}: MealEditorSheetProps) {
   const [label, setLabel] = useState('')
   const [slot, setSlot] = useState<MealSlot>('lunch')
   const [items, setItems] = useState<MealItem[]>([])
+  const [hint, setHint] = useState('')
 
   useEffect(() => {
     if (!open) return
+    setHint(meal?.hint ?? '')
     // A null meal is the « saisir à la main » case: the sheet must open blank
     // rather than showing whatever was corrected last.
     setLabel(meal?.label ?? '')
@@ -77,6 +88,38 @@ export function MealEditorSheet({ open, meal, onClose, onSave, onDelete }: MealE
 
         {meal?.status === 'done' && meal.source === 'ai' ? (
           <p className="text-xs text-muted-foreground">{t.meals.confidence[meal.confidence]}</p>
+        ) : null}
+
+        {/* Correcting the food by hand is slow when the model read the whole
+            plate wrong. Naming the dish and re-running is one sentence, and the
+            person holding the fork knows better than the photo does. */}
+        {meal && meal.source !== 'manual' ? (
+          <div className="rounded-lg border border-border p-2">
+            <h3 className="text-sm font-semibold">{t.meals.hintTitle}</h3>
+            <p className="mb-2 text-xs text-muted-foreground">{t.meals.hintHint}</p>
+            {meal.photoId ? (
+              <>
+                <Textarea
+                  aria-label={t.meals.hintTitle}
+                  value={hint}
+                  placeholder={t.meals.hintPlaceholder}
+                  onChange={(event) => setHint(event.target.value)}
+                />
+                <Button
+                  variant="secondary"
+                  block
+                  className="mt-2"
+                  disabled={!hint.trim()}
+                  onClick={() => onRetry(meal.id, hint.trim())}
+                >
+                  <RefreshCw size={16} aria-hidden />
+                  {t.meals.hintSubmit}
+                </Button>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t.meals.hintNoPhoto}</p>
+            )}
+          </div>
         ) : null}
 
         <ul className="flex flex-col gap-3">

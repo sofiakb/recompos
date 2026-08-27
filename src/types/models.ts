@@ -205,6 +205,13 @@ export interface MealEntry {
   status: MealAnalysisStatus
   /** Provider id that produced the analysis, for when two disagree over time. */
   analysedBy?: string
+  /**
+   * What the user typed to correct a wrong reading, e.g. « couscous, pas du riz ».
+   *
+   * Kept so a later retry starts from the correction rather than from the
+   * mistake, and so the entry records why it says what it says.
+   */
+  hint?: string
   /** Human-readable failure, kept so a retry can explain what went wrong before. */
   error?: string
   /** Thumbnail row in `mealPhotos`. Absent once retention has cleared it. */

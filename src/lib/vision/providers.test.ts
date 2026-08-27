@@ -107,11 +107,33 @@ describe('analyseWithProvider', () => {
     expect(body.messages[1].content[1].image_url.url).toBe(DATA_URL)
   })
 
-  it('passes a user hint through to the prompt', async () => {
+  it('passes a user correction through to the prompt, as authoritative', async () => {
     const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
-    await analyseWithProvider(groq(), { dataUrl: DATA_URL, hint: 'riz complet' }, fetchMock)
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string)
-    expect(body.messages[1].content[0].text).toContain('riz complet')
+    await analyseWithProvider(
+      groq(),
+      { dataUrl: DATA_URL, hint: 'couscous, pas du riz' },
+      fetchMock,
+    )
+    const text = JSON.parse(fetchMock.mock.calls[0][1].body as string).messages[1].content[0].text
+    expect(text).toContain('couscous, pas du riz')
+    // Authoritative on what the food is…
+    expect(text).toMatch(/fait autorité/i)
+    // …but the portions are re-read from the photo, not carried over.
+    expect(text).toMatch(/réestime les portions/i)
+  })
+
+  it('sends no correction framing when there is nothing to correct', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    const text = JSON.parse(fetchMock.mock.calls[0][1].body as string).messages[1].content[0].text
+    expect(text).not.toMatch(/fait autorité/i)
+  })
+
+  it('ignores a blank correction rather than framing an empty one', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL, hint: '   ' }, fetchMock)
+    const text = JSON.parse(fetchMock.mock.calls[0][1].body as string).messages[1].content[0].text
+    expect(text).not.toMatch(/fait autorité/i)
   })
 
   it('asks a second time when the first answer is not usable', async () => {

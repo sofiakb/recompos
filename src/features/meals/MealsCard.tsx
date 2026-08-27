@@ -114,6 +114,12 @@ export function MealsCard({ meals }: MealsCardProps) {
           setEditing(null)
           showToast(t.meals.deleted)
         }}
+        onRetry={(id, hint) => {
+          // The sheet closes: the row shows « Analyse en cours… » and the result
+          // arrives in place, rather than under a sheet frozen on stale numbers.
+          setEditing(null)
+          void meals.retry(id, hint)
+        }}
       />
 
       <MealEditorSheet
@@ -126,6 +132,7 @@ export function MealsCard({ meals }: MealsCardProps) {
           showToast(t.meals.saved(items.reduce((total, item) => total + item.kcal, 0)))
         }}
         onDelete={() => setManualOpen(false)}
+        onRetry={() => setManualOpen(false)}
       />
     </Card>
   )

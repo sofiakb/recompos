@@ -46,6 +46,10 @@ export async function pendingMeals(database: RecompDb = db): Promise<MealEntry[]
   return rows.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
 }
 
+export async function getMeal(id: string, database: RecompDb = db): Promise<MealEntry | undefined> {
+  return database.meals.get(id)
+}
+
 export async function getMealPhoto(
   mealId: string,
   database: RecompDb = db,
@@ -100,8 +104,18 @@ export async function createPendingMeal(
   return { ...meal, photoId: photoRow.id }
 }
 
-export async function markAnalysing(id: string, database: RecompDb = db): Promise<void> {
-  await database.meals.update(id, { status: 'analysing', updatedAt: nowIso() })
+export async function markAnalysing(
+  id: string,
+  hint: string | undefined,
+  database: RecompDb = db,
+): Promise<void> {
+  await database.meals.update(id, {
+    status: 'analysing',
+    // Stored before the call, so a correction survives a failed retry and is
+    // still there for the next one.
+    ...(hint !== undefined ? { hint: hint.trim() || undefined } : {}),
+    updatedAt: nowIso(),
+  })
 }
 
 export async function markFailed(

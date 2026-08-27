@@ -10,7 +10,7 @@
  * first valid answer wins: a rate limit or an outage on one is then a pause of a
  * few seconds rather than a lost meal.
  */
-import { MEAL_SYSTEM_PROMPT, MEAL_USER_PROMPT, repairPrompt } from '@/lib/vision/prompt'
+import { hintPrompt, MEAL_SYSTEM_PROMPT, MEAL_USER_PROMPT, repairPrompt } from '@/lib/vision/prompt'
 import { parseAnalysis, type MealAnalysis } from '@/lib/vision/schema'
 import type { VisionProviderId, VisionProviderSettings } from '@/types/models'
 
@@ -196,7 +196,7 @@ export function mentionsJson(messages: unknown[]): boolean {
 
 function messageContent(input: AnalyseInput) {
   const text = input.hint?.trim()
-    ? `${MEAL_USER_PROMPT}\nPrécision de l'utilisateur : ${input.hint.trim()}`
+    ? `${MEAL_USER_PROMPT}\n\n${hintPrompt(input.hint)}`
     : MEAL_USER_PROMPT
   return [
     { type: 'text', text },
