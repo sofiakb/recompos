@@ -353,6 +353,29 @@ dépend.
 4. Résultat validé, ligne par ligne, puis écrit sur le repas.
 5. Correction humaine à un tap, ligne par ligne.
 
+**Corriger l'identification, pas seulement les chiffres**
+
+Une lecture peut être fausse d'un cran — un chiffre à rectifier — ou fausse de bout en bout : du
+couscous lu comme du riz au lait, un verre de lben lu comme un « dessert aux fruits (type mangue) ».
+Dans le second cas, corriger ligne par ligne revient à ressaisir le repas à la main, ce que la feature
+existe précisément pour éviter.
+
+Le détail d'un repas porte donc un champ **« Ce n'est pas ça ? »** : une phrase — « couscous, bœuf,
+lben, carottes » — relance l'analyse **sur la même photo**. La précision fait autorité sur *ce que
+sont* les aliments, jamais sur *combien* : la personne était à table, le modèle non ; mais les
+portions se relisent sur la photo et ne sont pas reconduites de la lecture qu'on vient de remplacer.
+
+La précision est conservée sur le repas, si bien qu'une relance ultérieure repart de la correction et
+non de l'erreur.
+
+**Deux règles nées d'une lecture ratée**
+
+- **Ne jamais inventer une variété, un parfum ou une origine.** « Dessert lacté » si c'est ce qu'on
+  voit ; pas « type mangue ». Le modèle avait fabriqué une déclinaison de toutes pièces.
+- **Ne pas rabattre le plat sur la cuisine la plus fréquente.** Semoule, couscous, boulgour, riz et
+  quinoa se ressemblent en photo : à défaut de trancher, la famille, une confiance basse, et le doute
+  écrit dans les notes. Même chose pour un liquide blanc, qui n'est pas forcément du lait.
+
 **Le détail plutôt que le total**
 
 La réponse du modèle est stockée aliment par aliment, et c'est le détail qui est éditable. « Le riz

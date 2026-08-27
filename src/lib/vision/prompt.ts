@@ -32,10 +32,37 @@ export const MEAL_SYSTEM_PROMPT = [
   '- Les macros doivent être cohérentes avec les kcal (4/4/9 kcal par g).',
   '- "confidence" vaut "low" dès qu\'un aliment est caché, mélangé ou ambigu.',
   '- Aliment non identifiable : nomme-le « aliment non identifié » plutôt que de deviner.',
+  "- N'invente jamais une variété, un parfum ou une origine que tu ne vois pas.",
+  '  « Dessert lacté » si tu vois un dessert lacté ; pas « type mangue ».',
+  '  Nomme la famille que tu vois, jamais une déclinaison que tu supposes.',
+  '- Ne rabats pas le plat sur la cuisine que tu vois le plus souvent. Semoule,',
+  '  couscous, boulgour, riz et quinoa se ressemblent en photo : si tu ne peux pas',
+  '  trancher, écris la famille (« céréale en grains »), mets "confidence" à "low"',
+  '  et dis dans "notes" entre quoi tu hésites.',
+  "- Un liquide blanc dans un verre n'est pas forcément du lait : lait, lben, kéfir,",
+  '  yaourt à boire, sauce blanche. Là encore, la famille et le doute, pas la déclinaison.',
   '- Tout en français. Aucun champ supplémentaire.',
 ].join('\n')
 
 export const MEAL_USER_PROMPT = "Analyse ce repas. Rends le JSON demandé, rien d'autre."
+
+/**
+ * Frames the correction the user typed after a wrong reading.
+ *
+ * Authoritative on *what* the food is: the person was at the table and the model
+ * was not. Not authoritative on *how much* — the portion still has to be read off
+ * the photo, and a correction naming the dish is not a licence to keep the
+ * quantities from the reading it just replaced.
+ */
+export function hintPrompt(hint: string): string {
+  return [
+    "Correction de l'utilisateur, qui a le plat sous les yeux :",
+    hint.trim(),
+    'Elle fait autorité sur ce que sont les aliments. Reprends la photo depuis le',
+    'début avec cette information, et réestime les portions en conséquence.',
+    "Ne conserve rien de ta lecture précédente qu'elle contredit.",
+  ].join('\n')
+}
 
 /** Re-asks with the failure in hand; a second attempt usually lands. */
 export function repairPrompt(previous: string): string {

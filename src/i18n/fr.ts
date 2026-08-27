@@ -316,6 +316,13 @@ export const fr = {
     capturing: 'Lecture de la photo…',
     analysing: 'Analyse en cours…',
     retry: 'Relancer l’analyse',
+    hintTitle: 'Ce n’est pas ça ?',
+    hintHint:
+      'Dis ce que c’est vraiment. Le modèle te croit sur les aliments et refait l’estimation des portions depuis la photo.',
+    hintPlaceholder: 'couscous, bœuf, lben, carottes',
+    hintSubmit: 'Relancer avec cette précision',
+    hintKept: (text: string) => `Précision donnée : ${text}`,
+    hintNoPhoto: 'La photo a été effacée par la rétention — corrige les lignes à la main.',
     pending: 'En attente de réseau',
     failed: (reason: string) => `Analyse impossible : ${reason}`,
     empty: 'Aucun repas aujourd’hui.',

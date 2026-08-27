@@ -24,6 +24,7 @@ const PORT = 4319
 const HOST = '127.0.0.1'
 let lastRequest = null
 let lastProbe = null
+let corrected = false
 
 const ANSWER = {
   label: 'Poulet, riz, brocolis',
@@ -56,6 +57,17 @@ const cors = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization,content-type',
   'Access-Control-Allow-Methods': 'POST,OPTIONS',
+}
+
+/** What the model returns once the user has told it what the dish really is. */
+const CORRECTED = {
+  label: 'Couscous, bœuf, lben',
+  items: [
+    { name: 'Semoule de couscous', quantity: '250 g', kcal: 280, proteinG: 9, carbsG: 58, fatG: 1 },
+    { name: 'Bœuf mijoté', quantity: '120 g', kcal: 240, proteinG: 24, carbsG: 0, fatG: 16 },
+    { name: 'Lben', quantity: '200 ml', kcal: 80, proteinG: 7, carbsG: 9, fatG: 2 },
+  ],
+  confidence: 'high',
 }
 
 createServer((req, res) => {
@@ -136,6 +148,9 @@ createServer((req, res) => {
     const isImage = Array.isArray(content) && content.some((part) => part.type === 'image_url')
     if (isImage) {
       const image = content.find((part) => part.type === 'image_url').image_url.url
+      const promptText = content.find((part) => part.type === 'text')?.text ?? ''
+      // A correction changes the answer, the way the real thing would.
+      corrected = /fait autorité/i.test(promptText)
       lastRequest = {
         auth,
         model: parsed.model,
@@ -143,6 +158,7 @@ createServer((req, res) => {
         imagePrefix: image.slice(0, 24),
         imageBytes: image.length,
         systemPrompt: parsed.messages[0]?.content?.slice(0, 60),
+        prompt: promptText,
       }
     } else {
       // The key-test call: recorded so the browser run can assert on the bytes
@@ -158,7 +174,13 @@ createServer((req, res) => {
     res.writeHead(200, { ...cors, 'Content-Type': 'application/json' })
     res.end(
       JSON.stringify({
-        choices: [{ message: { content: isImage ? JSON.stringify(ANSWER) : '{"ok":true}' } }],
+        choices: [
+          {
+            message: {
+              content: isImage ? JSON.stringify(corrected ? CORRECTED : ANSWER) : '{"ok":true}',
+            },
+          },
+        ],
       }),
     )
   })

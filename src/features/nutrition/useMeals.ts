@@ -5,6 +5,7 @@ import {
   createManualMeal,
   createPendingMeal,
   editMeal,
+  getMeal,
   getMealPhoto,
   macrosFor,
   markAnalysing,
@@ -35,7 +36,8 @@ export interface MealsState {
   /** Ids currently in flight, so the UI can show a spinner per row. */
   analysing: string[]
   capture: (file: File) => Promise<void>
-  retry: (id: string) => Promise<void>
+  /** Re-runs the analysis on the stored photo, optionally with a correction. */
+  retry: (id: string, hint?: string) => Promise<void>
   correct: (id: string, edit: MealEdit) => Promise<void>
   addManual: (label: string, items: MealItem[], slot: MealSlot) => Promise<void>
   remove: (id: string) => Promise<void>
@@ -85,7 +87,7 @@ export function useMeals(): MealsState {
   const context = useRef({ chain, targetGrams })
   context.current = { chain, targetGrams }
 
-  const analyse = useCallback(async (mealId: string) => {
+  const analyse = useCallback(async (mealId: string, hint?: string) => {
     if (inFlight.has(mealId)) return
     const { chain: providersNow, targetGrams: target } = context.current
     if (providersNow.length === 0) {
@@ -99,10 +101,15 @@ export function useMeals(): MealsState {
     }
     inFlight.add(mealId)
     setAnalysing((current) => (current.includes(mealId) ? current : [...current, mealId]))
-    await markAnalysing(mealId)
+    await markAnalysing(mealId, hint)
+    // A retry with no new correction keeps the last one: the reading it produced
+    // is still better than the one that made the user type it.
+    const meal = await getMeal(mealId)
+    const effectiveHint = hint?.trim() || meal?.hint
     try {
       const outcome = await analyseMeal(providersNow, {
         dataUrl: bytesToDataUrl(photo.bytes, photo.mimeType),
+        hint: effectiveHint,
       })
       await applyAnalysis(mealId, outcome.analysis, outcome.providerId, target)
       haptic()
