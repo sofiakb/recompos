@@ -215,6 +215,13 @@ export const fr = {
     customBadge: 'perso',
     microSets: 'Micro-séries',
     microSetsHint: 'Une série isolée, n’importe quand, sans ouvrir de séance.',
+    isolatedSet: 'Une série isolée, sans séance',
+    sessionInProgress: 'Séance en cours',
+    finish: 'Terminer',
+    logHere: 'Logguer',
+    pastAndStrength: 'Séances passées et index de force',
+    suggestionNote:
+      'Les suggestions viennent de ta dernière série sur le mouvement, jamais d’un barème.',
     logSet: 'Logguer une série',
     logSetFor: (name: string) => `Logguer une série de ${name}`,
     setsToday: 'Séries du jour',

@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Check, CirclePlus, Dumbbell, Plus, Scale } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/sheet'
+import { activeSession } from '@/db/repositories/workoutRepository'
 import { useUiStore } from '@/stores/uiStore'
 import { useFloor } from '@/features/floor/useFloor'
 import { useProtein } from '@/features/nutrition/useProtein'
@@ -28,6 +30,9 @@ export function QuickActionFab() {
   const protein = useProtein()
   const weight = useWeight()
   const [weighInOpen, setWeighInOpen] = useState(false)
+  // Read directly rather than through useWorkouts: the FAB needs one boolean,
+  // not the whole workouts state and its live queries.
+  const session = useLiveQuery(() => activeSession(), [], null)
 
   const QUICK_PROTEIN_GRAMS = 30
 
@@ -69,6 +74,9 @@ export function QuickActionFab() {
 
   // Settings is a place to configure, not to log: no quick action there.
   if (pathname.startsWith('/settings')) return null
+  // During a session the screen is already a set of primary actions; the FAB
+  // would float a second « log a set » over the one that is right there.
+  if (session) return null
 
   return (
     <>
