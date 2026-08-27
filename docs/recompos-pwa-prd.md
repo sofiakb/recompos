@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.8 — refonte de la navigation et des Réglages (handoff `docs/design`) |
+| Version | 1.9 — refonte complète des écrans (handoff `docs/design`) |
 | Date | 2026-08-27 |
-| Statut | Jalons 1 à 7 livrés ; refonte en cours, coquille livrée |
-| Remplace | v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Statut | Jalons 1 à 7 livrés ; refonte livrée |
+| Remplace | v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -761,7 +761,17 @@ L'onglet Aujourd'hui est la racine. Un retour à froid sur l'app y atterrit touj
 - **Dark mode par défaut**, unique thème en V1. Fond quasi noir, surfaces légèrement élevées, un seul
   accent vif réservé aux actions et à la progression.
 - **Contraste** : AA minimum sur tout texte, AAA sur les chiffres clés du Dashboard.
-- **Cibles tactiles** : 48×48 px minimum, 56 px pour les boutons de log rapide.
+- **Cibles tactiles** : 48×48 px minimum, 56 px pour les boutons de log rapide. L'échelle `touch`
+  doit exister sur `height`/`width` **et** sur `minHeight`/`minWidth` dans `tailwind.config.js` :
+  déclarée sur les seules variantes minimales, `h-touch` ne génère rien et le bouton s'écrase à la
+  taille de son icône, sans erreur nulle part. Gardé par un test qui compile les utilitaires.
+- **Sections plutôt que cartes** : un écran est une colonne de sections à plat, chacune une mesure
+  ou une action. Les cartes sont réservées à ce qui est vraiment un objet — la carte « Maintenant »,
+  un bloc de séance. Six cartes de poids égal font d'un écran un défilement, pas une lecture.
+- **Une seule maison par donnée** : un chiffre est saisi et détaillé à un seul endroit ; les autres
+  écrans n'en montrent qu'un résumé tapable qui y mène (décision n°18).
+- **Décimales** : virgule, jamais le point. Un nombre JavaScript rendu tel quel dans du texte
+  français écrit « 78.4 » ; `formatDecimal` est le seul chemin vers l'affichage.
 - **Zone du pouce** : toute action fréquente vit dans le tiers inférieur de l'écran.
 - **Composants** : `Card`, `Button`, `Progress`, `Sheet` (bottom sheet), `Dialog`, `Tabs`, `Toast`
   depuis shadcn/ui.
