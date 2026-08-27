@@ -1,0 +1,68 @@
+{
+  "projectId": "6768cd54-6702-4006-a552-970ab7ba03d6",
+  "shape": "package",
+  "pkg": "recompos",
+  "globalName": "RecompOS",
+  "srcDir": "../../src/components",
+  "tsconfig": "../../.design-sync/tsconfig.sync.json",
+  "cssEntry": ".design-sync/.cache/recompos.css",
+  "extraEntries": [
+    "react-router-dom",
+    "../../src/stores/uiStore.ts"
+  ],
+  "provider": {
+    "component": "MemoryRouter"
+  },
+  "componentSrcMap": {
+    "CardHeader": null,
+    "CardTitle": null,
+    "CardDescription": null,
+    "CardContent": null
+  },
+  "dtsPropsFor": {
+    "Button": "/** Visual style. Default: 'primary'. */\n  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';\n  /** 'default' is the 48px minimum touch target; 'icon' is a 48x48 square. Default: 'default'. */\n  size?: 'default' | 'lg' | 'icon';\n  /** Stretch to the full width of the container. Default: false. */\n  block?: boolean;\n  /** Defaults to 'button' - pass 'submit' explicitly inside a form. */\n  type?: 'button' | 'submit' | 'reset';\n  disabled?: boolean;\n  onClick?: React.MouseEventHandler<HTMLButtonElement>;\n  children?: React.ReactNode;\n  className?: string;",
+    "Card": "children?: React.ReactNode;\n  className?: string;",
+    "Field": "/** Rendered as a <label> bound to the control by id. */\n  label: string;\n  /** Small muted helper text under the control. */\n  hint?: string;\n  /** Render prop: receives the generated id to hang on the control. */\n  children: (id: string) => React.ReactNode;\n  className?: string;",
+    "Input": "type?: string;\n  value?: string | number;\n  defaultValue?: string | number;\n  placeholder?: string;\n  disabled?: boolean;\n  inputMode?: 'text' | 'numeric' | 'decimal' | 'tel' | 'email' | 'search' | 'url';\n  onChange?: React.ChangeEventHandler<HTMLInputElement>;\n  id?: string;\n  className?: string;",
+    "Textarea": "value?: string;\n  defaultValue?: string;\n  placeholder?: string;\n  rows?: number;\n  disabled?: boolean;\n  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;\n  id?: string;\n  className?: string;",
+    "Progress": "/** Current amount. Clamped into 0..max when rendered. */\n  value: number;\n  /** Default: 100. */\n  max?: number;\n  /** Accessible name (aria-label). NOT visible text - the bar draws no caption. */\n  label?: string;\n  className?: string;",
+    "Segmented": "/** Accessible group label for the radio group. */\n  label: string;\n  /** The currently selected option's value. */\n  value: string;\n  options: ReadonlyArray<{ value: string; label: string }>;\n  onChange: (value: string) => void;\n  className?: string;",
+    "Sheet": "/** Nothing renders when false. */\n  open: boolean;\n  /** Called on Escape and on backdrop tap. There is no visible close button. */\n  onClose: () => void;\n  /** Bold heading above the content; omit it and the header disappears. */\n  title?: string;\n  children: React.ReactNode;\n  className?: string;",
+    "ToggleRow": "label: string;\n  checked: boolean;\n  onChange: (checked: boolean) => void;\n  /** Second line of muted text under the label. */\n  description?: string;\n  className?: string;",
+    "LineChart": "/** X axis in order. A null value draws a gap instead of interpolating. */\n  points: Array<{ label: string; value: number | null }>;\n  /** Required - the SVG's accessible name. */\n  ariaLabel: string;\n  /** Optional dashed second series (e.g. a rolling mean). Same length as points. */\n  overlay?: Array<number | null>;\n  /** Formats the axis tick labels. Defaults to an auto-precision number. */\n  formatValue?: (value: number) => string;\n  className?: string;",
+    "ScreenHeader": "title: string;\n  subtitle?: string;\n  /** Shows the settings link on the right. Default: false. */\n  showSettings?: boolean;",
+    "BottomNav": "/** No props - the four tabs and their routes are fixed. Requires a react-router context. */",
+    "Toast": "/** No props - renders whatever is in the ui store, or null when nothing is in flight.\n   * Trigger it with `useUiStore.getState().showToast(message, action?, durationMs?)`. */",
+    "QuickActionFab": "/** No props - the floating action button and its sheet read app state directly.\n   * Requires a react-router context. */",
+    "UpdatePrompt": "/** No props - renders the service-worker update banner, or null when no update is waiting. */"
+  },
+  "overrides": {
+    "Sheet": {
+      "cardMode": "single",
+      "primaryStory": "WeighIn",
+      "viewport": "420x360"
+    },
+    "BottomNav": {
+      "cardMode": "single",
+      "primaryStory": "Default",
+      "viewport": "420x260"
+    },
+    "QuickActionFab": {
+      "cardMode": "single",
+      "primaryStory": "Closed",
+      "viewport": "420x280"
+    },
+    "UpdatePrompt": {
+      "cardMode": "single",
+      "primaryStory": "Default",
+      "viewport": "420x240"
+    },
+    "Toast": {
+      "cardMode": "single",
+      "primaryStory": "WithUndo",
+      "viewport": "420x240"
+    }
+  },
+  "docsDir": "../../.design-sync/docs",
+  "readmeHeader": ".design-sync/conventions.md"
+}
