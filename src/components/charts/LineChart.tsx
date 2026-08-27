@@ -21,19 +21,29 @@ const HEIGHT = 140
 const PAD = { left: 34, right: 8, top: 8, bottom: 18 }
 
 /**
+ * Enough decimals for the axis labels to differ.
+ *
+ * A weight series that moves by 300 g rounds to the same integer three times
+ * over, and an axis that reads « 78 / 78 / 78 » says nothing. Precision is
+ * chosen from the ticks themselves rather than fixed per chart, so a series
+ * spanning kilos still reads in whole numbers.
+ */
+function pickDecimals(ticks: number[]): number {
+  for (const decimals of [0, 1, 2]) {
+    const labels = new Set(ticks.map((value) => value.toFixed(decimals)))
+    if (labels.size === ticks.length) return decimals
+  }
+  return 2
+}
+
+/**
  * A small SVG line chart, hand-drawn.
  *
  * Recharts would bring roughly 100 kB gzip for three of these, against a 200 kB
  * budget for the whole shell (PRD §4). Two axes, a path and a fill are cheaper
  * to own than to import.
  */
-export function LineChart({
-  points,
-  ariaLabel,
-  overlay,
-  formatValue = (value) => String(Math.round(value)),
-  className,
-}: LineChartProps) {
+export function LineChart({ points, ariaLabel, overlay, formatValue, className }: LineChartProps) {
   const gradientId = useId()
   const values = [...points.map((point) => point.value), ...(overlay ?? [])].filter(
     (value): value is number => value !== null,
@@ -46,6 +56,12 @@ export function LineChart({
   const span = max - min || Math.max(1, Math.abs(max) * 0.1)
   const top = max + span * 0.1
   const bottom = min - span * 0.1
+
+  // Ticks sit on the data itself, not on the padded extremes: the top gridline
+  // marks the highest point recorded rather than an invented ceiling.
+  const ticks = min === max ? [min] : [max, (min + max) / 2, min]
+  const decimals = pickDecimals(ticks)
+  const label = formatValue ?? ((value: number) => value.toFixed(decimals).replace('.', ','))
 
   const plotWidth = WIDTH - PAD.left - PAD.right
   const plotHeight = HEIGHT - PAD.top - PAD.bottom
@@ -99,7 +115,7 @@ export function LineChart({
         </linearGradient>
       </defs>
 
-      {[top, (top + bottom) / 2, bottom].map((value, index) => (
+      {ticks.map((value, index) => (
         <g key={index}>
           <line
             x1={PAD.left}
@@ -116,7 +132,7 @@ export function LineChart({
             fontSize="8"
             fill="hsl(var(--muted-foreground))"
           >
-            {formatValue(value)}
+            {label(value)}
           </text>
         </g>
       ))}

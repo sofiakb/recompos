@@ -1,19 +1,21 @@
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Check, CirclePlus, Dumbbell, Plus } from 'lucide-react'
+import { Check, CirclePlus, Dumbbell, Plus, Scale } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/sheet'
 import { useUiStore } from '@/stores/uiStore'
 import { useFloor } from '@/features/floor/useFloor'
 import { useProtein } from '@/features/nutrition/useProtein'
+import { WeightSheet } from '@/features/weight/WeightSheet'
+import { useWeight } from '@/features/weight/useWeight'
 import { t } from '@/i18n/fr'
 
 /**
  * The three-taps-max guarantee (PRD §3.1): a core action is reachable from any
  * tab without navigating first.
  *
- * All three actions are wired end to end: the floor and the protein counter act
- * in place, and logging a set hands off to the workouts screen with its logger
- * already open.
+ * The floor, the protein counter and the weigh-in act in place; logging a set
+ * hands off to the workouts screen with its logger already open.
  */
 export function QuickActionFab() {
   const open = useUiStore((state) => state.quickActionOpen)
@@ -24,6 +26,8 @@ export function QuickActionFab() {
   const { pathname } = useLocation()
   const { completeFloor, floorCompleted } = useFloor()
   const protein = useProtein()
+  const weight = useWeight()
+  const [weighInOpen, setWeighInOpen] = useState(false)
 
   const QUICK_PROTEIN_GRAMS = 30
 
@@ -53,6 +57,14 @@ export function QuickActionFab() {
     // the quick action asks it to open its logger rather than duplicating both.
     requestMicroSet()
     navigate('/workouts')
+  }
+
+  // A weigh-in is a single number: it is logged here rather than sent to Trends,
+  // so the quick action stays one tap plus the keypad from any tab.
+  const onLogWeight = async (kg: number) => {
+    await weight.log(kg)
+    setWeighInOpen(false)
+    showToast(t.weight.saved(kg))
   }
 
   // Settings is a place to configure, not to log: no quick action there.
@@ -95,8 +107,28 @@ export function QuickActionFab() {
             <Dumbbell size={20} aria-hidden />
             {t.quickAction.addSet}
           </Button>
+          <Button
+            size="lg"
+            block
+            variant="secondary"
+            className="justify-start"
+            onClick={() => {
+              setOpen(false)
+              setWeighInOpen(true)
+            }}
+          >
+            <Scale size={20} aria-hidden />
+            {t.quickAction.logWeight}
+          </Button>
         </div>
       </Sheet>
+
+      <WeightSheet
+        open={weighInOpen}
+        initialKg={weight.latest?.weightKg ?? null}
+        onClose={() => setWeighInOpen(false)}
+        onSubmit={onLogWeight}
+      />
     </>
   )
 }
