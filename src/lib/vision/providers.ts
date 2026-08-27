@@ -18,7 +18,15 @@ export interface ProviderDefinition {
   id: VisionProviderId
   label: string
   baseUrl: string
+  /** Empty means the user must name one; the provider is skipped until they do. */
   defaultModel: string
+  /**
+   * Tried once when the default model turns out not to exist.
+   *
+   * Hosted model ids are renamed and retired without warning, and a build that
+   * pins one is a build that stops working on someone else's schedule.
+   */
+  fallbackModel?: string
   /** Where the user goes to create a key. */
   keyUrl: string
   /** `custom` asks for its own endpoint; the hosted ones do not. */
@@ -30,7 +38,8 @@ export const PROVIDERS: Record<VisionProviderId, ProviderDefinition> = {
     id: 'groq',
     label: 'Groq',
     baseUrl: 'https://api.groq.com/openai/v1',
-    defaultModel: 'meta-llama/llama-4-scout-17b-16e-instruct',
+    defaultModel: 'qwen/qwen3.8-27b',
+    fallbackModel: 'qwen/qwen3.6-27b',
     keyUrl: 'https://console.groq.com/keys',
     needsBaseUrl: false,
   },
@@ -38,7 +47,10 @@ export const PROVIDERS: Record<VisionProviderId, ProviderDefinition> = {
     id: 'openrouter',
     label: 'OpenRouter',
     baseUrl: 'https://openrouter.ai/api/v1',
-    defaultModel: 'meta-llama/llama-4-scout',
+    // No default on purpose: OpenRouter's catalogue is too wide to guess a
+    // vision model that will still exist next month. Naming the model is the
+    // price of using it, and an unnamed provider stays out of the chain.
+    defaultModel: '',
     keyUrl: 'https://openrouter.ai/keys',
     needsBaseUrl: false,
   },
@@ -55,7 +67,14 @@ export const PROVIDERS: Record<VisionProviderId, ProviderDefinition> = {
 /** Order the chain is attempted in, cheapest and fastest first. */
 export const VISION_PROVIDER_ORDER: VisionProviderId[] = ['groq', 'openrouter', 'custom']
 
-export type VisionErrorKind = 'auth' | 'rate_limit' | 'network' | 'server' | 'bad_response'
+export type VisionErrorKind =
+  | 'auth'
+  | 'rate_limit'
+  | 'network'
+  | 'server'
+  | 'bad_response'
+  /** The endpoint answered, but does not know that model. */
+  | 'model'
 
 export class VisionError extends Error {
   constructor(
@@ -81,20 +100,34 @@ export interface ConfiguredProvider {
 }
 
 const REQUEST_TIMEOUT_MS = 45_000
-const MAX_TOKENS = 1200
+/**
+ * Generous, because the current vision models reason before they answer and
+ * those tokens count against the same budget. A truncated completion is an
+ * unparseable one.
+ */
+const MAX_TOKENS = 2048
 
 export function resolveEndpoint(
   id: VisionProviderId,
   settings: VisionProviderSettings,
+  useFallbackModel = false,
 ): { url: string; model: string } | null {
   const definition = PROVIDERS[id]
   const baseUrl = (definition.needsBaseUrl ? settings.baseUrl : definition.baseUrl)?.replace(
     /\/+$/,
     '',
   )
-  const model = settings.model?.trim() || definition.defaultModel
+  const chosen = settings.model?.trim()
+  // A model the user typed is never second-guessed: the fallback exists for the
+  // built-in default going stale, not to override a deliberate choice.
+  const model = chosen || (useFallbackModel ? definition.fallbackModel : definition.defaultModel)
   if (!baseUrl || !model) return null
   return { url: `${baseUrl}/chat/completions`, model }
+}
+
+/** True when the built-in default failed and a backup is worth one retry. */
+function hasFallbackModel(id: VisionProviderId, settings: VisionProviderSettings): boolean {
+  return !settings.model?.trim() && Boolean(PROVIDERS[id].fallbackModel)
 }
 
 /** Providers with a key, in chain order. */
@@ -125,8 +158,9 @@ async function postCompletion(
   settings: VisionProviderSettings,
   messages: unknown[],
   fetchImpl: typeof fetch,
+  useFallbackModel = false,
 ): Promise<string> {
-  const endpoint = resolveEndpoint(id, settings)
+  const endpoint = resolveEndpoint(id, settings, useFallbackModel)
   if (!endpoint) throw new VisionError('bad_response', 'Provider mal configuré', id)
 
   const controller = new AbortController()
@@ -145,7 +179,9 @@ async function postCompletion(
         // Low but not zero: at zero these models repeat a wrong reading of the
         // plate verbatim on every retry.
         temperature: 0.2,
-        max_tokens: MAX_TOKENS,
+        // The OpenAI-compatible spelling the current provider docs use;
+        // `max_tokens` is the deprecated alias.
+        max_completion_tokens: MAX_TOKENS,
         response_format: { type: 'json_object' },
       }),
       signal: controller.signal,
@@ -164,6 +200,12 @@ async function postCompletion(
       throw new VisionError('auth', 'Clé refusée', id)
     }
     if (response.status === 429) throw new VisionError('rate_limit', 'Quota atteint', id)
+    // A retired or misspelled model id answers 404 with a body naming it. Kept
+    // apart from a server fault because it is the user's to fix — and because a
+    // built-in default going stale earns one automatic retry on the backup.
+    if (response.status === 404 || /model_not_found|does not exist/i.test(detail)) {
+      throw new VisionError('model', `Modèle inconnu : ${endpoint.model}`, id)
+    }
     throw new VisionError(
       'server',
       `Erreur ${response.status}${detail ? ` — ${detail.slice(0, 120)}` : ''}`,
@@ -198,7 +240,20 @@ export async function analyseWithProvider(
     { role: 'user', content: messageContent(input) },
   ]
 
-  const first = await postCompletion(provider.id, provider.settings, messages, fetchImpl)
+  let useFallbackModel = false
+  let first: string
+  try {
+    first = await postCompletion(provider.id, provider.settings, messages, fetchImpl)
+  } catch (error) {
+    const retryable =
+      error instanceof VisionError &&
+      error.kind === 'model' &&
+      hasFallbackModel(provider.id, provider.settings)
+    if (!retryable) throw error
+    useFallbackModel = true
+    first = await postCompletion(provider.id, provider.settings, messages, fetchImpl, true)
+  }
+
   const parsed = parseAnalysis(first)
   if (parsed) return parsed
 
@@ -211,6 +266,7 @@ export async function analyseWithProvider(
       { role: 'user', content: repairPrompt(first) },
     ],
     fetchImpl,
+    useFallbackModel,
   )
   const second = parseAnalysis(repaired)
   if (second) return second
@@ -263,15 +319,24 @@ export async function testProvider(
 ): Promise<{ ok: true; model: string } | { ok: false; kind: VisionErrorKind; message: string }> {
   const endpoint = resolveEndpoint(id, settings)
   if (!endpoint) return { ok: false, kind: 'bad_response', message: 'Endpoint ou modèle manquant' }
+  const probe = [{ role: 'user', content: 'Réponds exactement : {"ok":true}' }]
   try {
-    await postCompletion(
-      id,
-      settings,
-      [{ role: 'user', content: 'Réponds exactement : {"ok":true}' }],
-      fetchImpl,
-    )
+    await postCompletion(id, settings, probe, fetchImpl)
     return { ok: true, model: endpoint.model }
   } catch (error) {
+    if (error instanceof VisionError && error.kind === 'model' && hasFallbackModel(id, settings)) {
+      // Reports the model that actually answered, so the settings screen never
+      // names one the real requests will not use.
+      try {
+        await postCompletion(id, settings, probe, fetchImpl, true)
+        const backup = resolveEndpoint(id, settings, true)
+        if (backup) return { ok: true, model: backup.model }
+      } catch (fallbackError) {
+        if (fallbackError instanceof VisionError) {
+          return { ok: false, kind: fallbackError.kind, message: fallbackError.message }
+        }
+      }
+    }
     if (error instanceof VisionError) return { ok: false, kind: error.kind, message: error.message }
     return { ok: false, kind: 'network', message: 'Échec inattendu' }
   }

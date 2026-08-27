@@ -85,7 +85,7 @@ une décision d'implémentation.
 | Tests | Vitest + Testing Library + jsdom | Logique métier couverte en priorité |
 | Qualité | ESLint, Prettier, `tsc --noEmit` | Bloquants en CI |
 | CI/CD | GitHub Actions → GitHub Pages | Déploiement sur push `main` |
-| Vision | Endpoints OpenAI-compatibles (Groq, OpenRouter, libre) | Appelés depuis la page avec la clé de l'utilisateur. Aucun SDK : `fetch` et un parseur maison |
+| Vision | Endpoints OpenAI-compatibles (Groq, OpenRouter, libre) | Appelés depuis la page avec la clé de l'utilisateur. Aucun SDK : `fetch` et un parseur maison. **CORS vérifié sur Groq depuis un navigateur le 27/08/2026** — aucun relais nécessaire |
 
 **Contraintes de bundle** : app shell sous 200 Ko gzip, vérifié à chaque build. Aucun découpage en
 chunks n'a été nécessaire : au jalon 7, l'app complète pèse ~159 Ko gzip.
@@ -398,6 +398,19 @@ de sauvegarde pour un problème qui ne se pose pas.
 
 Les repas partent dans l'export JSON ; leurs photos non, pour la même raison que la rétention les
 efface. Un import restaure les chiffres et laisse les vignettes derrière.
+
+**Modèles**
+
+`qwen/qwen3.8-27b` par défaut sur Groq, avec `qwen/qwen3.6-27b` en secours automatique si le premier
+disparaît du catalogue. Les identifiants de modèles hébergés sont renommés et retirés sans préavis, et
+une version qui en épingle un est une version qui cesse de marcher au calendrier de quelqu'un d'autre.
+Un modèle saisi à la main n'est jamais remplacé : le secours existe pour le défaut intégré, pas pour
+contredire un choix délibéré.
+
+Ces modèles raisonnent avant de répondre, ce qui a deux conséquences : le budget de tokens est fixé à
+2048 pour qu'une réponse ne soit pas tronquée, et l'extracteur JSON parcourt **tous** les objets
+équilibrés de la réponse plutôt que du premier `{` au dernier `}` — un préambule de raisonnement
+contient ses propres accolades.
 
 **Chaîne de services**
 
@@ -765,7 +778,8 @@ Explicitement exclu, pour éviter la dérive :
 | Une bibliothèque de graphiques alourdit le démarrage | Ouverture lente | Courbes SVG écrites à la main, aucune dépendance ajoutée |
 | Dérive de périmètre jalon après jalon | V1 jamais livrée | Section 14 opposable, critères de sortie par jalon |
 | Estimation calorique fausse et crue sur parole | Décisions alimentaires sur un mauvais chiffre | Confiance affichée, détail corrigible ligne par ligne, totaux recalculés depuis le détail. L'erreur dominante est la portion : le prompt y consacre ses consignes |
-| Le service de vision refuse les appels depuis le navigateur (CORS) | Fonction inutilisable | Bouton « tester la clé » qui l'établit en un tap ; repli documenté sur un relais minimal, sans toucher au reste |
+| ~~Le service de vision refuse les appels depuis le navigateur (CORS)~~ | — | **Écarté le 27/08/2026** : Groq répond bien à un appel cross-origin depuis la page. Le bouton « tester la clé » reste la façon de le revérifier si un service change de politique |
+| Un identifiant de modèle est retiré par le fournisseur | Analyse cassée du jour au lendemain | Un 404 est distingué d'une panne et déclenche un repli automatique sur un modèle de secours, une fois. Un modèle saisi à la main n'est jamais remplacé. Le message dit « modèle introuvable », pas « erreur du service » |
 | Clé API exposée | Facturation détournée | Jamais dans le bundle ni dans git (décision n°16). Saisie locale, retirable en un tap |
 | Abandon du suivi calorique | Module mort dans l'app | Additif par construction : aucun autre écran n'en dépend, et la saisie manuelle survit sans clé |
 
