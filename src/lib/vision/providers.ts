@@ -75,6 +75,8 @@ export type VisionErrorKind =
   | 'bad_response'
   /** The endpoint answered, but does not know that model. */
   | 'model'
+  /** The image would push the request past the documented ceiling. */
+  | 'too_large'
 
 export class VisionError extends Error {
   constructor(
@@ -94,6 +96,17 @@ export interface AnalyseInput {
   hint?: string
 }
 
+/**
+ * True when the encoded image is small enough to send.
+ *
+ * A meal photo capped at 1024 px lands two orders of magnitude under the limit,
+ * so this never fires in practice — but « never in practice » is exactly the
+ * check worth having when the alternative is a 400 the user has to interpret.
+ */
+export function fitsInRequest(dataUrl: string): boolean {
+  return dataUrl.length + REQUEST_OVERHEAD_BYTES <= MAX_REQUEST_BYTES
+}
+
 export interface ConfiguredProvider {
   id: VisionProviderId
   settings: VisionProviderSettings
@@ -101,11 +114,24 @@ export interface ConfiguredProvider {
 
 const REQUEST_TIMEOUT_MS = 45_000
 /**
- * Generous, because the current vision models reason before they answer and
- * those tokens count against the same budget. A truncated completion is an
- * unparseable one.
+ * Double the documented default of 1024, which the documentation itself invites
+ * for anything demanding: these models reason before answering and those tokens
+ * come out of this budget, so a plate with six items on it can run a truncated
+ * — therefore unparseable — completion at the default.
+ *
+ * The image is charged separately, on the input side: 2048 tokens per image.
  */
 const MAX_TOKENS = 2048
+
+/**
+ * Hard ceiling documented for a request carrying an image: past it the provider
+ * answers 400. Checked before sending so the failure names the real cause
+ * instead of arriving as a generic server error.
+ */
+export const MAX_REQUEST_BYTES = 20 * 1024 * 1024
+
+/** Headroom for the prompt, the headers and the JSON framing around the image. */
+const REQUEST_OVERHEAD_BYTES = 64 * 1024
 
 export function resolveEndpoint(
   id: VisionProviderId,
@@ -143,6 +169,31 @@ export function configuredProviders(
   })
 }
 
+/**
+ * Whether the conversation is allowed to ask for JSON mode.
+ *
+ * These platforms reject `response_format: json_object` unless the word « json »
+ * appears somewhere in the messages — a guard against asking for a shape the
+ * prompt never described. Rather than trusting every call site to remember, the
+ * flag is derived from the messages themselves: a prompt that never says JSON
+ * simply does not get JSON mode, and gets an answer instead of a 400.
+ */
+export function mentionsJson(messages: unknown[]): boolean {
+  const texts: string[] = []
+  for (const message of messages) {
+    const content = (message as { content?: unknown }).content
+    if (typeof content === 'string') {
+      texts.push(content)
+    } else if (Array.isArray(content)) {
+      for (const part of content) {
+        const text = (part as { text?: unknown }).text
+        if (typeof text === 'string') texts.push(text)
+      }
+    }
+  }
+  return texts.some((text) => /json/i.test(text))
+}
+
 function messageContent(input: AnalyseInput) {
   const text = input.hint?.trim()
     ? `${MEAL_USER_PROMPT}\nPrécision de l'utilisateur : ${input.hint.trim()}`
@@ -176,13 +227,15 @@ async function postCompletion(
       body: JSON.stringify({
         model: endpoint.model,
         messages,
-        // Low but not zero: at zero these models repeat a wrong reading of the
-        // plate verbatim on every retry.
-        temperature: 0.2,
+        // The documented range for this model is 0.5–0.7, lower being the more
+        // consistent end. Reading a plate is an extraction task, not a creative
+        // one, so it sits at the bottom of the range — and not below it, which
+        // is outside what the model is documented to handle well.
+        temperature: 0.5,
         // The OpenAI-compatible spelling the current provider docs use;
         // `max_tokens` is the deprecated alias.
         max_completion_tokens: MAX_TOKENS,
-        response_format: { type: 'json_object' },
+        ...(mentionsJson(messages) ? { response_format: { type: 'json_object' } } : {}),
       }),
       signal: controller.signal,
     })
@@ -239,6 +292,10 @@ export async function analyseWithProvider(
     { role: 'system', content: MEAL_SYSTEM_PROMPT },
     { role: 'user', content: messageContent(input) },
   ]
+
+  if (!fitsInRequest(input.dataUrl)) {
+    throw new VisionError('too_large', 'Photo trop lourde pour ce service', provider.id)
+  }
 
   let useFallbackModel = false
   let first: string
@@ -319,7 +376,10 @@ export async function testProvider(
 ): Promise<{ ok: true; model: string } | { ok: false; kind: VisionErrorKind; message: string }> {
   const endpoint = resolveEndpoint(id, settings)
   if (!endpoint) return { ok: false, kind: 'bad_response', message: 'Endpoint ou modèle manquant' }
-  const probe = [{ role: 'user', content: 'Réponds exactement : {"ok":true}' }]
+  // Says « JSON » on purpose: the probe should exercise the same JSON mode the
+  // real requests use, so a platform that refuses it fails here rather than on
+  // the user's first plate.
+  const probe = [{ role: 'user', content: 'Réponds en JSON avec exactement : {"ok":true}' }]
   try {
     await postCompletion(id, settings, probe, fetchImpl)
     return { ok: true, model: endpoint.model }

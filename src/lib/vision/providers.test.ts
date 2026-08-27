@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   analyseMeal,
+  fitsInRequest,
+  MAX_REQUEST_BYTES,
+  mentionsJson,
   analyseWithProvider,
   configuredProviders,
   resolveEndpoint,
@@ -207,6 +210,106 @@ describe('analyseMeal', () => {
 
   it('says so when nothing is configured', async () => {
     await expect(analyseMeal([], { dataUrl: DATA_URL })).rejects.toMatchObject({ kind: 'auth' })
+  })
+})
+
+/**
+ * One test per constraint the provider documentation states, so a future edit
+ * that quietly drops one fails here rather than on a plate.
+ */
+describe('provider contract', () => {
+  it('asks for JSON mode only when the prompt says « json »', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+
+    // The platform rejects response_format unless the word appears somewhere.
+    expect(body.response_format).toEqual({ type: 'json_object' })
+    const said = JSON.stringify(body.messages)
+    expect(/json/i.test(said)).toBe(true)
+  })
+
+  it('drops JSON mode rather than sending a request the platform will refuse', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply('{"ok":true}'))
+    await testProvider(
+      'custom',
+      { apiKey: 'k', enabled: true, baseUrl: 'http://x/v1', model: 'm' },
+      fetchMock,
+    ).catch(() => undefined)
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+    // The probe does say « JSON », so mode stays on and exercises the real path.
+    expect(/json/i.test(JSON.stringify(body.messages))).toBe(true)
+    expect(body.response_format).toEqual({ type: 'json_object' })
+  })
+
+  it('detects the word in a plain message, in a content part, and not elsewhere', () => {
+    expect(mentionsJson([{ role: 'user', content: 'Rends du JSON' }])).toBe(true)
+    expect(
+      mentionsJson([{ role: 'user', content: [{ type: 'text', text: 'réponds en json' }] }]),
+    ).toBe(true)
+    expect(mentionsJson([{ role: 'user', content: 'Décris ce plat' }])).toBe(false)
+    // An image part carries no text, and must not be mistaken for one.
+    expect(
+      mentionsJson([
+        { role: 'user', content: [{ type: 'image_url', image_url: { url: 'data:image/json' } }] },
+      ]),
+    ).toBe(false)
+    expect(mentionsJson([])).toBe(false)
+  })
+
+  it('omits JSON mode when the messages never ask for it', () => {
+    // The guard is what keeps a prompt edit from earning a 400: it reads the
+    // messages rather than trusting the call site to remember the rule.
+    expect(mentionsJson([{ role: 'user', content: 'Décris ce plat' }])).toBe(false)
+  })
+
+  it('uses the documented completion-budget field, not the deprecated alias', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(body.max_completion_tokens).toBe(2048)
+    expect(body.max_tokens).toBeUndefined()
+  })
+
+  it('stays inside the documented temperature range, at its consistent end', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    const { temperature } = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(temperature).toBeGreaterThanOrEqual(0.5)
+    expect(temperature).toBeLessThanOrEqual(0.7)
+    expect(temperature).toBe(0.5)
+  })
+
+  it('raises the completion budget above the documented default of 1024', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).max_completion_tokens).toBeGreaterThan(1024)
+  })
+
+  it('sends exactly one image, the documented maximum being three', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    const content = JSON.parse(fetchMock.mock.calls[0][1].body).messages[1].content
+    expect(content.filter((part: { type: string }) => part.type === 'image_url')).toHaveLength(1)
+  })
+
+  it('sends the image inline as a data URL, never as a hosted link', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL }, fetchMock)
+    const content = JSON.parse(fetchMock.mock.calls[0][1].body).messages[1].content
+    expect(content[1].image_url.url.startsWith('data:image/')).toBe(true)
+  })
+
+  it('refuses a photo past the documented ceiling instead of earning a 400', async () => {
+    const huge = `data:image/webp;base64,${'A'.repeat(MAX_REQUEST_BYTES)}`
+    expect(fitsInRequest(huge)).toBe(false)
+    expect(fitsInRequest(DATA_URL)).toBe(true)
+
+    const fetchMock = vi.fn()
+    await expect(analyseWithProvider(groq(), { dataUrl: huge }, fetchMock)).rejects.toMatchObject({
+      kind: 'too_large',
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
 

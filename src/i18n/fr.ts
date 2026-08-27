@@ -398,6 +398,7 @@ export const fr = {
       server: 'erreur du service',
       bad_response: 'réponse illisible',
       model: 'modèle introuvable chez ce service',
+      too_large: 'photo trop lourde pour ce service',
     },
     corsHelp:
       'Si le test échoue en « pas de réponse » alors que la clé est bonne, c’est que le service refuse les appels directs depuis le navigateur. Il faudra passer par un petit relais.',
