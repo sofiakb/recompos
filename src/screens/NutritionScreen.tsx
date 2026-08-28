@@ -1,11 +1,12 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Camera, Trash2 } from 'lucide-react'
+import { Camera, Sparkles, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Sheet } from '@/components/ui/sheet'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { CalorieCard } from '@/features/meals/CalorieCard'
+import { DescribeMealSheet } from '@/features/meals/DescribeMealSheet'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
 import { DayJournal } from '@/features/nutrition/DayJournal'
@@ -37,6 +38,8 @@ export function NutritionScreen() {
   const fileInput = useRef<HTMLInputElement>(null)
   const [customOpen, setCustomOpen] = useState(false)
   const [capturing, setCapturing] = useState(false)
+  const [describeOpen, setDescribeOpen] = useState(false)
+  const [describing, setDescribing] = useState(false)
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
   const [mealSheetOpen, setMealSheetOpen] = useState(false)
   const [editingLog, setEditingLog] = useState<ProteinLog | null>(null)
@@ -115,6 +118,15 @@ export function NutritionScreen() {
             <Camera size={18} aria-hidden />
             {capturing ? t.meals.capturing : t.nutrition.aMeal}
           </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            disabled={!meals.canAnalyse}
+            onClick={() => setDescribeOpen(true)}
+          >
+            <Sparkles size={18} aria-hidden />
+            {t.nutrition.describeMeal}
+          </Button>
         </div>
 
         {!meals.canAnalyse ? (
@@ -159,6 +171,22 @@ export function NutritionScreen() {
         onSubmit={(grams) => {
           setCustomOpen(false)
           void addWithUndo(grams, 'meal')
+        }}
+      />
+
+      <DescribeMealSheet
+        open={describeOpen}
+        pending={describing}
+        onClose={() => setDescribeOpen(false)}
+        onSubmit={(description) => {
+          setDescribing(true)
+          void meals
+            .describeMeal(description)
+            .catch(() => showToast(t.meals.unknownError))
+            .finally(() => {
+              setDescribing(false)
+              setDescribeOpen(false)
+            })
         }}
       />
 

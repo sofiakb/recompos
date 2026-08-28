@@ -23,6 +23,7 @@ export {
 
 export {
   analyseMealPhoto as analyseMeal,
+  analyseMealText,
   analysePhotoWithProvider as analyseWithProvider,
   type AnalyseInput,
   type AnalyseOutcome,

@@ -104,6 +104,46 @@ export async function createPendingMeal(
   return { ...meal, photoId: photoRow.id }
 }
 
+/**
+ * A meal described in words, queued for analysis.
+ *
+ * Written before the call like a photographed one, and for the same reason: the
+ * retry queue must be able to pick it up after a closed tab or a dead network.
+ * The description lives in `hint`, the field that already means « what the user
+ * told the model », so a retry starts from it rather than from nothing.
+ */
+export async function createTextMeal(
+  description: string,
+  options: { date?: IsoDate; slot?: MealSlot } = {},
+  database: RecompDb = db,
+): Promise<MealEntry> {
+  const now = nowIso()
+  const date = options.date ?? toLogicalDate()
+  const text = description.trim()
+  const meal: MealEntry = {
+    id: createId(),
+    date,
+    timestamp: now,
+    slot: options.slot ?? slotForHour(new Date().getHours()),
+    // Shown in the journal while the analysis runs, so the row says what it is
+    // instead of « repas » for as long as the call takes.
+    label: text.slice(0, 80),
+    items: [],
+    kcal: 0,
+    proteinG: 0,
+    carbsG: 0,
+    fatG: 0,
+    confidence: 'low',
+    source: 'ai_text',
+    status: 'pending',
+    hint: text,
+    createdAt: now,
+    updatedAt: now,
+  }
+  await database.meals.add(meal)
+  return meal
+}
+
 export async function markAnalysing(
   id: string,
   hint: string | undefined,
@@ -232,7 +272,10 @@ export async function editMeal(
     ...(edit.slot !== undefined ? { slot: edit.slot } : {}),
     items,
     ...totals,
-    source: itemsChanged && meal.source === 'ai' ? 'corrected' : meal.source,
+    source:
+      itemsChanged && (meal.source === 'ai' || meal.source === 'ai_text')
+        ? 'corrected'
+        : meal.source,
     status: 'done',
     error: undefined,
     updatedAt: nowIso(),

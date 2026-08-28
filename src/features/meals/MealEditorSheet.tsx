@@ -105,7 +105,7 @@ export function MealEditorSheet({
 
         <Segmented label={t.meals.slotLabel} value={slot} options={SLOTS} onChange={setSlot} />
 
-        {meal?.status === 'done' && meal.source === 'ai' ? (
+        {meal?.status === 'done' && (meal.source === 'ai' || meal.source === 'ai_text') ? (
           <p className="text-xs text-muted-foreground">{t.meals.confidence[meal.confidence]}</p>
         ) : null}
 
@@ -116,7 +116,7 @@ export function MealEditorSheet({
           <div className="rounded-lg border border-border p-2">
             <h3 className="text-sm font-semibold">{t.meals.hintTitle}</h3>
             <p className="mb-2 text-xs text-muted-foreground">{t.meals.hintHint}</p>
-            {meal.photoId ? (
+            {meal.photoId || meal.source === 'ai_text' ? (
               <>
                 <Textarea
                   aria-label={t.meals.hintTitle}

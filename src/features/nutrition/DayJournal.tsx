@@ -116,7 +116,9 @@ export function DayJournal({ entries, analysing, onOpenProtein, onOpenMeal }: Da
             ? t.meals.correctedBadge
             : meal.source === 'manual'
               ? t.meals.manualBadge
-              : null
+              : meal.source === 'ai_text'
+                ? t.meals.textBadge
+                : null
 
         return (
           <Row

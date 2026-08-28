@@ -4,6 +4,7 @@ import {
   applyAnalysis,
   createManualMeal,
   createPendingMeal,
+  createTextMeal,
   editMeal,
   getMeal,
   getMealPhoto,
@@ -23,7 +24,12 @@ import { bytesToDataUrl } from '@/lib/backup'
 import { toLogicalDate } from '@/lib/date'
 import { encodePhoto, MEAL_MAX_EDGE_PX, MEAL_WEBP_QUALITY } from '@/lib/image'
 import { haptic } from '@/lib/utils'
-import { analyseMeal, configuredProviders, VisionError } from '@/lib/vision/providers'
+import {
+  analyseMeal,
+  analyseMealText,
+  configuredProviders,
+  VisionError,
+} from '@/lib/vision/providers'
 import { t } from '@/i18n/fr'
 import type { MealEntry, MealItem, MealSlot } from '@/types/models'
 
@@ -40,6 +46,8 @@ export interface MealsState {
   retry: (id: string, hint?: string) => Promise<void>
   correct: (id: string, edit: MealEdit) => Promise<void>
   addManual: (label: string, items: MealItem[], slot: MealSlot) => Promise<void>
+  /** Queues a meal described in words, then analyses it. */
+  describeMeal: (description: string) => Promise<void>
   remove: (id: string) => Promise<void>
   photoUrlFor: (id: string) => Promise<string | null>
 }
@@ -94,23 +102,33 @@ export function useMeals(): MealsState {
       await markFailed(mealId, t.vision.errorKind.auth)
       return
     }
-    const photo = await getMealPhoto(mealId)
-    if (!photo) {
+    const meal = await getMeal(mealId)
+    if (!meal) return
+    const isText = meal.source === 'ai_text'
+
+    const photo = isText ? null : await getMealPhoto(mealId)
+    if (!isText && !photo) {
       await markFailed(mealId, t.meals.photoGone)
       return
     }
+    if (isText && !meal.hint) {
+      await markFailed(mealId, t.meals.descriptionGone)
+      return
+    }
+
     inFlight.add(mealId)
     setAnalysing((current) => (current.includes(mealId) ? current : [...current, mealId]))
     await markAnalysing(mealId, hint)
     // A retry with no new correction keeps the last one: the reading it produced
     // is still better than the one that made the user type it.
-    const meal = await getMeal(mealId)
-    const effectiveHint = hint?.trim() || meal?.hint
+    const effectiveHint = hint?.trim() || meal.hint
+    // Read here rather than inside the call: the photo branch is already guarded
+    // above, and this keeps the call free of a non-null assertion.
+    const dataUrl = photo ? bytesToDataUrl(photo.bytes, photo.mimeType) : ''
     try {
-      const outcome = await analyseMeal(providersNow, {
-        dataUrl: bytesToDataUrl(photo.bytes, photo.mimeType),
-        hint: effectiveHint,
-      })
+      const outcome = isText
+        ? await analyseMealText(providersNow, effectiveHint ?? '')
+        : await analyseMeal(providersNow, { dataUrl, hint: effectiveHint })
       await applyAnalysis(mealId, outcome.analysis, outcome.providerId, target)
       haptic()
     } catch (error) {
@@ -196,6 +214,14 @@ export function useMeals(): MealsState {
         haptic()
       },
       [targetGrams],
+    ),
+    describeMeal: useCallback(
+      async (description: string) => {
+        const meal = await createTextMeal(description)
+        haptic()
+        await analyse(meal.id)
+      },
+      [analyse],
     ),
     remove: useCallback(
       async (id: string) => {

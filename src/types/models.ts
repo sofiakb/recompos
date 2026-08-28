@@ -181,7 +181,15 @@ export interface MealItem {
  */
 export type MealAnalysisStatus = 'pending' | 'analysing' | 'done' | 'failed'
 
-export type MealSource = 'ai' | 'manual' | 'corrected'
+/**
+ * Where a meal's numbers come from.
+ *
+ * `barcode` is not `manual`: a scanned product carries the manufacturer's own
+ * figures, which is a different claim to accuracy than a number someone typed.
+ * `ai_text` is not `ai`: one read a photo, the other read a sentence, and only
+ * the first can be re-run against an image.
+ */
+export type MealSource = 'ai' | 'ai_text' | 'barcode' | 'manual' | 'corrected'
 
 export type MealConfidence = 'low' | 'medium' | 'high'
 
