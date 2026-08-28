@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Plus, RefreshCw, ScanBarcode, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
@@ -8,6 +8,7 @@ import { BarcodeScanSheet } from '@/features/meals/BarcodeScanSheet'
 import { MealPhoto } from '@/features/meals/MealPhoto'
 import { ProductSheet } from '@/features/meals/ProductSheet'
 import { useBarcode } from '@/features/meals/useBarcode'
+import { rescale, type Macros, type Portion } from '@/lib/portion'
 import { totalsFromItems } from '@/lib/vision/schema'
 import { t } from '@/i18n/fr'
 import type { MealEntry, MealItem, MealSlot } from '@/types/models'
@@ -43,6 +44,16 @@ function toNumber(text: string): number {
   return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed) : 0
 }
 
+function macrosOf(item: MealItem): Macros {
+  return { kcal: item.kcal, proteinG: item.proteinG, carbsG: item.carbsG, fatG: item.fatG }
+}
+
+function sameMacros(a: Macros, b: Macros): boolean {
+  return (
+    a.kcal === b.kcal && a.proteinG === b.proteinG && a.carbsG === b.carbsG && a.fatG === b.fatG
+  )
+}
+
 /**
  * Correcting the model, line by line (PRD §6.6).
  *
@@ -66,6 +77,14 @@ export function MealEditorSheet({
   const [items, setItems] = useState<MealItem[]>([])
   const barcode = useBarcode()
   const [hint, setHint] = useState('')
+  /**
+   * The portion an item's macros were last stated for, kept aside so every
+   * keystroke rescales from it rather than from the previous rescale: doing it
+   * step by step rounds 195 kcal down to nothing over the handful of keystrokes
+   * it takes to turn « 150 g » into « 200 g ». `applied` is what was written
+   * last, so a macro corrected by hand invalidates the basis on its own.
+   */
+  const basis = useRef<{ index: number; portion: Portion; applied: Macros } | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -75,10 +94,30 @@ export function MealEditorSheet({
     setLabel(meal?.label ?? '')
     setSlot(meal?.slot ?? defaultSlot)
     setItems(meal && meal.items.length > 0 ? meal.items : [EMPTY_ITEM])
+    basis.current = null
   }, [open, meal, defaultSlot])
 
   const patch = (index: number, next: Partial<MealItem>) =>
     setItems((current) => current.map((item, i) => (i === index ? { ...item, ...next } : item)))
+
+  /** Adding or removing a line shifts the indexes the basis is keyed by. */
+  const reshape = (next: (current: MealItem[]) => MealItem[]) => {
+    basis.current = null
+    setItems(next)
+  }
+
+  const changeQuantity = (index: number, quantity: string) => {
+    const item = items[index]
+    if (!item) return
+    const held = basis.current
+    const portion =
+      held && held.index === index && sameMacros(held.applied, item)
+        ? held.portion
+        : { quantity: item.quantity, ...macrosOf(item) }
+    const scaled = rescale(portion, quantity)
+    basis.current = { index, portion, applied: scaled ?? macrosOf(item) }
+    patch(index, scaled ? { quantity, ...scaled } : { quantity })
+  }
 
   const totals = totalsFromItems(items.filter((item) => item.name.trim()))
   const named = items.filter((item) => item.name.trim())
@@ -161,7 +200,7 @@ export function MealEditorSheet({
                 <button
                   type="button"
                   aria-label={t.meals.removeItem(item.name || String(index + 1))}
-                  onClick={() => setItems((current) => current.filter((_, i) => i !== index))}
+                  onClick={() => reshape((current) => current.filter((_, i) => i !== index))}
                   className="flex h-touch w-touch shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Trash2 size={16} aria-hidden />
@@ -173,7 +212,7 @@ export function MealEditorSheet({
                 aria-label={`${t.meals.itemQuantity} ${index + 1}`}
                 value={item.quantity}
                 placeholder={t.meals.itemQuantity}
-                onChange={(event) => patch(index, { quantity: event.target.value })}
+                onChange={(event) => changeQuantity(index, event.target.value)}
               />
 
               <div className="mt-2 grid grid-cols-4 gap-2">
@@ -204,7 +243,7 @@ export function MealEditorSheet({
         <Button
           variant="secondary"
           block
-          onClick={() => setItems((current) => [...current, EMPTY_ITEM])}
+          onClick={() => reshape((current) => [...current, EMPTY_ITEM])}
         >
           <Plus size={16} aria-hidden />
           {t.meals.addItem}
@@ -258,7 +297,7 @@ export function MealEditorSheet({
             onAdd={(item) => {
               // Straight into the local list: the user saves the meal as they
               // would after any other correction.
-              setItems((current) => [...current.filter((row) => row.name.trim()), item])
+              reshape((current) => [...current.filter((row) => row.name.trim()), item])
               barcode.close()
             }}
           />
