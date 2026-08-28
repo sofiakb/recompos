@@ -20,13 +20,12 @@ export function isValidEan(digits: string): boolean {
   if (!/^\d+$/.test(digits)) return false
   if (!SUPPORTED_LENGTHS.has(digits.length)) return false
 
-  const check = Number(digits[digits.length - 1])
+  const check = Number(digits.at(-1))
   // Weights run 3,1,3,1… from the rightmost digit before the check digit, so
-  // the walk goes backwards rather than reversing a copy of the array.
+  // the walk counts backwards from the end rather than reversing a copy.
   let sum = 0
   for (let offset = 0; offset < digits.length - 1; offset += 1) {
-    const digit = Number(digits[digits.length - 2 - offset])
-    sum += digit * (offset % 2 === 0 ? 3 : 1)
+    sum += Number(digits.at(-2 - offset)) * (offset % 2 === 0 ? 3 : 1)
   }
   return (10 - (sum % 10)) % 10 === check
 }
