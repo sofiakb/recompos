@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   applyAnalysis,
   createManualMeal,
+  createBarcodeMeal,
   createPendingMeal,
   createTextMeal,
   editMeal,
@@ -57,6 +58,8 @@ export interface MealsState {
   retry: (id: string, hint?: string) => Promise<void>
   correct: (id: string, edit: MealEdit) => Promise<void>
   addManual: (label: string, items: MealItem[], slot: MealSlot) => Promise<void>
+  /** Writes a scanned product as a one-line meal. */
+  addProduct: (item: MealItem) => Promise<void>
   /** Queues a meal described in words, then analyses it. */
   describeMeal: (description: string) => Promise<void>
   remove: (id: string) => Promise<void>
@@ -246,6 +249,13 @@ export function useMeals(): MealsState {
     addManual: useCallback(
       async (label: string, items: MealItem[], slot: MealSlot) => {
         await createManualMeal(label, items, targetGrams, { slot })
+        haptic()
+      },
+      [targetGrams],
+    ),
+    addProduct: useCallback(
+      async (item: MealItem) => {
+        await createBarcodeMeal(item, targetGrams)
         haptic()
       },
       [targetGrams],

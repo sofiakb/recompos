@@ -1,14 +1,17 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Camera, Sparkles, Trash2 } from 'lucide-react'
+import { Camera, ScanBarcode, Sparkles, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Sheet } from '@/components/ui/sheet'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { CalorieCard } from '@/features/meals/CalorieCard'
+import { BarcodeScanSheet } from '@/features/meals/BarcodeScanSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
 import { DescribeMealSheet } from '@/features/meals/DescribeMealSheet'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
+import { ProductSheet } from '@/features/meals/ProductSheet'
+import { useBarcode } from '@/features/meals/useBarcode'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
 import { DayJournal } from '@/features/nutrition/DayJournal'
 import { buildDayJournal } from '@/features/nutrition/journal'
@@ -41,6 +44,11 @@ export function NutritionScreen() {
   const [capturing, setCapturing] = useState(false)
   const [staged, setStaged] = useState<StagedPhoto | null>(null)
   const [analysingCapture, setAnalysingCapture] = useState(false)
+  const barcode = useBarcode()
+
+  useEffect(() => {
+    if (barcode.error) showToast(barcode.error)
+  }, [barcode.error, showToast])
   const [describeOpen, setDescribeOpen] = useState(false)
   const [describing, setDescribing] = useState(false)
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
@@ -130,6 +138,10 @@ export function NutritionScreen() {
             <Sparkles size={18} aria-hidden />
             {t.nutrition.describeMeal}
           </Button>
+          <Button variant="secondary" size="lg" onClick={barcode.start}>
+            <ScanBarcode size={18} aria-hidden />
+            {t.nutrition.scanProduct}
+          </Button>
         </div>
 
         {!meals.canAnalyse ? (
@@ -176,6 +188,23 @@ export function NutritionScreen() {
           void addWithUndo(grams, 'meal')
         }}
       />
+
+      <BarcodeScanSheet
+        open={barcode.open}
+        onClose={barcode.close}
+        onDetected={(code) => void barcode.submit(code)}
+      />
+      {barcode.product ? (
+        <ProductSheet
+          open
+          product={barcode.product}
+          onClose={barcode.close}
+          onAdd={(item) => {
+            void meals.addProduct(item).then(() => showToast(t.meals.productAdded))
+            barcode.close()
+          }}
+        />
+      ) : null}
 
       {staged ? (
         <CapturePreviewSheet

@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { Plus, RefreshCw, ScanBarcode, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
 import { Segmented } from '@/components/ui/segmented'
 import { Sheet } from '@/components/ui/sheet'
+import { BarcodeScanSheet } from '@/features/meals/BarcodeScanSheet'
 import { MealPhoto } from '@/features/meals/MealPhoto'
+import { ProductSheet } from '@/features/meals/ProductSheet'
+import { useBarcode } from '@/features/meals/useBarcode'
 import { totalsFromItems } from '@/lib/vision/schema'
 import { t } from '@/i18n/fr'
 import type { MealEntry, MealItem, MealSlot } from '@/types/models'
@@ -58,6 +61,7 @@ export function MealEditorSheet({
   const [label, setLabel] = useState('')
   const [slot, setSlot] = useState<MealSlot>('lunch')
   const [items, setItems] = useState<MealItem[]>([])
+  const barcode = useBarcode()
   const [hint, setHint] = useState('')
 
   useEffect(() => {
@@ -203,6 +207,11 @@ export function MealEditorSheet({
           {t.meals.addItem}
         </Button>
 
+        <Button variant="secondary" block onClick={barcode.start}>
+          <ScanBarcode size={16} aria-hidden />
+          {t.barcode.addProduct}
+        </Button>
+
         <div className="flex items-baseline justify-between border-t border-border pt-3">
           <span className="text-sm text-muted-foreground">{t.meals.total}</span>
           <span className="tnum text-lg font-semibold">{t.meals.kcal(totals.kcal)}</span>
@@ -228,6 +237,28 @@ export function MealEditorSheet({
             <Trash2 size={16} aria-hidden />
             {t.meals.delete}
           </Button>
+        ) : null}
+
+        {/* Last children on purpose: `Sheet` is `fixed inset-0 z-50` with no
+            portal, so at equal z-index it is DOM order that puts one above the
+            other. */}
+        <BarcodeScanSheet
+          open={barcode.open}
+          onClose={barcode.close}
+          onDetected={(code) => void barcode.submit(code)}
+        />
+        {barcode.product ? (
+          <ProductSheet
+            open
+            product={barcode.product}
+            onClose={barcode.close}
+            onAdd={(item) => {
+              // Straight into the local list: the user saves the meal as they
+              // would after any other correction.
+              setItems((current) => [...current.filter((row) => row.name.trim()), item])
+              barcode.close()
+            }}
+          />
         ) : null}
       </div>
     </Sheet>

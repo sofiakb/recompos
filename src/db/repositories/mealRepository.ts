@@ -313,6 +313,40 @@ export async function createManualMeal(
   return syncProteinLog(meal, targetGrams, database)
 }
 
+/**
+ * A meal built from a scanned product.
+ *
+ * Not `createManualMeal` with another label: the figures come from the
+ * manufacturer's own table, which is a stronger claim than a typed guess, and
+ * `source` is what carries that difference into the journal and into any later
+ * question about where a number came from.
+ */
+export async function createBarcodeMeal(
+  item: MealItem,
+  targetGrams: number,
+  options: { date?: IsoDate; slot?: MealSlot } = {},
+  database: RecompDb = db,
+): Promise<MealEntry> {
+  const now = nowIso()
+  const totals = totalsFromItems([item])
+  const meal: MealEntry = {
+    id: createId(),
+    date: options.date ?? toLogicalDate(),
+    timestamp: now,
+    slot: options.slot ?? slotForHour(new Date().getHours()),
+    label: item.name,
+    items: [item],
+    ...totals,
+    confidence: 'high',
+    source: 'barcode',
+    status: 'done',
+    createdAt: now,
+    updatedAt: now,
+  }
+  await database.meals.add(meal)
+  return syncProteinLog(meal, targetGrams, database)
+}
+
 export async function removeMeal(
   id: string,
   targetGrams: number,
