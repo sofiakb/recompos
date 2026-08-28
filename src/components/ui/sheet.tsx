@@ -5,6 +5,15 @@ interface SheetProps {
   open: boolean
   onClose: () => void
   title?: string
+  /** Replaces the grabber and the title, for a sheet with its own header row. */
+  header?: React.ReactNode
+  /**
+   * Anchors the panel below the status bar instead of hugging its content.
+   *
+   * For a sheet that holds a whole workflow rather than one question: the height
+   * stops jumping as the content changes, and the children own their scrolling.
+   */
+  tall?: boolean
   children: React.ReactNode
   className?: string
 }
@@ -13,7 +22,15 @@ interface SheetProps {
  * Bottom sheet, hand-rolled rather than pulled from Radix: it is the only
  * overlay V1 needs, and the shell budget (PRD §4) does not have room to spare.
  */
-export function Sheet({ open, onClose, title, children, className }: SheetProps) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  header,
+  tall = false,
+  children,
+  className,
+}: Readonly<SheetProps>) {
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {
@@ -45,12 +62,19 @@ export function Sheet({ open, onClose, title, children, className }: SheetProps)
       />
       <div
         className={cn(
-          'relative w-full animate-slide-up rounded-t-2xl border-t border-border bg-card p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]',
+          'animate-slide-up border-t border-border bg-card',
+          tall
+            ? 'absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-3xl'
+            : 'relative w-full rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]',
           className,
         )}
       >
-        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-muted" />
-        {title ? <h2 className="mb-3 text-base font-semibold">{title}</h2> : null}
+        {header ?? (
+          <>
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-muted" />
+            {title ? <h2 className="mb-3 text-base font-semibold">{title}</h2> : null}
+          </>
+        )}
         {children}
       </div>
     </div>

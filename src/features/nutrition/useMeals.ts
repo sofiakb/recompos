@@ -40,6 +40,13 @@ export interface StagedPhoto {
   previewUrl: string
 }
 
+export interface CaptureOptions {
+  /** What the user said while the plate was still in front of them. */
+  context?: string
+  /** The meal its `+` was tapped on; the clock decides when nothing said so. */
+  slot?: MealSlot
+}
+
 export interface MealsState {
   /** The day being shown, which is not always today. */
   date: IsoDate
@@ -52,7 +59,7 @@ export interface MealsState {
   /** Encodes a photo without writing anything: the preview sheet may cancel. */
   stageCapture: (file: File) => Promise<StagedPhoto>
   /** Writes the staged photo as a pending meal and analyses it. */
-  confirmCapture: (staged: StagedPhoto, context?: string) => Promise<void>
+  confirmCapture: (staged: StagedPhoto, options?: CaptureOptions) => Promise<void>
   /** Drops a staged photo the user backed out of. */
   discardCapture: (staged: StagedPhoto) => void
   /** Re-runs the analysis on the stored photo, optionally with a correction. */
@@ -60,9 +67,9 @@ export interface MealsState {
   correct: (id: string, edit: MealEdit) => Promise<void>
   addManual: (label: string, items: MealItem[], slot: MealSlot) => Promise<void>
   /** Writes a scanned product as a one-line meal. */
-  addProduct: (item: MealItem) => Promise<void>
+  addProduct: (item: MealItem, slot?: MealSlot) => Promise<void>
   /** Queues a meal described in words, then analyses it. */
-  describeMeal: (description: string) => Promise<void>
+  describeMeal: (description: string, slot?: MealSlot) => Promise<void>
   remove: (id: string) => Promise<void>
   photoUrlFor: (id: string) => Promise<string | null>
 }
@@ -211,7 +218,7 @@ export function useMeals(date: IsoDate = toLogicalDate()): MealsState {
   }, [])
 
   const confirmCapture = useCallback(
-    async (staged: StagedPhoto, context?: string) => {
+    async (staged: StagedPhoto, options: CaptureOptions = {}) => {
       URL.revokeObjectURL(staged.previewUrl)
       const meal = await createPendingMeal(
         {
@@ -219,10 +226,10 @@ export function useMeals(date: IsoDate = toLogicalDate()): MealsState {
           mimeType: staged.encoded.mimeType,
           byteSize: staged.encoded.byteSize,
         },
-        { date },
+        { date, slot: options.slot },
       )
       haptic()
-      await analyse(meal.id, context)
+      await analyse(meal.id, options.context)
     },
     [analyse, date],
   )
@@ -261,15 +268,15 @@ export function useMeals(date: IsoDate = toLogicalDate()): MealsState {
       [targetGrams, date],
     ),
     addProduct: useCallback(
-      async (item: MealItem) => {
-        await createBarcodeMeal(item, targetGrams, { date })
+      async (item: MealItem, slot?: MealSlot) => {
+        await createBarcodeMeal(item, targetGrams, { date, slot })
         haptic()
       },
       [targetGrams, date],
     ),
     describeMeal: useCallback(
-      async (description: string) => {
-        const meal = await createTextMeal(description, { date })
+      async (description: string, slot?: MealSlot) => {
+        const meal = await createTextMeal(description, { date, slot })
         haptic()
         await analyse(meal.id)
       },

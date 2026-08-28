@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 2.1 — décodeur de code-barres embarqué, pour iOS |
+| Version | 2.2 — Nutrition calories d'abord, IMC dans Progression |
 | Date | 2026-08-28 |
 | Statut | Jalons 1 à 7 livrés ; refonte livrée |
-| Remplace | v2.0 (trois sources de repas), v1.9 (refonte complète des écrans), v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Remplace | v2.1 (décodeur de code-barres embarqué), v2.0 (trois sources de repas), v1.9 (refonte complète des écrans), v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -55,6 +55,9 @@ une décision d'implémentation.
 | 21 | Sources d'un repas | **Trois entrées : photo, description en texte, code-barres OpenFoodFacts.** Ajoutée le 28/08/2026 | La photo n'est plus la seule porte. Le texte passe par un modèle réglé à part du modèle vision, sur la même clé ; le code-barres n'appelle aucun modèle et ne coûte rien |
 | 22 | Contexte d'analyse | **Une précision facultative est demandée avant l'envoi de la photo**, pas seulement après une lecture ratée | Une information que l'utilisateur avait avant la photo coûtait jusqu'ici un second appel. Le prompt distingue une précision d'une correction |
 | 23 | Décodeur de code-barres | **Une dépendance est admise : `barcode-detector`, chargée à la demande.** Décidé le 28/08/2026, renverse la contrainte « aucune dépendance » du plan | `BarcodeDetector` est une API Chromium. Safari ne l'implémente pas, et tout navigateur sur iOS est Safari en dessous — c'est-à-dire l'appareil avec lequel on scanne. Sans décodeur embarqué, le bouton n'ouvre jamais la caméra sur iPhone. Voir §6.8 |
+| 24 | Écran Nutrition | **Calories d'abord, journal rangé par repas, une seule feuille d'ajout.** Décidée le 28/08/2026 sur le handoff « Refonte de l'écran Nutrition » | Les protéines quittent le grand anneau mais gardent l'accent : c'est toujours le nombre dont l'app parle. Le journal chronologique devient un budget par repas. Les quatre points d'entrée de saisie deviennent le `+` d'un repas, ce qui répond « quel repas ? » avant d'ouvrir plutôt qu'après. Voir §6.9 |
+| 25 | Cibles dérivées | **Cible kcal par repas en 25 / 40 / 30 / 5 %, figée ; glucides et lipides = le reste des calories après protéines, réparti 55/45** | Aucun réglage de plus à tenir à jour. Les protéines restent la seule cible que l'app calcule vraiment ; les deux autres sont ce qu'il reste du budget, et le disent. Une cible protéines qui mange tout le budget rend zéro, jamais un gramme négatif — et un dénominateur nul disparaît de l'écran au lieu d'inventer une cible |
+| 26 | IMC | **Affiché dans la section Poids de Progression, calculé sur le poids lissé, et jamais sans la taille** | L'IMC est une lecture du poids, pas une mesure de plus : pas de section à lui. Sans `heightCm`, aucun chiffre — la carte se réduit au lien qui répare. Le graphique gagne une seconde graduation, pas une seconde courbe : à taille constante les deux tracés seraient superposés. Voir §6.5 |
 
 ---
 
@@ -326,6 +329,27 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
   le poids de corps. Le résultat est publié en **base 100 sur la première semaine ayant du volume** :
   la valeur absolue mélange des mouvements et ne veut rien dire seule. Une semaine sans série est un
   **trou dans la courbe**, pas un zéro.
+- **IMC** (décision n°26) : affiché dans la section **Poids** et nulle part ailleurs, sous le chiffre
+  du poids lissé. C'est une lecture du poids, pas une mesure de plus.
+
+  Calculé sur le **poids lissé**, le même chiffre affiché juste au-dessus : sur la pesée brute du
+  matin, l'IMC bougerait d'un dixième par jour pour des raisons d'eau. Arrondi à une décimale à la
+  source plutôt qu'à l'affichage, faute de quoi un 24,96 rendu « 25,0 » se contredirait avec la
+  catégorie « corpulence normale » posée à côté.
+
+  La carte rappelle la taille qui a servi au calcul, parce qu'elle se saisit ailleurs (Réglages ›
+  Objectifs) et qu'un IMC sans sa taille n'est pas vérifiable. **Sans `heightCm`, aucun chiffre** : la
+  carte se réduit à un lien vers le réglage manquant, et l'axe droit du graphique disparaît. Un IMC
+  calculé sur une taille devinée a exactement l'air d'un vrai — c'est ce qui le rend pire que rien.
+
+  Aucune couleur d'alerte : la catégorie est une information, pas un verdict. Même règle que l'anneau
+  qui plafonne au lieu de virer au rouge.
+
+  Le graphique de poids gagne **une seconde graduation à droite, pas une seconde courbe**. À taille
+  constante l'IMC est le poids divisé par une constante : les deux tracés seraient rigoureusement
+  superposés. `LineChart` accepte donc un axe secondaire — un libellé et une conversion — avec sa
+  propre précision décimale, des bornes converties pouvant se retrouver bien plus serrées que celles
+  dont elles viennent.
 - **Mesures** : tour de taille en cm, saisie hebdomadaire suggérée mais jamais imposée. Courbe avec
   moyenne glissante sur 4 points pour lisser le bruit quotidien.
 - **Coffre photos** : photos mensuelles stockées en octets dans IndexedDB, redimensionnées côté client
@@ -569,6 +593,88 @@ l'utilisateur a le droit de savoir que « 0 g de glucides » était une absence.
 
 ---
 
+### 6.9 L'écran Nutrition, calories d'abord (décisions n°24 et n°25)
+
+L'écran menait par les protéines : un grand anneau, la carte Calories en dessous, quatre boutons de
+saisie, un journal chronologique. Il répondait à « qu'est-ce que j'ai mangé », jamais à « est-ce que
+je peux encore me le permettre ce soir ».
+
+**Le bandeau chiffré**
+
+Trois chiffres en haut, dans l'ordre où on les lit : **consommées · ce qu'il reste · protéines**. Les
+calories prennent l'anneau, les protéines passent en chiffre latéral mais **gardent l'accent lime** —
+c'est toujours le nombre dont cette app parle.
+
+Dépasser reste une information, jamais un échec. L'anneau plafonne à 100 % au lieu de virer au rouge,
+et le centre change de légende : « 95 au-dessus » plutôt que « 0 restantes » ou un négatif. Même règle
+que l'anneau protéines suivait déjà.
+
+Les macros vivent en trois jauges de 4 px, dépliables en trois anneaux accompagnés du raisonnement
+derrière les cibles. Le détail se lit une fois par jour ; les kcal restantes se lisent à chaque
+ouverture de l'onglet.
+
+Une pastille rappelle la **consistance sur 7 jours** — pas une série de jours. « Un pourcentage
+glissant, jamais une série » est un principe du produit (§3), et une série est exactement le compteur
+qu'une semaine ratée remet à zéro.
+
+**Les deux cibles dérivées** (décision n°25)
+
+```
+cible_repas   = arrondi_10(cible_jour × part)      part : 25 / 40 / 30 / 5 %
+reste         = max(0, cible_jour − cible_prot × 4)
+cible_glucides = arrondi_5(reste × 0,55 / 4)
+cible_lipides  = arrondi_5(reste × 0,45 / 9)
+```
+
+Les protéines restent la seule cible que l'app calcule vraiment (décision n°11) ; les deux autres sont
+ce qu'il reste du budget. D'où les deux garde-fous : une cible protéines qui mange tout le budget rend
+**zéro**, jamais un gramme négatif affiché avec aplomb, et un dénominateur nul **disparaît de
+l'écran** au lieu d'inventer une cible.
+
+**La navigation de jour**
+
+`‹ Aujourd'hui ›`, et les écritures atterrissent sur le jour regardé. Deux règles :
+
+- « jour suivant » s'arrête à aujourd'hui. Il n'y a rien à loguer demain, et un bouton qui mène à un
+  jour incapable de rien contenir est un bouton qui ment.
+- La purge des photos de repas reste ancrée au **vrai** aujourd'hui. Remonter la semaine ne doit pas
+  faire glisser la fenêtre de rétention avec elle et supprimer des photos encore dedans.
+
+**Le journal par repas**
+
+Quatre créneaux, toujours affichés, **vides compris** : `0 / 560 kcal` est exactement le point d'un
+budget par repas.
+
+Le piège du double comptage (§6.6) tient et se déplace : un repas qui porte des protéines possède son
+`ProteinLog`, et c'est le repas qu'on montre. Mais ses grammes comptent **dans le créneau du repas**,
+pas à l'heure où le log a été écrit — un dîner photographié à minuit reste un dîner. Les protéines
+viennent donc toujours du registre, si bien que la somme des quatre groupes fait exactement le total
+du bandeau. Un repas encore en analyse n'entre dans aucun total : ses chiffres ne sont pas encore des
+chiffres.
+
+Un dépassement de repas se dit sans rouge et sans reproche : « au-dessus du repas — c'est la journée
+qui compte ».
+
+**La feuille d'ajout unique**
+
+Quatre feuilles séparées et une rangée de quatre boutons deviennent **le `+` d'un repas**, avec cinq
+onglets : Recherche · Ajout rapide · Photo · Décrire · Code-barres.
+
+Le gain n'est pas le rangement, c'est l'ordre des questions. **Le repas est décidé avant, pas après.**
+L'ancien écran demandait « c'était quel repas ? » en dernier, dans l'éditeur, au moment où la réponse
+est la moins disponible.
+
+« Vos habitudes » liste les repas des 30 derniers jours, dédoublonnés sur le libellé et filtrés à la
+frappe. Quelqu'un qui prend le même petit-déjeuner quatre fois par semaine ne devrait pas le
+photographier quatre fois ; les macros du plus récent gagnent, c'est la lecture qu'il a corrigée en
+dernier.
+
+Le créneau visé survit à la feuille : prendre une photo passe la main à la caméra de l'OS, et la fiche
+produit s'ouvre par-dessus. Les deux vivent plus longtemps que la feuille qui les a lancés et doivent
+quand même atterrir sur le bon repas.
+
+---
+
 ## 7. Architecture applicative
 
 ```text
@@ -578,13 +684,15 @@ src/
 │   └── providers.tsx           # thème, error boundary
 ├── components/
 │   ├── ui/                     # primitives shadcn/ui (button, card, sheet, progress…)
+│   ├── charts/                 # LineChart et Ring, dessinés à la main (décision n°9)
 │   └── shared/                 # BottomNav, ScreenHeader, QuickActionFab, EmptyState
 ├── features/
 │   ├── floor/                  # module 1 : composants, store, logique, tests
-│   ├── nutrition/              # module 3
+│   ├── nutrition/              # module 3 — bandeau, navigation de jour, journal par repas
 │   ├── workouts/               # module 2
 │   ├── trends/                 # module 4
-│   ├── meals/                  # module 5 — capture, correction, calories du jour
+│   ├── meals/                  # module 5 — capture, correction, feuille d'ajout à onglets
+│   │   └── add/                # les cinq routes d'ajout, sous un seul point d'entrée
 │   └── vision/                 # réglages de service et de clé
 ├── db/
 │   ├── dexie.ts                # déclaration de la base et des migrations
@@ -597,6 +705,8 @@ src/
 │   ├── consistency.ts          # calcul des scores élastiques
 │   ├── overload.ts             # règles de surcharge progressive
 │   ├── image.ts                # redimensionnement et conversion WebP
+│   ├── bmi.ts                  # IMC, sa catégorie, sa position sur la réglette
+│   ├── format.ts               # nombres à la française : virgule, milliers, delta signé
 │   ├── llm/
 │   │   ├── client.ts           # transport OpenAI-compatible : clés, endpoints, modalités
 │   │   └── meal.ts             # les deux lectures d'un repas, photo et texte
@@ -832,6 +942,12 @@ L'onglet Aujourd'hui est la racine. Un retour à froid sur l'app y atterrit touj
   doit exister sur `height`/`width` **et** sur `minHeight`/`minWidth` dans `tailwind.config.js` :
   déclarée sur les seules variantes minimales, `h-touch` ne génère rien et le bouton s'écrase à la
   taille de son icône, sans erreur nulle part. Gardé par un test qui compile les utilitaires.
+
+  **Le dessin peut être plus petit que la cible, jamais l'inverse.** Le handoff de l'écran Nutrition
+  dessine le « + » d'un repas en 32 px ; il fait 32 px de lime **à l'intérieur** d'un bouton de 48 px.
+  Même arbitrage sur les lignes d'aliments du journal, dessinées comme un relevé compact : elles font
+  48 px de haut en gardant leur typo de 12 px, parce que chacune ouvre l'éditeur et qu'une lecture
+  fausse doit rester corrigible. La compacité cède, la règle ne bouge pas.
 - **Sections plutôt que cartes** : un écran est une colonne de sections à plat, chacune une mesure
   ou une action. Les cartes sont réservées à ce qui est vraiment un objet — la carte « Maintenant »,
   un bloc de séance. Six cartes de poids égal font d'un écran un défilement, pas une lecture.
@@ -839,6 +955,10 @@ L'onglet Aujourd'hui est la racine. Un retour à froid sur l'app y atterrit touj
   écrans n'en montrent qu'un résumé tapable qui y mène (décision n°18).
 - **Décimales** : virgule, jamais le point. Un nombre JavaScript rendu tel quel dans du texte
   français écrit « 78.4 » ; `formatDecimal` est le seul chemin vers l'affichage.
+- **Milliers** : espace fine insécable (U+202F), par `formatCount`. `1850` est une suite de chiffres,
+  `1 850` est un nombre qu'on lit d'un coup d'œil. Le groupage vient d'`Intl.NumberFormat('fr-FR')` —
+  c'est l'affaire d'une locale, pas la nôtre — puis est normalisé : un ICU ancien rend U+00A0, et un
+  chiffre ne doit pas changer de largeur d'un téléphone à l'autre.
 - **Zone du pouce** : toute action fréquente vit dans le tiers inférieur de l'écran.
 - **Composants** : `Card`, `Button`, `Progress`, `Sheet` (bottom sheet), `Dialog`, `Tabs`, `Toast`
   depuis shadcn/ui.

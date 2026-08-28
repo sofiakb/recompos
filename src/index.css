@@ -54,6 +54,19 @@
   .tnum {
     font-variant-numeric: tabular-nums;
   }
+
+  /*
+    A scroll region without its bar. For the panes inside a sheet, where a
+    scrollbar would draw a line through the design on desktop and show nothing
+    at all on the phone this is built for.
+  */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
