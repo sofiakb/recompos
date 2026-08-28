@@ -7,18 +7,35 @@ export interface ChartPoint {
   value: number | null
 }
 
+/**
+ * A second reading of the same numbers, drawn in the right-hand gutter.
+ *
+ * Not a second series: BMI is weight over a constant, so a second polyline would
+ * lie exactly on top of the first. Only the graduations change unit.
+ */
+export interface SecondaryAxis {
+  /** Unit title above the gutter, e.g. `IMC`. */
+  label: string
+  convert: (value: number) => number
+}
+
 interface LineChartProps {
   points: ChartPoint[]
   ariaLabel: string
   /** Optional dashed second series, same length as `points` — e.g. a rolling mean. */
   overlay?: Array<number | null>
   formatValue?: (value: number) => string
+  /** Unit title above the left axis, e.g. `kg`. Only drawn when given. */
+  unit?: string
+  secondaryAxis?: SecondaryAxis
   className?: string
 }
 
 const WIDTH = 320
 const HEIGHT = 140
 const PAD = { left: 34, right: 8, top: 8, bottom: 18 }
+/** Mirrors the left gutter, so the right-hand labels have the same room. */
+const SECONDARY_PAD_RIGHT = 34
 
 /**
  * Enough decimals for the axis labels to differ.
@@ -43,7 +60,15 @@ function pickDecimals(ticks: number[]): number {
  * budget for the whole shell (PRD §4). Two axes, a path and a fill are cheaper
  * to own than to import.
  */
-export function LineChart({ points, ariaLabel, overlay, formatValue, className }: LineChartProps) {
+export function LineChart({
+  points,
+  ariaLabel,
+  overlay,
+  formatValue,
+  unit,
+  secondaryAxis,
+  className,
+}: LineChartProps) {
   const gradientId = useId()
   const values = [...points.map((point) => point.value), ...(overlay ?? [])].filter(
     (value): value is number => value !== null,
@@ -63,7 +88,15 @@ export function LineChart({ points, ariaLabel, overlay, formatValue, className }
   const decimals = pickDecimals(ticks)
   const label = formatValue ?? ((value: number) => value.toFixed(decimals).replace('.', ','))
 
-  const plotWidth = WIDTH - PAD.left - PAD.right
+  // The right-hand gutter gets its own precision: converted ticks can land far
+  // closer together than the ones they came from, and « 25 / 25 / 25 » would
+  // read as a broken axis rather than as a narrow range.
+  const secondaryTicks = secondaryAxis ? ticks.map(secondaryAxis.convert) : []
+  const secondaryDecimals = pickDecimals(secondaryTicks)
+  const secondaryLabel = (value: number) => value.toFixed(secondaryDecimals).replace('.', ',')
+
+  const padRight = secondaryAxis ? SECONDARY_PAD_RIGHT : PAD.right
+  const plotWidth = WIDTH - PAD.left - padRight
   const plotHeight = HEIGHT - PAD.top - PAD.bottom
 
   const x = (index: number) =>
@@ -110,16 +143,33 @@ export function LineChart({ points, ariaLabel, overlay, formatValue, className }
     >
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.28" />
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.12" />
           <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
         </linearGradient>
       </defs>
+
+      {unit ? (
+        <text
+          x={PAD.left - 4}
+          y={10}
+          textAnchor="end"
+          fontSize="8"
+          fill="hsl(var(--muted-foreground))"
+        >
+          {unit}
+        </text>
+      ) : null}
+      {secondaryAxis ? (
+        <text x={WIDTH - padRight + 6} y={10} fontSize="8" fill="hsl(var(--muted-foreground))">
+          {secondaryAxis.label}
+        </text>
+      ) : null}
 
       {ticks.map((value, index) => (
         <g key={index}>
           <line
             x1={PAD.left}
-            x2={WIDTH - PAD.right}
+            x2={WIDTH - padRight}
             y1={y(value)}
             y2={y(value)}
             stroke="hsl(var(--border))"
@@ -134,6 +184,16 @@ export function LineChart({ points, ariaLabel, overlay, formatValue, className }
           >
             {label(value)}
           </text>
+          {secondaryAxis ? (
+            <text
+              x={WIDTH - padRight + 6}
+              y={y(value) + 3}
+              fontSize="8"
+              fill="hsl(var(--muted-foreground))"
+            >
+              {secondaryLabel(secondaryTicks[index])}
+            </text>
+          ) : null}
         </g>
       ))}
 
@@ -145,7 +205,7 @@ export function LineChart({ points, ariaLabel, overlay, formatValue, className }
           points={toPolyline(segment)}
           fill="none"
           stroke="hsl(var(--primary))"
-          strokeWidth={2}
+          strokeWidth={2.5}
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
@@ -169,7 +229,7 @@ export function LineChart({ points, ariaLabel, overlay, formatValue, className }
         {points[0]?.label}
       </text>
       <text
-        x={WIDTH - PAD.right}
+        x={WIDTH - padRight}
         y={HEIGHT - 4}
         textAnchor="end"
         fontSize="8"

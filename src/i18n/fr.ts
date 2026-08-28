@@ -327,6 +327,18 @@ export const fr = {
     since: (date: string) => `Depuis le ${date}`,
     pastSessions: 'Séances passées',
     photoVaultHint: 'Face, profil, dos — sur l’appareil uniquement.',
+    bmi: 'IMC',
+    bmiOnHeight: (metres: number) => `sur ${formatDecimal(metres)} m`,
+    bmiBand: {
+      underweight: 'maigreur',
+      normal: 'corpulence normale',
+      overweight: 'surpoids',
+      obese: 'obésité',
+    },
+    bmiScaleLabel: (value: string, band: string) => `IMC ${value}, ${band}`,
+    bmiNoHeight: 'Renseigner ma taille',
+    weightBmiChart: 'Poids lissé et IMC',
+    weightBmiHint: 'Une seule courbe, deux lectures : l’IMC suit le poids à taille constante.',
   },
   consistency: {
     rolling7: '7 jours',
