@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MEAL_SYSTEM_PROMPT } from '@/lib/vision/prompt'
+import { MEAL_PHOTO_SYSTEM_PROMPT } from '@/lib/vision/prompt'
 import { extractJson, parseAnalysis, totalsFromItems } from '@/lib/vision/schema'
 
 const VALID = {
@@ -146,22 +146,22 @@ describe('totalsFromItems', () => {
   })
 })
 
-describe('MEAL_SYSTEM_PROMPT', () => {
+describe('MEAL_PHOTO_SYSTEM_PROMPT', () => {
   it('forbids inventing a variety the photo cannot show', () => {
     // « Dessert aux fruits (type mangue) » on a glass of lben: the model
     // invented a flavour. The rule against it has to be in the prompt.
-    expect(MEAL_SYSTEM_PROMPT).toMatch(/n'invente jamais une variété/i)
+    expect(MEAL_PHOTO_SYSTEM_PROMPT).toMatch(/n'invente jamais une variété/i)
   })
 
   it('names the grains that look alike, so one is not assumed', () => {
     // « Riz au lait » for couscous: the model fell back on the cuisine it sees
     // most often rather than admitting the grain was ambiguous.
     for (const grain of ['semoule', 'couscous', 'boulgour', 'riz']) {
-      expect(MEAL_SYSTEM_PROMPT.toLowerCase()).toContain(grain)
+      expect(MEAL_PHOTO_SYSTEM_PROMPT.toLowerCase()).toContain(grain)
     }
   })
 
   it('spends its instructions on portion size, the dominant error', () => {
-    expect(MEAL_SYSTEM_PROMPT).toMatch(/repères d'échelle/i)
+    expect(MEAL_PHOTO_SYSTEM_PROMPT).toMatch(/repères d'échelle/i)
   })
 })

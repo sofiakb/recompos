@@ -12,7 +12,12 @@ import {
   PROVIDERS,
   type ConfiguredProvider,
 } from '@/lib/llm/client'
-import { hintPrompt, MEAL_SYSTEM_PROMPT, MEAL_USER_PROMPT, repairPrompt } from '@/lib/vision/prompt'
+import {
+  hintPrompt,
+  MEAL_PHOTO_SYSTEM_PROMPT,
+  MEAL_PHOTO_USER_PROMPT,
+  repairPrompt,
+} from '@/lib/vision/prompt'
 import { parseAnalysis, type MealAnalysis } from '@/lib/vision/schema'
 import type { VisionProviderId } from '@/types/models'
 
@@ -25,8 +30,8 @@ export interface AnalyseInput {
 
 function messageContent(input: AnalyseInput) {
   const text = input.hint?.trim()
-    ? `${MEAL_USER_PROMPT}\n\n${hintPrompt(input.hint)}`
-    : MEAL_USER_PROMPT
+    ? `${MEAL_PHOTO_USER_PROMPT}\n\n${hintPrompt(input.hint)}`
+    : MEAL_PHOTO_USER_PROMPT
   return [
     { type: 'text', text },
     { type: 'image_url', image_url: { url: input.dataUrl } },
@@ -46,7 +51,7 @@ export async function analysePhotoWithProvider(
   fetchImpl: typeof fetch = fetch,
 ): Promise<MealAnalysis> {
   const messages: unknown[] = [
-    { role: 'system', content: MEAL_SYSTEM_PROMPT },
+    { role: 'system', content: MEAL_PHOTO_SYSTEM_PROMPT },
     { role: 'user', content: messageContent(input) },
   ]
 
