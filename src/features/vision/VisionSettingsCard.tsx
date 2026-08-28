@@ -123,6 +123,26 @@ export function VisionSettingsCard() {
           )}
         </Field>
 
+        <Field
+          label={t.vision.textModelLabel}
+          hint={
+            definition.defaultTextModel
+              ? t.vision.textModelHint(definition.defaultTextModel)
+              : t.vision.textModelRequired
+          }
+        >
+          {(id) => (
+            <Input
+              id={id}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={definition.defaultTextModel}
+              value={current?.textModel ?? ''}
+              onChange={(event) => patch({ textModel: event.target.value })}
+            />
+          )}
+        </Field>
+
         {hasKey ? (
           <ToggleRow
             label={t.vision.enabled}

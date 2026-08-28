@@ -452,6 +452,10 @@ export const fr = {
     modelLabel: 'Modèle',
     modelHint: (fallback: string) => `Vide = ${fallback}`,
     modelRequired: 'À renseigner pour ce service.',
+    textModelLabel: 'Modèle texte',
+    textModelHint: (fallback: string) =>
+      `Vide = ${fallback}. Sert aux repas décrits, pas aux photos.`,
+    textModelRequired: 'À renseigner pour analyser un repas décrit avec ce service.',
     baseUrlLabel: 'Endpoint',
     baseUrlPlaceholder: 'https://mon-endpoint/v1',
     getKey: 'Obtenir une clé',

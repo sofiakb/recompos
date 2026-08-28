@@ -18,12 +18,18 @@ export interface ProviderDefinition {
   /** Empty means the user must name one; the provider is skipped until they do. */
   defaultModel: string
   /**
+   * The text-only model. Held apart from `defaultModel` because a description
+   * does not need vision, and paying for vision to read a sentence is waste.
+   */
+  defaultTextModel: string
+  /**
    * Tried once when the default model turns out not to exist.
    *
    * Hosted model ids are renamed and retired without warning, and a build that
    * pins one is a build that stops working on someone else's schedule.
    */
   fallbackModel?: string
+  fallbackTextModel?: string
   /** Where the user goes to create a key. */
   keyUrl: string
   /** `custom` asks for its own endpoint; the hosted ones do not. */
@@ -37,6 +43,8 @@ export const PROVIDERS: Record<VisionProviderId, ProviderDefinition> = {
     baseUrl: 'https://api.groq.com/openai/v1',
     defaultModel: 'qwen/qwen3.8-27b',
     fallbackModel: 'qwen/qwen3.6-27b',
+    defaultTextModel: 'openai/gpt-oss-120b',
+    fallbackTextModel: 'llama-3.3-70b-versatile',
     keyUrl: 'https://console.groq.com/keys',
     needsBaseUrl: false,
   },
@@ -48,6 +56,7 @@ export const PROVIDERS: Record<VisionProviderId, ProviderDefinition> = {
     // vision model that will still exist next month. Naming the model is the
     // price of using it, and an unnamed provider stays out of the chain.
     defaultModel: '',
+    defaultTextModel: '',
     keyUrl: 'https://openrouter.ai/keys',
     needsBaseUrl: false,
   },
@@ -56,6 +65,7 @@ export const PROVIDERS: Record<VisionProviderId, ProviderDefinition> = {
     label: 'Endpoint personnalisé',
     baseUrl: '',
     defaultModel: '',
+    defaultTextModel: '',
     keyUrl: '',
     needsBaseUrl: true,
   },
@@ -128,6 +138,7 @@ const REQUEST_OVERHEAD_BYTES = 64 * 1024
 export function resolveEndpoint(
   id: VisionProviderId,
   settings: VisionProviderSettings,
+  modality: Modality = 'vision',
   useFallbackModel = false,
 ): { url: string; model: string } | null {
   const definition = PROVIDERS[id]
@@ -135,17 +146,26 @@ export function resolveEndpoint(
     /\/+$/,
     '',
   )
-  const chosen = settings.model?.trim()
+  const text = modality === 'text'
+  const chosen = (text ? settings.textModel : settings.model)?.trim()
+  const fallback = text ? definition.fallbackTextModel : definition.fallbackModel
+  const preferred = text ? definition.defaultTextModel : definition.defaultModel
   // A model the user typed is never second-guessed: the fallback exists for the
   // built-in default going stale, not to override a deliberate choice.
-  const model = chosen || (useFallbackModel ? definition.fallbackModel : definition.defaultModel)
+  const model = chosen || (useFallbackModel ? fallback : preferred)
   if (!baseUrl || !model) return null
   return { url: `${baseUrl}/chat/completions`, model }
 }
 
 /** True when the built-in default failed and a backup is worth one retry. */
-function hasFallbackModel(id: VisionProviderId, settings: VisionProviderSettings): boolean {
-  return !settings.model?.trim() && Boolean(PROVIDERS[id].fallbackModel)
+function hasFallbackModel(
+  id: VisionProviderId,
+  settings: VisionProviderSettings,
+  modality: Modality = 'vision',
+): boolean {
+  const text = modality === 'text'
+  const chosen = (text ? settings.textModel : settings.model)?.trim()
+  return !chosen && Boolean(text ? PROVIDERS[id].fallbackTextModel : PROVIDERS[id].fallbackModel)
 }
 
 /** Providers with a key, in chain order. */
@@ -192,8 +212,9 @@ export async function postCompletion(
   messages: unknown[],
   fetchImpl: typeof fetch,
   useFallbackModel = false,
+  modality: Modality = 'vision',
 ): Promise<string> {
-  const endpoint = resolveEndpoint(id, settings, useFallbackModel)
+  const endpoint = resolveEndpoint(id, settings, modality, useFallbackModel)
   if (!endpoint) throw new LlmError('bad_response', 'Provider mal configuré', id)
 
   const controller = new AbortController()
@@ -285,7 +306,7 @@ export async function testProvider(
       // names one the real requests will not use.
       try {
         await postCompletion(id, settings, probe, fetchImpl, true)
-        const backup = resolveEndpoint(id, settings, true)
+        const backup = resolveEndpoint(id, settings, 'vision', true)
         if (backup) return { ok: true, model: backup.model }
       } catch (fallbackError) {
         if (fallbackError instanceof LlmError) {

@@ -252,6 +252,12 @@ export interface VisionProviderSettings {
   apiKey: string
   /** Overrides the provider default; required for `custom`. */
   model?: string
+  /**
+   * The model used to read a written meal, when it is not the one that reads a
+   * photo. Optional and separate: the same key buys both, but a vision model is
+   * a poor and expensive way to parse a sentence.
+   */
+  textModel?: string
   /** Only read for `custom`. */
   baseUrl?: string
   enabled: boolean
