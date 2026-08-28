@@ -28,7 +28,7 @@ export function CapturePreviewSheet({
   onCancel,
   onConfirm,
   pending,
-}: CapturePreviewSheetProps) {
+}: Readonly<CapturePreviewSheetProps>) {
   const [context, setContext] = useState('')
 
   useEffect(() => {

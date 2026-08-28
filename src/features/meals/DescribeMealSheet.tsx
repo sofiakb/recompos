@@ -20,7 +20,12 @@ interface DescribeMealSheetProps {
  * form: they are saying what they ate. So it is one free-text box, and the
  * prompt behind it — not the field — carries the demand for quantities.
  */
-export function DescribeMealSheet({ open, onClose, onSubmit, pending }: DescribeMealSheetProps) {
+export function DescribeMealSheet({
+  open,
+  onClose,
+  onSubmit,
+  pending,
+}: Readonly<DescribeMealSheetProps>) {
   const [text, setText] = useState('')
 
   useEffect(() => {

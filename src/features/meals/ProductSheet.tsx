@@ -22,7 +22,7 @@ interface ProductSheetProps {
  * left in the chain — so it is the only thing this sheet asks, pre-filled with
  * the manufacturer's serving when there is one.
  */
-export function ProductSheet({ open, product, onClose, onAdd }: ProductSheetProps) {
+export function ProductSheet({ open, product, onClose, onAdd }: Readonly<ProductSheetProps>) {
   const [grams, setGrams] = useState(String(product.servingGrams))
 
   useEffect(() => {

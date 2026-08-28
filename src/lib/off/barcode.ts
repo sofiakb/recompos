@@ -7,7 +7,7 @@
  * serve the browsers that are already the minority here.
  */
 
-const SUPPORTED_LENGTHS = [8, 12, 13, 14]
+const SUPPORTED_LENGTHS = new Set([8, 12, 13, 14])
 
 /**
  * The trailing check digit, as defined for EAN/UPC.
@@ -18,14 +18,16 @@ const SUPPORTED_LENGTHS = [8, 12, 13, 14]
  */
 export function isValidEan(digits: string): boolean {
   if (!/^\d+$/.test(digits)) return false
-  if (!SUPPORTED_LENGTHS.includes(digits.length)) return false
+  if (!SUPPORTED_LENGTHS.has(digits.length)) return false
 
-  const figures = digits.split('').map(Number)
-  const check = figures.pop() as number
-  // Weights run 3,1,3,1… from the rightmost digit before the check digit.
-  const sum = figures
-    .reverse()
-    .reduce((total, digit, index) => total + digit * (index % 2 === 0 ? 3 : 1), 0)
+  const check = Number(digits[digits.length - 1])
+  // Weights run 3,1,3,1… from the rightmost digit before the check digit, so
+  // the walk goes backwards rather than reversing a copy of the array.
+  let sum = 0
+  for (let offset = 0; offset < digits.length - 1; offset += 1) {
+    const digit = Number(digits[digits.length - 2 - offset])
+    sum += digit * (offset % 2 === 0 ? 3 : 1)
+  }
   return (10 - (sum % 10)) % 10 === check
 }
 

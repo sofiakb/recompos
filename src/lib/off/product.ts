@@ -44,7 +44,7 @@ const DEFAULT_SERVING_G = 100
 function asNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null
   if (typeof value !== 'string') return null
-  const match = value.replace(',', '.').match(/-?\d+(\.\d+)?/)
+  const match = /-?\d+(\.\d+)?/.exec(value.replace(',', '.'))
   if (!match) return null
   const parsed = Number(match[0])
   return Number.isFinite(parsed) ? parsed : null

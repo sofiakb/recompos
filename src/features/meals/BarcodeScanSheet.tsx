@@ -23,7 +23,7 @@ const FRAME_INTERVAL_MS = 400
  * same place — the numeric field — because a scanner that cannot scan should
  * still let someone read the digits off the box.
  */
-export function BarcodeScanSheet({ open, onClose, onDetected }: BarcodeScanSheetProps) {
+export function BarcodeScanSheet({ open, onClose, onDetected }: Readonly<BarcodeScanSheetProps>) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [scanning, setScanning] = useState(false)
   const [typed, setTyped] = useState('')
@@ -131,11 +131,7 @@ export function BarcodeScanSheet({ open, onClose, onDetected }: BarcodeScanSheet
           )}
         </Field>
 
-        {error ? (
-          <p className="text-sm text-muted-foreground" role="status">
-            {error}
-          </p>
-        ) : null}
+        {error ? <output className="block text-sm text-muted-foreground">{error}</output> : null}
 
         <Button size="lg" block disabled={!typed.trim()} onClick={submitTyped}>
           <Search size={16} aria-hidden />
