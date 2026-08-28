@@ -91,6 +91,20 @@ export const fr = {
     consistencyPill: (percent: number) => `${percent} %`,
     journalTitle: 'Le journal du jour',
     journalEmpty: 'Rien de logué pour le moment.',
+    slotTotals: (kcal: number, target: number) =>
+      `${formatCount(kcal)} / ${formatCount(target)} kcal`,
+    slotProtein: (grams: number) => `${grams} g de protéines`,
+    // No red, no scolding: over a meal's share is a fact about one meal, and the
+    // day is what the app actually judges.
+    overMeal: (kcal: number) =>
+      `${formatCount(kcal)} kcal au-dessus du repas — c’est la journée qui compte`,
+    addToSlot: {
+      breakfast: 'Ajouter au petit-déj',
+      lunch: 'Ajouter au déjeuner',
+      dinner: 'Ajouter au dîner',
+      snack: 'Ajouter à l’en-cas',
+    },
+    kcalValue: (kcal: number) => `${formatCount(kcal)} kcal`,
     whatToEat: 'Que manger ?',
     aMeal: 'Un repas',
     describeMeal: 'Décrire',

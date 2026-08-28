@@ -12,10 +12,10 @@ import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
 import { ProductSheet } from '@/features/meals/ProductSheet'
 import { useBarcode } from '@/features/meals/useBarcode'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
-import { DayJournal } from '@/features/nutrition/DayJournal'
 import { DayNav } from '@/features/nutrition/DayNav'
 import { DayTotals } from '@/features/nutrition/DayTotals'
-import { buildDayJournal } from '@/features/nutrition/journal'
+import { buildSlotJournal } from '@/features/nutrition/journal'
+import { MealSlotList } from '@/features/nutrition/MealSlotList'
 import { QuickAddRow } from '@/features/nutrition/QuickAddRow'
 import { useCalorieTarget, type CalorieTargetState } from '@/features/nutrition/useCalorieTarget'
 import { useMeals, type StagedPhoto } from '@/features/nutrition/useMeals'
@@ -25,7 +25,7 @@ import { useUiStore } from '@/stores/uiStore'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
 import { macroTargetsG } from '@/lib/nutrition'
 import { t } from '@/i18n/fr'
-import type { MealEntry, ProteinLog, ProteinSource } from '@/types/models'
+import type { MealEntry, MealSlot, ProteinLog, ProteinSource } from '@/types/models'
 
 const SOURCES: ProteinSource[] = ['meal', 'zero_cook', 'takeout', 'shake']
 
@@ -76,9 +76,10 @@ export function NutritionScreen() {
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
   const [mealSheetOpen, setMealSheetOpen] = useState(false)
   const [editingLog, setEditingLog] = useState<ProteinLog | null>(null)
+  const [newMealSlot, setNewMealSlot] = useState<MealSlot>('lunch')
 
   const journal = useMemo(
-    () => buildDayJournal(protein.logs, meals.meals),
+    () => buildSlotJournal(protein.logs, meals.meals),
     [protein.logs, meals.meals],
   )
 
@@ -117,6 +118,12 @@ export function NutritionScreen() {
   const openMeal = (meal: MealEntry | null) => {
     setEditingMeal(meal)
     setMealSheetOpen(true)
+  }
+
+  /** Adding to a named meal, until the tabbed add sheet replaces this. */
+  const addToSlot = (slot: MealSlot) => {
+    setNewMealSlot(slot)
+    openMeal(null)
   }
 
   return (
@@ -178,22 +185,16 @@ export function NutritionScreen() {
         {!meals.canAnalyse ? (
           <p className="-mt-4 text-xs text-muted-foreground">{t.meals.noProvider}</p>
         ) : null}
-
-        <section className="flex flex-col gap-2">
-          <h2 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-            {t.nutrition.journalTitle}
-          </h2>
-          <DayJournal
-            entries={journal}
-            analysing={meals.analysing}
-            onOpenProtein={setEditingLog}
-            onOpenMeal={openMeal}
-          />
-          <Button variant="ghost" className="self-start" onClick={() => openMeal(null)}>
-            {t.meals.addManual}
-          </Button>
-        </section>
       </div>
+
+      <MealSlotList
+        groups={journal}
+        targetKcal={calories.targetKcal}
+        analysing={meals.analysing}
+        onAdd={addToSlot}
+        onOpenMeal={openMeal}
+        onOpenProtein={setEditingLog}
+      />
 
       <input
         ref={fileInput}
@@ -276,6 +277,7 @@ export function NutritionScreen() {
       <MealEditorSheet
         open={mealSheetOpen}
         meal={editingMeal}
+        defaultSlot={newMealSlot}
         photoUrlFor={meals.photoUrlFor}
         onClose={() => setMealSheetOpen(false)}
         onSave={async (label, slot, items) => {
