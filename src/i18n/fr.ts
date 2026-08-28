@@ -355,6 +355,8 @@ export const fr = {
     scanHint: 'Vise le code-barres. La lecture se fait sur l’appareil.',
     typeHint: 'La caméra n’est pas disponible ici. Tape les chiffres sous le code-barres.',
     cameraLabel: 'Aperçu de la caméra',
+    preparing: 'Préparation du lecteur…',
+    readerFailed: 'Lecteur indisponible — tape les chiffres sous le code-barres.',
     digitsLabel: 'Code-barres',
     search: 'Chercher',
     invalid: 'Code-barres invalide — vérifie les chiffres.',

@@ -1,10 +1,16 @@
 /**
- * Reading a barcode, with the browser's own detector.
+ * Reading a barcode.
  *
- * `BarcodeDetector` ships in Chrome and in Safari 17+, and is absent elsewhere.
- * That is the whole reason the sheet above keeps a numeric field: a scanner
- * library would cost more bundle than every chart in the app put together, to
- * serve the browsers that are already the minority here.
+ * `BarcodeDetector` is a Chromium-only API. Safari does not implement it, and
+ * every browser on iOS is Safari underneath — which is exactly the device a
+ * barcode gets scanned with. So the native detector is used where it exists,
+ * and a WebAssembly decoder is downloaded where it does not.
+ *
+ * That decoder is 449 kB gzipped, nearly three times the app shell, so it is
+ * never bundled: it arrives on the first scan and is cached from then on. It is
+ * also served from this origin rather than the CDN the library defaults to —
+ * an offline-first app cannot hang on a third party being up, and nothing here
+ * should tell one that a scan happened.
  */
 
 const SUPPORTED_LENGTHS = new Set([8, 12, 13, 14])
@@ -35,26 +41,75 @@ interface DetectedBarcode {
 }
 
 interface BarcodeDetectorLike {
-  detect(source: CanvasImageSource): Promise<DetectedBarcode[]>
+  detect(source: HTMLVideoElement): Promise<DetectedBarcode[]>
 }
 
-type BarcodeDetectorConstructor = new (options?: { formats?: string[] }) => BarcodeDetectorLike
+type BarcodeDetectorConstructor = new (options?: {
+  formats?: readonly string[]
+}) => BarcodeDetectorLike
 
-function detectorConstructor(): BarcodeDetectorConstructor | null {
-  const found = (globalThis as { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector
-  return typeof found === 'function' ? found : null
+/** The only symbologies a food product carries; anything else is noise. */
+const FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e'] as const
+
+let pending: Promise<BarcodeDetectorLike | null> | null = null
+
+async function load(): Promise<BarcodeDetectorLike | null> {
+  const native = (globalThis as { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector
+  if (typeof native === 'function') return new native({ formats: FORMATS })
+
+  try {
+    const [ponyfill, wasm] = await Promise.all([
+      import('barcode-detector/ponyfill'),
+      import('zxing-wasm/reader/zxing_reader.wasm?url'),
+    ])
+    // Points the decoder at our own copy. Left alone it fetches from jsDelivr,
+    // which would put a third party between the user and their own groceries.
+    ponyfill.prepareZXingModule({
+      overrides: {
+        locateFile: (path: string, prefix: string) =>
+          path.endsWith('.wasm') ? wasm.default : `${prefix}${path}`,
+      },
+    })
+    return new ponyfill.BarcodeDetector({ formats: [...FORMATS] }) as BarcodeDetectorLike
+  } catch {
+    return null
+  }
 }
 
-export function isBarcodeScanSupported(): boolean {
-  return detectorConstructor() !== null
+async function detector(): Promise<BarcodeDetectorLike | null> {
+  pending ??= load()
+  const resolved = await pending
+  // A download that failed — offline on the first scan — must not poison every
+  // later attempt with a cached null.
+  if (!resolved) pending = null
+  return resolved
+}
+
+/**
+ * Whether a camera can be opened at all.
+ *
+ * Decoding is no longer the question, since a decoder can always be fetched;
+ * what varies is whether this browser has a camera to point at anything.
+ */
+export function isCameraAvailable(): boolean {
+  return Boolean(navigator.mediaDevices?.getUserMedia)
+}
+
+/**
+ * Resolves once a detector exists — which means a download on Safari.
+ *
+ * Awaited before the scan loop starts so the screen can say « préparation »
+ * instead of showing a live camera that quietly reads nothing.
+ */
+export async function prepareBarcodeDetector(): Promise<boolean> {
+  return (await detector()) !== null
 }
 
 /** One frame, one look. Returns null when the frame holds no readable code. */
-export async function detectBarcode(source: CanvasImageSource): Promise<string | null> {
-  const Detector = detectorConstructor()
-  if (!Detector) return null
-  const detector = new Detector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] })
-  const results = await detector.detect(source).catch(() => [])
+export async function detectBarcode(source: HTMLVideoElement): Promise<string | null> {
+  const instance = await detector()
+  if (!instance) return null
+  const results = await instance.detect(source).catch(() => [])
   const value = results[0]?.rawValue
   return value && isValidEan(value) ? value : null
 }
