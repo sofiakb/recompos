@@ -11,26 +11,23 @@ export function formatDecimal(value: number): string {
 }
 
 /**
+ * Grouping is a locale's business, not ours.
+ *
+ * Normalised afterwards all the same: `fr-FR` returns a narrow no-break space
+ * (U+202F) on current ICU, but older builds — still shipping inside some
+ * WebKits — return U+00A0. Pinning it keeps the figure the same shape whatever
+ * phone the PWA is installed on, and keeps the assertion below meaningful.
+ */
+const FRENCH_INTEGER = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 })
+
+/**
  * A whole number as French writes it, with a thin space every three digits.
  *
- * `1850` is a string of digits; `1 850` is a number you can read at a glance on
- * a dashboard. A narrow no-break space (U+202F) rather than a plain one so the
- * grouping never wraps mid-number at the end of a line.
- *
- * Counted rather than matched. The usual `/\B(?=(\d{3})+(?!\d))/g` backtracks
- * on a long run of digits; a single pass cannot, and reads no worse.
+ * `1850` is a string of digits; `1 850` is a number you read at a glance on a
+ * dashboard.
  */
 export function formatCount(value: number): string {
-  const rounded = Math.round(value).toString()
-  const negative = rounded.startsWith('-')
-  const digits = negative ? rounded.slice(1) : rounded
-
-  let grouped = ''
-  for (let index = 0; index < digits.length; index += 1) {
-    if (index > 0 && (digits.length - index) % 3 === 0) grouped += '\u202f'
-    grouped += digits[index]
-  }
-  return negative ? `-${grouped}` : grouped
+  return FRENCH_INTEGER.format(value).replaceAll('\u00a0', '\u202f')
 }
 
 /** The typographic minus (U+2212), not the hyphen: it aligns with the digits. */

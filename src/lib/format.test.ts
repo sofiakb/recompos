@@ -52,4 +52,12 @@ describe('formatCount', () => {
     expect(formatCount(-1200)).toBe('-1 200')
     expect(formatCount(1234567)).toBe('1 234 567')
   })
+
+  it('separates with a narrow no-break space, whatever ICU the engine ships', () => {
+    // U+202F, not U+00A0 and certainly not a plain space: the grouping must
+    // never wrap, and must not change width between two phones.
+    expect([...formatCount(1850)].map((char) => char.codePointAt(0))).toEqual([
+      0x31, 0x202f, 0x38, 0x35, 0x30,
+    ])
+  })
 })
