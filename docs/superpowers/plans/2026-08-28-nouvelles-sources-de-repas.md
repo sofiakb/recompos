@@ -24,6 +24,36 @@
 - **TypeScript strict** : `npm run typecheck` doit passer. `npm run lint` tourne avec `--max-warnings 0`.
 - **Commandes** : `npm test` (une passe), `npm test -- <motif>` (ciblé), `npm run typecheck`, `npm run lint`.
 
+## Pièges de l'environnement, vérifiés dans le dépôt
+
+Un avertissement ESLint **fait échouer la CI** (`--max-warnings 0`). Trois règles actives mordent sur ce plan :
+
+| Règle | Ce qu'elle interdit ici |
+|---|---|
+| `@typescript-eslint/no-non-null-assertion` | Aucun `valeur!`. Sortir la valeur du `?` dans une variable en amont. |
+| `react-hooks/exhaustive-deps` | Tout `useEffect`/`useCallback` déclare ses dépendances. Les `setX` de `useState` et les refs sont stables et n'ont pas à y figurer. |
+| `react-refresh/only-export-components` | Un `.tsx` n'exporte que des composants. Types et hooks vont dans un `.ts`. |
+
+Autres faits établis en lisant le dépôt :
+
+- **Vitest tourne en `jsdom`, `globals: true`, avec `src/test/setup.ts`** (`vite.config.ts`). Les tests importent quand même explicitement depuis `vitest`, comme le reste de la suite — s'y tenir.
+- **jsdom n'a ni `BarcodeDetector` ni `navigator.mediaDevices`.** C'est ce qui rend le repli saisie manuelle testable sans truquage : ne pas mocker ces API, la branche par défaut est la bonne.
+- **`src/db/repositories/*.test.ts` ouvre une `RecompDb` jetable par test** et passe `db` en **dernier argument** de chaque fonction du dépôt. Omettre cet argument écrit dans la base partagée.
+- **`__APP_VERSION__` est déclaré** dans `src/vite-env.d.ts` et injecté par `define` dans `vite.config.ts`. Disponible aussi sous Vitest ; rien à ajouter.
+- **`src/test/touchTargets.test.ts` compile Tailwind**, il ne scanne pas les composants : ajouter un écran ne peut pas le casser, mais il ne protège pas non plus contre un bouton trop petit. Utiliser `size="lg"` ou `min-h-touch`.
+- **`t.common.cancel`** vaut « Annuler » (`src/i18n/fr.ts:561`).
+- **`src/i18n/fr.ts` finit par `} as const`** : toute clé ajoutée l'est avant cette ligne, et son type se propage tout seul.
+- **`Sheet` n'utilise pas de portail** (`fixed inset-0 z-50`). Deux feuilles ouvertes ensemble se départagent par l'ordre du DOM.
+
+## Si une étape ne se comporte pas comme décrit
+
+Ce plan a été écrit contre le dépôt au commit `bfb4d70`. Quand la réalité diffère :
+
+1. **Un test échoue après un déplacement de code (Task 1, Task 2)** — c'est le déplacement qui est faux, pas le test. Le test existant est la spécification du comportement actuel : ne jamais l'ajuster pour le faire passer.
+2. **Un identifiant nommé ici n'existe pas** — le chercher avant d'en créer un : `grep -rn "<nom>" src`. Le plan cite des lignes précises, mais un fichier a pu bouger.
+3. **Un test neuf échoue sur une valeur attendue** — recalculer avant de changer l'attendu. Les nombres du plan sont vérifiés : `539 × 0,3 = 161,7 → 162` ; `2252 / 4,184 = 538,2 → 538` ; `539 × 0,15 = 80,85 → 81` ; `3017620422003` et `96385074` ont une somme de contrôle valide, `3017620422004` non.
+4. **Une tâche s'avère plus large que décrite** — la finir quand même, et le noter dans le message de commit. Ne pas en déborder sur la suivante.
+
 ## Structure des fichiers
 
 **Créés**
@@ -134,7 +164,12 @@ import type { VisionProviderId, VisionProviderSettings } from '@/types/models'
 export type Modality = 'vision' | 'text'
 ```
 
-`hasFallbackModel` reste non exportée.
+**Deux visibilités à changer en même temps que le déplacement :**
+
+- `postCompletion` est aujourd'hui privée dans `providers.ts`. Elle devient `export async function postCompletion(` : Task 3 la teste directement, et Task 4 l'appelle depuis `meal.ts`.
+- `hasFallbackModel` reste privée.
+
+Tout le reste garde la visibilité qu'il avait.
 
 - [ ] **Step 2: Créer `src/lib/llm/meal.ts` avec la lecture photo**
 
@@ -1004,12 +1039,12 @@ git commit -m "feat: analyser un repas décrit en texte"
 
 - [ ] **Step 1: Écrire les tests qui échouent**
 
-Ajouter à `src/db/repositories/mealRepository.test.ts` :
+Ajouter à `src/db/repositories/mealRepository.test.ts`. **Ce fichier ouvre une base Dexie jetable par test** (`let db: RecompDb` + `beforeEach`) et passe `db` en dernier argument de chaque appel : l'omettre écrit dans la base partagée et rend les tests dépendants les uns des autres. Ajouter `createTextMeal` à l'import existant en tête de fichier.
 
 ```ts
 describe('createTextMeal', () => {
   it('écrit un repas en attente qui porte sa description', async () => {
-    const meal = await createTextMeal('200 g de poulet')
+    const meal = await createTextMeal('200 g de poulet', {}, db)
     expect(meal.status).toBe('pending')
     expect(meal.source).toBe('ai_text')
     expect(meal.hint).toBe('200 g de poulet')
@@ -1019,21 +1054,21 @@ describe('createTextMeal', () => {
 
   it('coupe un label trop long sans perdre la description', async () => {
     const long = 'a'.repeat(200)
-    const meal = await createTextMeal(long)
+    const meal = await createTextMeal(long, {}, db)
     expect(meal.label.length).toBeLessThanOrEqual(80)
     expect(meal.hint).toBe(long)
   })
 
   it('apparaît dans la file des repas à analyser', async () => {
-    const meal = await createTextMeal('une pomme')
-    const queue = await pendingMeals()
+    const meal = await createTextMeal('une pomme', {}, db)
+    const queue = await pendingMeals(db)
     expect(queue.map((row) => row.id)).toContain(meal.id)
   })
 })
 
 describe('editMeal sur un repas texte', () => {
   it('passe ai_text à corrected quand les lignes changent', async () => {
-    const meal = await createTextMeal('une pomme')
+    const meal = await createTextMeal('une pomme', {}, db)
     await applyAnalysis(
       meal.id,
       {
@@ -1046,12 +1081,14 @@ describe('editMeal sur un repas texte', () => {
         confidence: 'medium',
       },
       'groq',
-      150,
+      TARGET,
+      db,
     )
     const edited = await editMeal(
       meal.id,
       { items: [{ name: 'Pomme', quantity: '2', kcal: 160, proteinG: 0, carbsG: 42, fatG: 0 }] },
-      150,
+      TARGET,
+      db,
     )
     expect(edited?.source).toBe('corrected')
   })
@@ -1220,16 +1257,18 @@ Dans `analyse`, le bloc qui lit la photo devient sensible à la source. Remplace
     // A retry with no new correction keeps the last one: the reading it produced
     // is still better than the one that made the user type it.
     const effectiveHint = hint?.trim() || meal.hint
+    // Read here rather than inside the call: the photo branch is already guarded
+    // above, and this keeps the call free of a non-null assertion.
+    const dataUrl = photo ? bytesToDataUrl(photo.bytes, photo.mimeType) : ''
     try {
       const outcome = isText
         ? await analyseMealText(providersNow, effectiveHint ?? '')
-        : await analyseMeal(providersNow, {
-            dataUrl: bytesToDataUrl(photo!.bytes, photo!.mimeType),
-            hint: effectiveHint,
-          })
+        : await analyseMeal(providersNow, { dataUrl, hint: effectiveHint })
 ```
 
 Le reste du `try`/`catch`/`finally` ne change pas.
+
+> **Pas de `photo!`.** ESLint tourne avec `--max-warnings 0` et `@typescript-eslint/recommended` classe `no-non-null-assertion` en avertissement : une assertion `!` fait échouer `npm run lint`. Le `dataUrl` calculé au-dessus est là pour ça.
 
 > Sur un repas texte, une « correction » **est** la nouvelle description : c'est le même champ, relu par le même modèle. Aucun cas particulier à écrire.
 
@@ -1637,7 +1676,7 @@ Dans `analyse`, l'appel photo transmet l'antériorité :
       const outcome = isText
         ? await analyseMealText(providersNow, effectiveHint ?? '')
         : await analyseMeal(providersNow, {
-            dataUrl: bytesToDataUrl(photo!.bytes, photo!.mimeType),
+            dataUrl,
             hint: effectiveHint,
             // A meal that has already been read is being corrected; one that has
             // not is being introduced.
@@ -2945,7 +2984,7 @@ un bouton sous « Ajouter un aliment » :
         </Button>
 ```
 
-et les feuilles, en fin de composant, avant la fermeture de `<Sheet>` :
+et les feuilles, en fin de composant, **dernières enfants** du `<div>` intérieur, avant la fermeture de `<Sheet>`. `Sheet` est `fixed inset-0 z-50` sans portail : une feuille imbriquée sort bien du `overflow-y-auto` du parent, mais à z-index égal c'est l'ordre du DOM qui décide — la placer en dernier est ce qui la met au-dessus. Le vérifier à l'étape 11.
 
 ```tsx
         <BarcodeScanSheet
