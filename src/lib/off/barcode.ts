@@ -39,18 +39,18 @@ interface BarcodeDetectorLike {
 
 type BarcodeDetectorConstructor = new (options?: { formats?: string[] }) => BarcodeDetectorLike
 
-function constructor(): BarcodeDetectorConstructor | null {
+function detectorConstructor(): BarcodeDetectorConstructor | null {
   const found = (globalThis as { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector
   return typeof found === 'function' ? found : null
 }
 
 export function isBarcodeScanSupported(): boolean {
-  return constructor() !== null
+  return detectorConstructor() !== null
 }
 
 /** One frame, one look. Returns null when the frame holds no readable code. */
 export async function detectBarcode(source: CanvasImageSource): Promise<string | null> {
-  const Detector = constructor()
+  const Detector = detectorConstructor()
   if (!Detector) return null
   const detector = new Detector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] })
   const results = await detector.detect(source).catch(() => [])
