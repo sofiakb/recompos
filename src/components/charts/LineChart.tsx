@@ -68,7 +68,7 @@ export function LineChart({
   unit,
   secondaryAxis,
   className,
-}: LineChartProps) {
+}: Readonly<LineChartProps>) {
   const gradientId = useId()
   const values = [...points.map((point) => point.value), ...(overlay ?? [])].filter(
     (value): value is number => value !== null,

@@ -15,7 +15,7 @@ export function Progress({
   accent = 'primary',
   className,
   ...props
-}: ProgressProps) {
+}: Readonly<ProgressProps>) {
   const percent = max === 0 ? 0 : Math.min(100, Math.max(0, (value / max) * 100))
   return (
     <div
