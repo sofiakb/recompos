@@ -4,9 +4,18 @@ interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value: number
   max?: number
   label?: string
+  /** `muted` for a figure the app tracks without having an opinion about it. */
+  accent?: 'primary' | 'muted'
 }
 
-export function Progress({ value, max = 100, label, className, ...props }: ProgressProps) {
+export function Progress({
+  value,
+  max = 100,
+  label,
+  accent = 'primary',
+  className,
+  ...props
+}: ProgressProps) {
   const percent = max === 0 ? 0 : Math.min(100, Math.max(0, (value / max) * 100))
   return (
     <div
@@ -19,7 +28,10 @@ export function Progress({ value, max = 100, label, className, ...props }: Progr
       {...props}
     >
       <div
-        className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+        className={cn(
+          'h-full rounded-full transition-[width] duration-300 ease-out',
+          accent === 'primary' ? 'bg-primary' : 'bg-muted-foreground',
+        )}
         style={{ width: `${percent}%` }}
       />
     </div>

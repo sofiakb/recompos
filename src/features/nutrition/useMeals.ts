@@ -22,7 +22,7 @@ import {
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { bytesToDataUrl } from '@/lib/backup'
-import { toLogicalDate } from '@/lib/date'
+import { toLogicalDate, type IsoDate } from '@/lib/date'
 import { encodePhoto, MEAL_MAX_EDGE_PX, MEAL_WEBP_QUALITY, type EncodedImage } from '@/lib/image'
 import { haptic } from '@/lib/utils'
 import {
@@ -41,7 +41,8 @@ export interface StagedPhoto {
 }
 
 export interface MealsState {
-  today: string
+  /** The day being shown, which is not always today. */
+  date: IsoDate
   meals: MealEntry[]
   macros: DayMacros
   /** True once at least one provider has a key. */
@@ -92,13 +93,12 @@ function messageFor(error: unknown): string {
  * the app keeps working with no network, and so does this one, minus the
  * numbers, until the call goes through.
  */
-export function useMeals(): MealsState {
-  const today = toLogicalDate()
+export function useMeals(date: IsoDate = toLogicalDate()): MealsState {
   const { targetGrams } = useProteinTarget()
   const providers = useSettingsStore((state) => state.settings.visionProviders)
   const retentionDays = useSettingsStore((state) => state.settings.mealPhotoRetentionDays)
 
-  const mealsQuery = useLiveQuery(() => mealsForDate(today), [today], [])
+  const mealsQuery = useLiveQuery(() => mealsForDate(date), [date], [])
   const meals = mealsQuery ?? []
   const [analysing, setAnalysing] = useState<string[]>([])
 
@@ -190,9 +190,13 @@ export function useMeals(): MealsState {
   // Retention runs once per mount rather than on a timer: the app is opened
   // several times a day, and a sweep that costs nothing when there is nothing
   // to sweep does not need scheduling.
+  // Anchored on the real today rather than the day being browsed: retention
+  // sweeps the archive, and walking back through the week must not make the
+  // window slide with it and delete photos that are still inside it.
+  const realToday = toLogicalDate()
   useEffect(() => {
-    void pruneMealPhotos(retentionDays, today)
-  }, [retentionDays, today])
+    void pruneMealPhotos(retentionDays, realToday)
+  }, [retentionDays, realToday])
 
   /**
    * Encodes the photo and stops.
@@ -209,15 +213,18 @@ export function useMeals(): MealsState {
   const confirmCapture = useCallback(
     async (staged: StagedPhoto, context?: string) => {
       URL.revokeObjectURL(staged.previewUrl)
-      const meal = await createPendingMeal({
-        bytes: staged.encoded.bytes,
-        mimeType: staged.encoded.mimeType,
-        byteSize: staged.encoded.byteSize,
-      })
+      const meal = await createPendingMeal(
+        {
+          bytes: staged.encoded.bytes,
+          mimeType: staged.encoded.mimeType,
+          byteSize: staged.encoded.byteSize,
+        },
+        { date },
+      )
       haptic()
       await analyse(meal.id, context)
     },
-    [analyse],
+    [analyse, date],
   )
 
   const discardCapture = useCallback((staged: StagedPhoto) => {
@@ -231,7 +238,7 @@ export function useMeals(): MealsState {
   }, [])
 
   return {
-    today,
+    date,
     meals,
     macros: macrosFor(meals),
     canAnalyse,
@@ -248,25 +255,25 @@ export function useMeals(): MealsState {
     ),
     addManual: useCallback(
       async (label: string, items: MealItem[], slot: MealSlot) => {
-        await createManualMeal(label, items, targetGrams, { slot })
+        await createManualMeal(label, items, targetGrams, { date, slot })
         haptic()
       },
-      [targetGrams],
+      [targetGrams, date],
     ),
     addProduct: useCallback(
       async (item: MealItem) => {
-        await createBarcodeMeal(item, targetGrams)
+        await createBarcodeMeal(item, targetGrams, { date })
         haptic()
       },
-      [targetGrams],
+      [targetGrams, date],
     ),
     describeMeal: useCallback(
       async (description: string) => {
-        const meal = await createTextMeal(description)
+        const meal = await createTextMeal(description, { date })
         haptic()
         await analyse(meal.id)
       },
-      [analyse],
+      [analyse, date],
     ),
     remove: useCallback(
       async (id: string) => {

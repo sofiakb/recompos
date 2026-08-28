@@ -1,4 +1,4 @@
-import { formatDecimal } from '@/lib/format'
+import { formatCount, formatDecimal } from '@/lib/format'
 
 /**
  * Every user-facing string lives here (PRD §7).
@@ -63,6 +63,32 @@ export const fr = {
     addGrams: (grams: number) => `Ajouter ${grams} g`,
     deleteDigit: 'Effacer un chiffre',
     todayTitle: 'Aujourd’hui',
+    consumed: 'Consommées',
+    proteinTitle: 'Protéines',
+    kcalUnit: 'kcal',
+    remainingCaption: 'restantes',
+    overCaption: 'au-dessus',
+    kcalRing: (consumed: number, target: number) =>
+      `${formatCount(consumed)} kcal sur ${formatCount(target)} kcal`,
+    macroLabel: { proteinG: 'Protéines', carbsG: 'Glucides', fatG: 'Lipides' },
+    macroOf: (current: number, target: number) =>
+      target > 0 ? `${current} / ${formatCount(target)} g` : `${current} g`,
+    macrosDetail: 'Détail des macros',
+    macrosHide: 'Masquer le détail',
+    kcalTargetAuto: (target: number, maintenance: number, deficit: number) =>
+      deficit === 0
+        ? `Cible ${formatCount(target)} kcal — maintien estimé ${formatCount(maintenance)} kcal`
+        : `Cible ${formatCount(target)} kcal — maintien estimé ${formatCount(maintenance)} kcal, moins ${deficit} %`,
+    kcalTargetManual: (target: number) => `Cible ${formatCount(target)} kcal — ajustée à la main`,
+    kcalTargetProvisional: 'Cible provisoire — ajoute ton poids pour l’estimer',
+    proteinFromWeight: (weightKg: number, perKg: number) =>
+      `Protéines calculées sur ${formatDecimal(weightKg)} kg × ${formatDecimal(perKg)} g/kg`,
+    proteinTargetManual: 'Protéines — cible ajustée à la main',
+    proteinTargetNoWeight: 'Protéines — cible provisoire, ajoute ton poids',
+    previousDay: 'Jour précédent',
+    nextDay: 'Jour suivant',
+    pickDay: 'Choisir le jour',
+    consistencyPill: (percent: number) => `${percent} %`,
     journalTitle: 'Le journal du jour',
     journalEmpty: 'Rien de logué pour le moment.',
     whatToEat: 'Que manger ?',
@@ -425,7 +451,7 @@ export const fr = {
     photoGone: 'photo effacée par la rétention',
     unknownError: 'erreur inattendue',
     productAdded: 'Produit ajouté',
-    slot: { breakfast: 'Petit-déj', lunch: 'Déjeuner', dinner: 'Dîner', snack: 'Collation' },
+    slot: { breakfast: 'Petit-déj', lunch: 'Déjeuner', dinner: 'Dîner', snack: 'En-cas' },
     slotLabel: 'Moment',
     confidence: {
       low: 'estimation large',
@@ -449,20 +475,21 @@ export const fr = {
     removeItem: (name: string) => `Retirer ${name}`,
     delete: 'Supprimer ce repas',
     deleted: 'Repas supprimé',
-    saved: (kcal: number) => `${kcal} kcal enregistrées`,
+    saved: (kcal: number) => `${formatCount(kcal)} kcal enregistrées`,
     total: 'Total du repas',
     notes: (text: string) => `Le modèle signale : ${text}`,
     proteinSynced: 'Les protéines de ce repas sont comptées dans le total du jour.',
     dayTitle: 'Calories du jour',
-    dayOf: (current: number, target: number) => `${current} kcal sur ${target} kcal`,
-    dayRemaining: (kcal: number) => `encore ${kcal} kcal`,
-    dayOver: (kcal: number) => `${kcal} kcal au-dessus`,
+    dayOf: (current: number, target: number) =>
+      `${formatCount(current)} kcal sur ${formatCount(target)} kcal`,
+    dayRemaining: (kcal: number) => `encore ${formatCount(kcal)} kcal`,
+    dayOver: (kcal: number) => `${formatCount(kcal)} kcal au-dessus`,
     macrosShort: (proteinG: number, carbsG: number, fatG: number) =>
       `P ${proteinG} g · G ${carbsG} g · L ${fatG} g`,
     targetFromWeight: (maintenance: number, deficit: number) =>
       deficit === 0
-        ? `Maintien estimé : ${maintenance} kcal`
-        : `Maintien estimé ${maintenance} kcal, moins ${deficit} %`,
+        ? `Maintien estimé : ${formatCount(maintenance)} kcal`
+        : `Maintien estimé ${formatCount(maintenance)} kcal, moins ${deficit} %`,
     profileTitle: 'Ton corps',
     profileHint:
       'Taille, âge et sexe servent uniquement au calcul de la dépense au repos. Ils ne sortent pas de l’appareil.',

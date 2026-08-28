@@ -33,6 +33,13 @@ export function parseIsoDate(date: IsoDate): Date {
   return new Date(y, m - 1, d)
 }
 
+/** The date key `days` after `date`; a negative count walks backwards. */
+export function addDays(date: IsoDate, days: number): IsoDate {
+  const shifted = parseIsoDate(date)
+  shifted.setDate(shifted.getDate() + days)
+  return formatIsoDate(shifted)
+}
+
 /** Signed number of calendar days from `from` to `to`. */
 export function daysBetween(from: IsoDate, to: IsoDate): number {
   const a = parseIsoDate(from)

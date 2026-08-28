@@ -10,6 +10,19 @@ export function formatDecimal(value: number): string {
   return String(value).replace('.', ',')
 }
 
+/**
+ * A whole number as French writes it, with a thin space every three digits.
+ *
+ * `1850` is a string of digits; `1 850` is a number you can read at a glance on
+ * a dashboard. A narrow no-break space (U+202F) rather than a plain one so the
+ * grouping never wraps mid-number at the end of a line.
+ */
+export function formatCount(value: number): string {
+  return Math.round(value)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f')
+}
+
 /** Byte sizes in French units, for storage figures. */
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} o`
