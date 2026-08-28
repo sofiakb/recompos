@@ -4,7 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Sheet } from '@/components/ui/sheet'
-import { detectBarcode, isBarcodeScanSupported, isValidEan } from '@/lib/off/barcode'
+import {
+  detectBarcode,
+  isCameraAvailable,
+  isValidEan,
+  prepareBarcodeDetector,
+} from '@/lib/off/barcode'
 import { t } from '@/i18n/fr'
 
 interface BarcodeScanSheetProps {
@@ -14,6 +19,13 @@ interface BarcodeScanSheetProps {
 }
 
 const FRAME_INTERVAL_MS = 400
+
+/** Three states, one line each: nesting them as ternaries reads worse. */
+function hintFor(preparing: boolean, scanning: boolean): string {
+  if (preparing) return t.barcode.preparing
+  if (scanning) return t.barcode.scanHint
+  return t.barcode.typeHint
+}
 
 /**
  * The camera, and the field that exists because the camera often is not there.
@@ -26,14 +38,24 @@ const FRAME_INTERVAL_MS = 400
 export function BarcodeScanSheet({ open, onClose, onDetected }: Readonly<BarcodeScanSheetProps>) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [scanning, setScanning] = useState(false)
+  const [preparing, setPreparing] = useState(false)
   const [typed, setTyped] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  // Held in a ref, not in the effect's dependencies. Both call sites pass an
+  // inline arrow, so a new identity arrives on every parent render — and an
+  // effect that re-runs on every render tears the camera down as fast as it
+  // opens it, which is what « la caméra ne s'ouvre pas » looked like.
+  const onDetectedRef = useRef(onDetected)
+  useEffect(() => {
+    onDetectedRef.current = onDetected
+  })
 
   useEffect(() => {
     if (!open) return
     setTyped('')
     setError(null)
-    if (!isBarcodeScanSupported() || !navigator.mediaDevices?.getUserMedia) return
+    if (!isCameraAvailable()) return
 
     let stream: MediaStream | null = null
     let timer: number | null = null
@@ -45,7 +67,7 @@ export function BarcodeScanSheet({ open, onClose, onDetected }: Readonly<Barcode
     const accept = (code: string | null) => {
       if (!code || stopped) return
       stopped = true
-      onDetected(code)
+      onDetectedRef.current(code)
     }
 
     const scanFrame = () => {
@@ -73,6 +95,17 @@ export function BarcodeScanSheet({ open, onClose, onDetected }: Readonly<Barcode
       await video.play().catch(() => undefined)
       setScanning(true)
 
+      // Safari has to download the decoder first. Starting the loop before it
+      // lands would show a live camera that silently reads nothing.
+      setPreparing(true)
+      const ready = await prepareBarcodeDetector()
+      if (stopped) return
+      setPreparing(false)
+      if (!ready) {
+        setError(t.barcode.readerFailed)
+        return
+      }
+
       timer = window.setInterval(scanFrame, FRAME_INTERVAL_MS)
     }
 
@@ -82,8 +115,9 @@ export function BarcodeScanSheet({ open, onClose, onDetected }: Readonly<Barcode
       if (timer !== null) window.clearInterval(timer)
       stream?.getTracks().forEach((track) => track.stop())
       setScanning(false)
+      setPreparing(false)
     }
-  }, [open, onDetected])
+  }, [open])
 
   const submitTyped = () => {
     const digits = typed.trim()
@@ -98,21 +132,15 @@ export function BarcodeScanSheet({ open, onClose, onDetected }: Readonly<Barcode
   return (
     <Sheet open={open} onClose={onClose} title={t.barcode.scanTitle}>
       <div className="flex flex-col gap-3">
-        {scanning ? (
-          <video
-            ref={videoRef}
-            className="h-56 w-full rounded-lg bg-muted object-cover"
-            muted
-            playsInline
-            aria-label={t.barcode.cameraLabel}
-          />
-        ) : (
-          <video ref={videoRef} className="hidden" muted playsInline />
-        )}
+        <video
+          ref={videoRef}
+          className={scanning ? 'h-56 w-full rounded-lg bg-muted object-cover' : 'hidden'}
+          muted
+          playsInline
+          aria-label={t.barcode.cameraLabel}
+        />
 
-        <p className="text-sm text-muted-foreground">
-          {scanning ? t.barcode.scanHint : t.barcode.typeHint}
-        </p>
+        <p className="text-sm text-muted-foreground">{hintFor(preparing, scanning)}</p>
 
         <Field label={t.barcode.digitsLabel}>
           {(id) => (

@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 2.0 — trois sources de repas : photo, texte, code-barres |
+| Version | 2.1 — décodeur de code-barres embarqué, pour iOS |
 | Date | 2026-08-28 |
 | Statut | Jalons 1 à 7 livrés ; refonte livrée |
-| Remplace | v1.9 (refonte complète des écrans), v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Remplace | v2.0 (trois sources de repas), v1.9 (refonte complète des écrans), v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -54,6 +54,7 @@ une décision d'implémentation.
 | 20 | Numéro de version affiché | **`package.json`, injecté au build**, jamais `SCHEMA_VERSION` | L'écran affichait « Version 3.0 » en beta : c'était le compteur de migrations Dexie déguisé en livraison. Le numéro de schéma reste visible, mais dans Réglages → Données, à côté de l'export, seul endroit où il veut dire quelque chose |
 | 21 | Sources d'un repas | **Trois entrées : photo, description en texte, code-barres OpenFoodFacts.** Ajoutée le 28/08/2026 | La photo n'est plus la seule porte. Le texte passe par un modèle réglé à part du modèle vision, sur la même clé ; le code-barres n'appelle aucun modèle et ne coûte rien |
 | 22 | Contexte d'analyse | **Une précision facultative est demandée avant l'envoi de la photo**, pas seulement après une lecture ratée | Une information que l'utilisateur avait avant la photo coûtait jusqu'ici un second appel. Le prompt distingue une précision d'une correction |
+| 23 | Décodeur de code-barres | **Une dépendance est admise : `barcode-detector`, chargée à la demande.** Décidé le 28/08/2026, renverse la contrainte « aucune dépendance » du plan | `BarcodeDetector` est une API Chromium. Safari ne l'implémente pas, et tout navigateur sur iOS est Safari en dessous — c'est-à-dire l'appareil avec lequel on scanne. Sans décodeur embarqué, le bouton n'ouvre jamais la caméra sur iPhone. Voir §6.8 |
 
 ---
 
@@ -542,6 +543,21 @@ phrase et deux instructions différentes — une correction annule une lecture p
 n'en a aucune à annuler, et dire à un modèle d'écarter une lecture qui n'a pas eu lieu, c'est
 l'inviter à l'inventer.
 
+**Le décodeur, et pourquoi il n'est pas natif (décision n°23)**
+
+`BarcodeDetector` est une API Chromium. Safari ne l'implémente pas, et sur iOS tous les
+navigateurs reposent sur WebKit — donc aucun n'en dispose. Le plan d'origine interdisait toute
+dépendance en s'appuyant sur l'idée fausse que Safari 17 la fournissait : sur iPhone, le bouton
+« Code-barres » sortait avant même de demander la caméra et n'affichait que la saisie manuelle.
+
+Le décodeur natif est donc utilisé là où il existe, et un décodeur WebAssembly est téléchargé là
+où il manque. Il pèse 449 ko compressés, presque trois fois la coquille de l'app, ce qui décide de
+tout le reste : il n'est jamais dans le bundle, il arrive au premier scan, et il est mis en cache
+ensuite — la première lecture demande le réseau, les suivantes fonctionnent dans le métro. Il est
+servi depuis notre propre origine et non depuis le CDN que la bibliothèque vise par défaut : une
+app hors-ligne d'abord ne peut pas dépendre d'un tiers, et rien ici ne doit signaler à quiconque
+qu'un scan a eu lieu.
+
 **Ce qu'OpenFoodFacts ne garantit pas**
 
 C'est une base communautaire : les champs sont facultatifs, les unités varient, et un produit peut
@@ -587,7 +603,7 @@ src/
 │   ├── off/
 │   │   ├── product.ts          # parseur OpenFoodFacts, pur : kJ, portions, macros absentes
 │   │   ├── client.ts           # requête v2, erreurs typées
-│   │   └── barcode.ts          # somme de contrôle EAN, détection par le navigateur
+│   │   └── barcode.ts          # somme de contrôle EAN, détecteur natif ou WASM à la demande
 │   └── vision/
 │       ├── prompt.ts           # consignes partagées par les deux modalités
 │       ├── schema.ts           # validation stricte de la réponse du modèle

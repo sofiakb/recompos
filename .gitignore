@@ -6,3 +6,6 @@ coverage
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# Flux de caméra factice générés par tools/make-barcode.mjs (~27 Mo pièce)
+*.y4m

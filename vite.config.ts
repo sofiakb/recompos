@@ -36,9 +36,21 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       workbox: {
+        // `.wasm` is deliberately absent: the barcode decoder is 449 kB gzipped,
+        // and precaching it would make every install pay for a screen most
+        // openings never reach.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: `${BASE}index.html`,
         cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            // Cached on the way past instead: the first scan needs the network,
+            // every scan after it works on the metro.
+            urlPattern: ({ url }) => url.pathname.endsWith('.wasm'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'barcode-reader', expiration: { maxEntries: 2 } },
+          },
+        ],
       },
       manifest: {
         name: 'RecompOS',
