@@ -33,6 +33,13 @@ export function parseIsoDate(date: IsoDate): Date {
   return new Date(y, m - 1, d)
 }
 
+/** The date key `days` after `date`; a negative count walks backwards. */
+export function addDays(date: IsoDate, days: number): IsoDate {
+  const shifted = parseIsoDate(date)
+  shifted.setDate(shifted.getDate() + days)
+  return formatIsoDate(shifted)
+}
+
 /** Signed number of calendar days from `from` to `to`. */
 export function daysBetween(from: IsoDate, to: IsoDate): number {
   const a = parseIsoDate(from)
@@ -62,6 +69,11 @@ export function formatLongDate(date: IsoDate, locale = 'fr-FR'): string {
     day: 'numeric',
     month: 'long',
   })
+}
+
+/** Compact label for a chart axis, e.g. « 24 août ». */
+export function formatShortDate(date: IsoDate, locale = 'fr-FR'): string {
+  return parseIsoDate(date).toLocaleDateString(locale, { day: 'numeric', month: 'short' })
 }
 
 /**

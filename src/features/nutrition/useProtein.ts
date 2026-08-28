@@ -7,12 +7,13 @@ import {
   updateProteinLogSource,
 } from '@/db/repositories/proteinRepository'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
-import { toLogicalDate } from '@/lib/date'
+import { toLogicalDate, type IsoDate } from '@/lib/date'
 import { haptic } from '@/lib/utils'
 import type { ProteinLog, ProteinSource } from '@/types/models'
 
 export interface ProteinState {
-  today: string
+  /** The day being shown, which is not always today. */
+  date: IsoDate
   logs: ProteinLog[]
   totalGrams: number
   targetGrams: number
@@ -23,19 +24,25 @@ export interface ProteinState {
   setSource: (id: string, sourceType: ProteinSource) => Promise<void>
 }
 
-export function useProtein(): ProteinState {
-  const today = toLogicalDate()
+/**
+ * The protein ledger for one day.
+ *
+ * The day is a parameter rather than always today: Nutrition lets you walk back
+ * through the week, and a log written while looking at Tuesday belongs to
+ * Tuesday.
+ */
+export function useProtein(date: IsoDate = toLogicalDate()): ProteinState {
   const { targetGrams } = useProteinTarget()
-  const logs = useLiveQuery(() => logsForDate(today), [today], []) ?? []
+  const logs = useLiveQuery(() => logsForDate(date), [date], []) ?? []
   const totalGrams = logs.reduce((total, log) => total + log.grams, 0)
 
   const add = useCallback(
     async (grams: number, sourceType: ProteinSource, note?: string) => {
-      const log = await addProteinLog(grams, sourceType, targetGrams, { note, date: today })
+      const log = await addProteinLog(grams, sourceType, targetGrams, { note, date })
       haptic()
       return log
     },
-    [targetGrams, today],
+    [targetGrams, date],
   )
 
   const remove = useCallback(
@@ -51,7 +58,7 @@ export function useProtein(): ProteinState {
   )
 
   return {
-    today,
+    date,
     logs,
     totalGrams,
     targetGrams,

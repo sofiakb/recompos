@@ -1,3 +1,5 @@
+import type { MealSlot } from '@/types/models'
+
 /**
  * Protein target derivation (PRD §6.3).
  *
@@ -177,6 +179,67 @@ export function clampCalorieTargetKcal(kcal: number): number {
 
 /** Target when no weigh-in exists yet, flagged as provisional in the UI. */
 export const PROVISIONAL_CALORIE_TARGET_KCAL = 2200
+
+/**
+ * How the day's calories split across the four meals.
+ *
+ * A fixed split rather than a setting: the numbers exist to answer « can I still
+ * have that », not to be tuned. They are deliberately lopsided towards lunch,
+ * which is the meal this app's user actually sits down for.
+ */
+export const MEAL_SLOT_SHARE: Record<MealSlot, number> = {
+  breakfast: 0.25,
+  lunch: 0.4,
+  dinner: 0.3,
+  snack: 0.05,
+}
+
+/**
+ * A meal's share of the day, to the nearest 10 kcal.
+ *
+ * Rounded for the same reason everything else here is: the day's target is
+ * itself an estimate, and a per-meal figure ending in 7 would claim a precision
+ * that four multiplications cannot possibly have.
+ */
+export function mealTargetKcal(dayTargetKcal: number, slot: MealSlot): number {
+  return Math.round((dayTargetKcal * MEAL_SLOT_SHARE[slot]) / 10) * 10
+}
+
+export const KCAL_PER_GRAM = { protein: 4, carbs: 4, fat: 9 } as const
+
+/**
+ * Of the calories left once protein is served, this share goes to carbohydrate.
+ *
+ * Protein comes first because it is the only macro the app has an opinion about
+ * (PRD §6.3); the rest is split on the usual 55/45, which is a convention rather
+ * than a claim.
+ */
+export const CARB_SHARE_OF_REMAINDER = 0.55
+
+export interface MacroTargetsG {
+  proteinG: number
+  /** 0 when protein alone already covers the target — the UI then shows no denominator. */
+  carbsG: number
+  fatG: number
+}
+
+/**
+ * Carbohydrate and fat targets, derived rather than typed.
+ *
+ * Only the protein target is a real target. These two are what is left of the
+ * calorie budget once protein is paid for, which is why a protein target that
+ * eats the whole budget returns zeros: a negative remainder split 55/45 would
+ * print a confident negative gram count.
+ */
+export function macroTargetsG(targetKcal: number, proteinTargetG: number): MacroTargetsG {
+  const remainder = Math.max(0, targetKcal - proteinTargetG * KCAL_PER_GRAM.protein)
+  const round5 = (grams: number) => Math.round(grams / 5) * 5
+  return {
+    proteinG: proteinTargetG,
+    carbsG: round5((remainder * CARB_SHARE_OF_REMAINDER) / KCAL_PER_GRAM.carbs),
+    fatG: round5((remainder * (1 - CARB_SHARE_OF_REMAINDER)) / KCAL_PER_GRAM.fat),
+  }
+}
 
 export const MIN_WEIGHT_KG = 35
 export const MAX_WEIGHT_KG = 250

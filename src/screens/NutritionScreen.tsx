@@ -4,8 +4,7 @@ import { Camera, ScanBarcode, Sparkles, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Sheet } from '@/components/ui/sheet'
-import { ScreenHeader } from '@/components/shared/ScreenHeader'
-import { CalorieCard } from '@/features/meals/CalorieCard'
+import { useFloor } from '@/features/floor/useFloor'
 import { BarcodeScanSheet } from '@/features/meals/BarcodeScanSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
 import { DescribeMealSheet } from '@/features/meals/DescribeMealSheet'
@@ -14,18 +13,38 @@ import { ProductSheet } from '@/features/meals/ProductSheet'
 import { useBarcode } from '@/features/meals/useBarcode'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
 import { DayJournal } from '@/features/nutrition/DayJournal'
+import { DayNav } from '@/features/nutrition/DayNav'
+import { DayTotals } from '@/features/nutrition/DayTotals'
 import { buildDayJournal } from '@/features/nutrition/journal'
-import { ProteinRing } from '@/features/nutrition/ProteinRing'
 import { QuickAddRow } from '@/features/nutrition/QuickAddRow'
+import { useCalorieTarget, type CalorieTargetState } from '@/features/nutrition/useCalorieTarget'
 import { useMeals, type StagedPhoto } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
-import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
+import { useProteinTarget, type ProteinTargetState } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
-import { formatLongDate } from '@/lib/date'
+import { formatLongDate, toLogicalDate } from '@/lib/date'
+import { macroTargetsG } from '@/lib/nutrition'
 import { t } from '@/i18n/fr'
 import type { MealEntry, ProteinLog, ProteinSource } from '@/types/models'
 
 const SOURCES: ProteinSource[] = ['meal', 'zero_cook', 'takeout', 'shake']
+
+/** The calorie target, said in one sentence — auto, manual or not yet knowable. */
+function kcalExplain(target: CalorieTargetState): string {
+  if (target.mode === 'manual') return t.nutrition.kcalTargetManual(target.targetKcal)
+  if (target.isFallback) return t.nutrition.kcalTargetProvisional
+  return t.nutrition.kcalTargetAuto(
+    target.targetKcal,
+    target.maintenanceKcal ?? 0,
+    target.deficitPercent,
+  )
+}
+
+function proteinExplain(target: ProteinTargetState): string {
+  if (target.mode === 'manual') return t.nutrition.proteinTargetManual
+  if (target.isFallback) return t.nutrition.proteinTargetNoWeight
+  return t.nutrition.proteinFromWeight(target.smoothedWeightKg ?? 0, target.gramsPerKg)
+}
 
 /**
  * Where the day stands, how to add to it, and what has been added.
@@ -34,9 +53,12 @@ const SOURCES: ProteinSource[] = ['meal', 'zero_cook', 'takeout', 'shake']
  * a question asked when deciding, not every time the tab is opened.
  */
 export function NutritionScreen() {
-  const protein = useProtein()
-  const meals = useMeals()
+  const [day, setDay] = useState(toLogicalDate())
+  const protein = useProtein(day)
+  const meals = useMeals(day)
   const target = useProteinTarget()
+  const calories = useCalorieTarget()
+  const { score7 } = useFloor()
   const showToast = useUiStore((state) => state.showToast)
 
   const fileInput = useRef<HTMLInputElement>(null)
@@ -59,6 +81,17 @@ export function NutritionScreen() {
     () => buildDayJournal(protein.logs, meals.meals),
     [protein.logs, meals.meals],
   )
+
+  const macroTargets = macroTargetsG(calories.targetKcal, target.targetGrams)
+  // Protein comes from the ledger, not from the meals: a meal writes its protein
+  // into that same ledger, so adding the two would count every photographed
+  // meal twice.
+  const totals = {
+    kcal: meals.macros.kcal,
+    proteinG: protein.totalGrams,
+    carbsG: meals.macros.carbsG,
+    fatG: meals.macros.fatG,
+  }
 
   /** Every add is undoable for a few seconds — a mistyped 300 g is one tap away. */
   const addWithUndo = async (grams: number, source: ProteinSource, note?: string) => {
@@ -88,24 +121,22 @@ export function NutritionScreen() {
 
   return (
     <>
-      <ScreenHeader eyebrow={formatLongDate(protein.today)} title={t.nav.nutrition} />
+      <DayTotals
+        dateLabel={formatLongDate(day)}
+        consistencyPercent={day === toLogicalDate() ? score7.percent : null}
+        totals={totals}
+        targets={{
+          kcal: calories.targetKcal,
+          proteinG: target.targetGrams,
+          carbsG: macroTargets.carbsG,
+          fatG: macroTargets.fatG,
+        }}
+        explain={{ kcal: kcalExplain(calories), protein: proteinExplain(target) }}
+      />
+
+      <DayNav date={day} onChange={setDay} />
 
       <div className="flex flex-col gap-7 px-5 pt-2">
-        <div className="flex flex-col gap-4">
-          <ProteinRing
-            totalGrams={protein.totalGrams}
-            targetGrams={protein.targetGrams}
-            remainingGrams={protein.remainingGrams}
-          />
-          <p className="text-center text-xs text-muted-foreground">
-            {target.mode === 'auto' && target.smoothedWeightKg !== null
-              ? t.nutrition.targetFromWeight(target.smoothedWeightKg, target.gramsPerKg)
-              : null}
-            {target.mode === 'manual' ? t.nutrition.targetManual : null}
-            {target.isFallback ? t.nutrition.targetNoWeight : null}
-          </p>
-        </div>
-
         <QuickAddRow
           onAdd={(grams) => void addWithUndo(grams, 'meal')}
           onCustom={() => setCustomOpen(true)}
@@ -147,8 +178,6 @@ export function NutritionScreen() {
         {!meals.canAnalyse ? (
           <p className="-mt-4 text-xs text-muted-foreground">{t.meals.noProvider}</p>
         ) : null}
-
-        <CalorieCard macros={meals.macros} />
 
         <section className="flex flex-col gap-2">
           <h2 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
