@@ -13,8 +13,8 @@ import {
   pendingMeals,
   pruneMealPhotos,
   removeMeal,
-  slotForHour,
 } from '@/db/repositories/mealRepository'
+import { slotForHour } from '@/lib/nutrition'
 import { totalProteinForDate } from '@/db/repositories/proteinRepository'
 import type { MealAnalysis } from '@/lib/vision/schema'
 

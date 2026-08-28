@@ -25,6 +25,8 @@ interface MealEditorSheetProps {
    * which has no photo to show.
    */
   photoUrlFor?: (id: string) => Promise<string | null>
+  /** Which meal a blank sheet starts on — the one whose `+` was tapped. */
+  defaultSlot?: MealSlot
 }
 
 const SLOTS: Array<{ value: MealSlot; label: string }> = [
@@ -57,9 +59,10 @@ export function MealEditorSheet({
   onDelete,
   onRetry,
   photoUrlFor,
-}: MealEditorSheetProps) {
+  defaultSlot = 'lunch',
+}: Readonly<MealEditorSheetProps>) {
   const [label, setLabel] = useState('')
-  const [slot, setSlot] = useState<MealSlot>('lunch')
+  const [slot, setSlot] = useState<MealSlot>(defaultSlot)
   const [items, setItems] = useState<MealItem[]>([])
   const barcode = useBarcode()
   const [hint, setHint] = useState('')
@@ -70,9 +73,9 @@ export function MealEditorSheet({
     // A null meal is the « saisir à la main » case: the sheet must open blank
     // rather than showing whatever was corrected last.
     setLabel(meal?.label ?? '')
-    setSlot(meal?.slot ?? 'lunch')
+    setSlot(meal?.slot ?? defaultSlot)
     setItems(meal && meal.items.length > 0 ? meal.items : [EMPTY_ITEM])
-  }, [open, meal])
+  }, [open, meal, defaultSlot])
 
   const patch = (index: number, next: Partial<MealItem>) =>
     setItems((current) => current.map((item, i) => (i === index ? { ...item, ...next } : item)))

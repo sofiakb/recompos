@@ -16,16 +16,9 @@ import {
 } from '@/db/repositories/proteinRepository'
 import { toLogicalDate, type IsoDate } from '@/lib/date'
 import { createId, nowIso } from '@/lib/utils'
+import { slotForHour } from '@/lib/nutrition'
 import { totalsFromItems, type MealAnalysis } from '@/lib/vision/schema'
 import type { MealEntry, MealItem, MealPhoto, MealSlot, VisionProviderId } from '@/types/models'
-
-/** Rough clock slots; the user can change one in a tap. */
-export function slotForHour(hour: number): MealSlot {
-  if (hour < 11) return 'breakfast'
-  if (hour < 15) return 'lunch'
-  if (hour < 18) return 'snack'
-  return 'dinner'
-}
 
 export async function mealsForDate(date: IsoDate, database: RecompDb = db): Promise<MealEntry[]> {
   const rows = await database.meals.where('date').equals(date).toArray()

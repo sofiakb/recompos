@@ -180,6 +180,22 @@ export function clampCalorieTargetKcal(kcal: number): number {
 /** Target when no weigh-in exists yet, flagged as provisional in the UI. */
 export const PROVISIONAL_CALORIE_TARGET_KCAL = 2200
 
+/** The four meals in the order a day meets them. */
+export const MEAL_SLOT_ORDER = [
+  'breakfast',
+  'lunch',
+  'dinner',
+  'snack',
+] as const satisfies readonly MealSlot[]
+
+/** Rough clock slots; the user can change one in a tap. */
+export function slotForHour(hour: number): MealSlot {
+  if (hour < 11) return 'breakfast'
+  if (hour < 15) return 'lunch'
+  if (hour < 18) return 'snack'
+  return 'dinner'
+}
+
 /**
  * How the day's calories split across the four meals.
  *
