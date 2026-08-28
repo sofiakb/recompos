@@ -1,7 +1,7 @@
 import { AlertTriangle, Loader2 } from 'lucide-react'
 import { t } from '@/i18n/fr'
 import type { JournalEntry } from '@/features/nutrition/journal'
-import type { MealEntry, ProteinLog } from '@/types/models'
+import type { MealEntry, MealSource, ProteinLog } from '@/types/models'
 
 interface DayJournalProps {
   entries: JournalEntry[]
@@ -59,6 +59,22 @@ function Row({
  * They used to sit in two separate cards, which made « what did I eat today »
  * a question you answered by reading two lists and merging them yourself.
  */
+/**
+ * What each source is called in the journal.
+ *
+ * A table rather than a chain of ternaries: it is exhaustive over `MealSource`,
+ * so a source added later is a compile error here instead of a row that quietly
+ * shows no badge at all. `ai` is deliberately null — a photographed meal is the
+ * default, and labelling the default is noise on every row.
+ */
+const SOURCE_BADGE: Record<MealSource, string | null> = {
+  ai: null,
+  ai_text: t.meals.textBadge,
+  barcode: t.barcode.badge,
+  corrected: t.meals.correctedBadge,
+  manual: t.meals.manualBadge,
+}
+
 export function DayJournal({ entries, analysing, onOpenProtein, onOpenMeal }: DayJournalProps) {
   if (entries.length === 0) {
     return <p className="py-2 text-sm text-muted-foreground">{t.nutrition.journalEmpty}</p>
@@ -111,12 +127,7 @@ export function DayJournal({ entries, analysing, onOpenProtein, onOpenMeal }: Da
           )
         }
 
-        const badge =
-          meal.source === 'corrected'
-            ? t.meals.correctedBadge
-            : meal.source === 'manual'
-              ? t.meals.manualBadge
-              : null
+        const badge = SOURCE_BADGE[meal.source]
 
         return (
           <Row

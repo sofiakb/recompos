@@ -1,18 +1,23 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Camera, Trash2 } from 'lucide-react'
+import { Camera, ScanBarcode, Sparkles, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Sheet } from '@/components/ui/sheet'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { CalorieCard } from '@/features/meals/CalorieCard'
+import { BarcodeScanSheet } from '@/features/meals/BarcodeScanSheet'
+import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
+import { DescribeMealSheet } from '@/features/meals/DescribeMealSheet'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
+import { ProductSheet } from '@/features/meals/ProductSheet'
+import { useBarcode } from '@/features/meals/useBarcode'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
 import { DayJournal } from '@/features/nutrition/DayJournal'
 import { buildDayJournal } from '@/features/nutrition/journal'
 import { ProteinRing } from '@/features/nutrition/ProteinRing'
 import { QuickAddRow } from '@/features/nutrition/QuickAddRow'
-import { useMeals } from '@/features/nutrition/useMeals'
+import { useMeals, type StagedPhoto } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
@@ -37,6 +42,15 @@ export function NutritionScreen() {
   const fileInput = useRef<HTMLInputElement>(null)
   const [customOpen, setCustomOpen] = useState(false)
   const [capturing, setCapturing] = useState(false)
+  const [staged, setStaged] = useState<StagedPhoto | null>(null)
+  const [analysingCapture, setAnalysingCapture] = useState(false)
+  const barcode = useBarcode()
+
+  useEffect(() => {
+    if (barcode.error) showToast(barcode.error)
+  }, [barcode.error, showToast])
+  const [describeOpen, setDescribeOpen] = useState(false)
+  const [describing, setDescribing] = useState(false)
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
   const [mealSheetOpen, setMealSheetOpen] = useState(false)
   const [editingLog, setEditingLog] = useState<ProteinLog | null>(null)
@@ -59,7 +73,7 @@ export function NutritionScreen() {
     if (!file) return
     setCapturing(true)
     try {
-      await meals.capture(file)
+      setStaged(await meals.stageCapture(file))
     } catch {
       showToast(t.photos.failed)
     } finally {
@@ -115,6 +129,19 @@ export function NutritionScreen() {
             <Camera size={18} aria-hidden />
             {capturing ? t.meals.capturing : t.nutrition.aMeal}
           </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            disabled={!meals.canAnalyse}
+            onClick={() => setDescribeOpen(true)}
+          >
+            <Sparkles size={18} aria-hidden />
+            {t.nutrition.describeMeal}
+          </Button>
+          <Button variant="secondary" size="lg" onClick={barcode.start}>
+            <ScanBarcode size={18} aria-hidden />
+            {t.nutrition.scanProduct}
+          </Button>
         </div>
 
         {!meals.canAnalyse ? (
@@ -159,6 +186,61 @@ export function NutritionScreen() {
         onSubmit={(grams) => {
           setCustomOpen(false)
           void addWithUndo(grams, 'meal')
+        }}
+      />
+
+      <BarcodeScanSheet
+        open={barcode.open}
+        onClose={barcode.close}
+        onDetected={(code) => void barcode.submit(code)}
+      />
+      {barcode.product ? (
+        <ProductSheet
+          open
+          product={barcode.product}
+          onClose={barcode.close}
+          onAdd={(item) => {
+            void meals.addProduct(item).then(() => showToast(t.meals.productAdded))
+            barcode.close()
+          }}
+        />
+      ) : null}
+
+      {staged ? (
+        <CapturePreviewSheet
+          open
+          previewUrl={staged.previewUrl}
+          pending={analysingCapture}
+          onCancel={() => {
+            meals.discardCapture(staged)
+            setStaged(null)
+          }}
+          onConfirm={(context) => {
+            setAnalysingCapture(true)
+            void meals
+              .confirmCapture(staged, context || undefined)
+              .catch(() => showToast(t.meals.unknownError))
+              .finally(() => {
+                setAnalysingCapture(false)
+                setStaged(null)
+              })
+          }}
+        />
+      ) : null}
+
+      <DescribeMealSheet
+        open={describeOpen}
+        pending={describing}
+        onClose={() => setDescribeOpen(false)}
+        onSubmit={(description) => {
+          setDescribing(true)
+          void meals
+            .describeMeal(description)
+            .catch(() => showToast(t.meals.unknownError))
+            .finally(() => {
+              setDescribing(false)
+              setDescribeOpen(false)
+            })
         }}
       />
 

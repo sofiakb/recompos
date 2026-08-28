@@ -3,7 +3,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   applyAnalysis,
   createManualMeal,
+  createBarcodeMeal,
   createPendingMeal,
+  createTextMeal,
   editMeal,
   getMeal,
   getMealPhoto,
@@ -21,11 +23,22 @@ import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { bytesToDataUrl } from '@/lib/backup'
 import { toLogicalDate } from '@/lib/date'
-import { encodePhoto, MEAL_MAX_EDGE_PX, MEAL_WEBP_QUALITY } from '@/lib/image'
+import { encodePhoto, MEAL_MAX_EDGE_PX, MEAL_WEBP_QUALITY, type EncodedImage } from '@/lib/image'
 import { haptic } from '@/lib/utils'
-import { analyseMeal, configuredProviders, VisionError } from '@/lib/vision/providers'
+import {
+  analyseMeal,
+  analyseMealText,
+  configuredProviders,
+  VisionError,
+} from '@/lib/vision/providers'
 import { t } from '@/i18n/fr'
 import type { MealEntry, MealItem, MealSlot } from '@/types/models'
+
+export interface StagedPhoto {
+  encoded: EncodedImage
+  /** Object URL for the preview. Revoked by `confirmCapture` or `discardCapture`. */
+  previewUrl: string
+}
 
 export interface MealsState {
   today: string
@@ -35,11 +48,20 @@ export interface MealsState {
   canAnalyse: boolean
   /** Ids currently in flight, so the UI can show a spinner per row. */
   analysing: string[]
-  capture: (file: File) => Promise<void>
+  /** Encodes a photo without writing anything: the preview sheet may cancel. */
+  stageCapture: (file: File) => Promise<StagedPhoto>
+  /** Writes the staged photo as a pending meal and analyses it. */
+  confirmCapture: (staged: StagedPhoto, context?: string) => Promise<void>
+  /** Drops a staged photo the user backed out of. */
+  discardCapture: (staged: StagedPhoto) => void
   /** Re-runs the analysis on the stored photo, optionally with a correction. */
   retry: (id: string, hint?: string) => Promise<void>
   correct: (id: string, edit: MealEdit) => Promise<void>
   addManual: (label: string, items: MealItem[], slot: MealSlot) => Promise<void>
+  /** Writes a scanned product as a one-line meal. */
+  addProduct: (item: MealItem) => Promise<void>
+  /** Queues a meal described in words, then analyses it. */
+  describeMeal: (description: string) => Promise<void>
   remove: (id: string) => Promise<void>
   photoUrlFor: (id: string) => Promise<string | null>
 }
@@ -94,23 +116,39 @@ export function useMeals(): MealsState {
       await markFailed(mealId, t.vision.errorKind.auth)
       return
     }
-    const photo = await getMealPhoto(mealId)
-    if (!photo) {
+    const meal = await getMeal(mealId)
+    if (!meal) return
+    const isText = meal.source === 'ai_text'
+
+    const photo = isText ? null : await getMealPhoto(mealId)
+    if (!isText && !photo) {
       await markFailed(mealId, t.meals.photoGone)
       return
     }
+    if (isText && !meal.hint) {
+      await markFailed(mealId, t.meals.descriptionGone)
+      return
+    }
+
     inFlight.add(mealId)
     setAnalysing((current) => (current.includes(mealId) ? current : [...current, mealId]))
     await markAnalysing(mealId, hint)
     // A retry with no new correction keeps the last one: the reading it produced
     // is still better than the one that made the user type it.
-    const meal = await getMeal(mealId)
-    const effectiveHint = hint?.trim() || meal?.hint
+    const effectiveHint = hint?.trim() || meal.hint
+    // Read here rather than inside the call: the photo branch is already guarded
+    // above, and this keeps the call free of a non-null assertion.
+    const dataUrl = photo ? bytesToDataUrl(photo.bytes, photo.mimeType) : ''
     try {
-      const outcome = await analyseMeal(providersNow, {
-        dataUrl: bytesToDataUrl(photo.bytes, photo.mimeType),
-        hint: effectiveHint,
-      })
+      const outcome = isText
+        ? await analyseMealText(providersNow, effectiveHint ?? '')
+        : await analyseMeal(providersNow, {
+            dataUrl,
+            hint: effectiveHint,
+            // A meal that has already been read is being corrected; one that has
+            // not is being introduced.
+            isCorrection: meal.status === 'done' || meal.status === 'failed',
+          })
       await applyAnalysis(mealId, outcome.analysis, outcome.providerId, target)
       haptic()
     } catch (error) {
@@ -156,19 +194,35 @@ export function useMeals(): MealsState {
     void pruneMealPhotos(retentionDays, today)
   }, [retentionDays, today])
 
-  const capture = useCallback(
-    async (file: File) => {
-      const encoded = await encodePhoto(file, MEAL_MAX_EDGE_PX, MEAL_WEBP_QUALITY)
+  /**
+   * Encodes the photo and stops.
+   *
+   * Nothing is written yet: the sheet that follows can be cancelled, and a meal
+   * the user backed out of has no business being in the journal.
+   */
+  const stageCapture = useCallback(async (file: File): Promise<StagedPhoto> => {
+    const encoded = await encodePhoto(file, MEAL_MAX_EDGE_PX, MEAL_WEBP_QUALITY)
+    const previewUrl = URL.createObjectURL(new Blob([encoded.bytes], { type: encoded.mimeType }))
+    return { encoded, previewUrl }
+  }, [])
+
+  const confirmCapture = useCallback(
+    async (staged: StagedPhoto, context?: string) => {
+      URL.revokeObjectURL(staged.previewUrl)
       const meal = await createPendingMeal({
-        bytes: encoded.bytes,
-        mimeType: encoded.mimeType,
-        byteSize: encoded.byteSize,
+        bytes: staged.encoded.bytes,
+        mimeType: staged.encoded.mimeType,
+        byteSize: staged.encoded.byteSize,
       })
       haptic()
-      await analyse(meal.id)
+      await analyse(meal.id, context)
     },
     [analyse],
   )
+
+  const discardCapture = useCallback((staged: StagedPhoto) => {
+    URL.revokeObjectURL(staged.previewUrl)
+  }, [])
 
   const photoUrlFor = useCallback(async (id: string) => {
     const photo = await getMealPhoto(id)
@@ -182,7 +236,9 @@ export function useMeals(): MealsState {
     macros: macrosFor(meals),
     canAnalyse,
     analysing,
-    capture,
+    stageCapture,
+    confirmCapture,
+    discardCapture,
     retry: analyse,
     correct: useCallback(
       async (id: string, edit: MealEdit) => {
@@ -196,6 +252,21 @@ export function useMeals(): MealsState {
         haptic()
       },
       [targetGrams],
+    ),
+    addProduct: useCallback(
+      async (item: MealItem) => {
+        await createBarcodeMeal(item, targetGrams)
+        haptic()
+      },
+      [targetGrams],
+    ),
+    describeMeal: useCallback(
+      async (description: string) => {
+        const meal = await createTextMeal(description)
+        haptic()
+        await analyse(meal.id)
+      },
+      [analyse],
     ),
     remove: useCallback(
       async (id: string) => {

@@ -4,6 +4,7 @@ import {
   applyAnalysis,
   createManualMeal,
   createPendingMeal,
+  createTextMeal,
   editMeal,
   getMealPhoto,
   macrosFor,
@@ -287,5 +288,59 @@ describe('pruneMealPhotos', () => {
   it('does nothing when there is nothing stale', async () => {
     await createPendingMeal(photo(), { date: '2026-08-27' }, db)
     expect(await pruneMealPhotos(30, '2026-08-27', db)).toBe(0)
+  })
+})
+
+const DESCRIPTION = '200 g de poulet'
+
+describe('createTextMeal', () => {
+  it('écrit un repas en attente qui porte sa description', async () => {
+    const meal = await createTextMeal(DESCRIPTION, {}, db)
+    expect(meal.status).toBe('pending')
+    expect(meal.source).toBe('ai_text')
+    expect(meal.hint).toBe(DESCRIPTION)
+    expect(meal.label).toBe(DESCRIPTION)
+    expect(meal.items).toEqual([])
+  })
+
+  it('coupe un label trop long sans perdre la description', async () => {
+    const long = 'a'.repeat(200)
+    const meal = await createTextMeal(long, {}, db)
+    expect(meal.label.length).toBeLessThanOrEqual(80)
+    expect(meal.hint).toBe(long)
+  })
+
+  it('apparaît dans la file des repas à analyser', async () => {
+    const meal = await createTextMeal('une pomme', {}, db)
+    const queue = await pendingMeals(db)
+    expect(queue.map((row) => row.id)).toContain(meal.id)
+  })
+})
+
+describe('editMeal sur un repas texte', () => {
+  it('passe ai_text à corrected quand les lignes changent', async () => {
+    const meal = await createTextMeal('une pomme', {}, db)
+    await applyAnalysis(
+      meal.id,
+      {
+        label: 'Pomme',
+        items: [{ name: 'Pomme', quantity: '1', kcal: 80, proteinG: 0, carbsG: 21, fatG: 0 }],
+        kcal: 80,
+        proteinG: 0,
+        carbsG: 21,
+        fatG: 0,
+        confidence: 'medium',
+      },
+      'groq',
+      TARGET,
+      db,
+    )
+    const edited = await editMeal(
+      meal.id,
+      { items: [{ name: 'Pomme', quantity: '2', kcal: 160, proteinG: 0, carbsG: 42, fatG: 0 }] },
+      TARGET,
+      db,
+    )
+    expect(edited?.source).toBe('corrected')
   })
 })
