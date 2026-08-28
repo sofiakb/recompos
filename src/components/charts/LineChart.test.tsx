@@ -79,6 +79,41 @@ describe('LineChart', () => {
     expect(axisLabels(container)[0]).toBe('130 %')
   })
 
+  it('reads the same curve in a second unit on the right', () => {
+    const { container } = render(
+      <LineChart
+        ariaLabel="Poids lissé et IMC"
+        unit="kg"
+        secondaryAxis={{ label: 'IMC', convert: (kg) => Math.round((kg / 1.78 ** 2) * 10) / 10 }}
+        points={[
+          { label: '20 juil.', value: 79.6 },
+          { label: '24 août', value: 78.1 },
+        ]}
+      />,
+    )
+    const right = [...container.querySelectorAll('text:not([text-anchor])')].map(
+      (node) => node.textContent ?? '',
+    )
+    expect(right).toContain('IMC')
+    expect(right).toContain('25,1')
+    expect(right).toContain('24,6')
+    // One polyline, not two: the second axis is a reading, not a second series.
+    expect(container.querySelectorAll('polyline')).toHaveLength(1)
+  })
+
+  it('leaves the right gutter alone without a secondary axis', () => {
+    const { container } = render(
+      <LineChart
+        ariaLabel="Poids"
+        points={[
+          { label: '1 jan', value: 78 },
+          { label: '2 jan', value: 79 },
+        ]}
+      />,
+    )
+    expect(container.querySelectorAll('text:not([text-anchor])')).toHaveLength(1)
+  })
+
   it('names itself for screen readers', () => {
     render(
       <LineChart

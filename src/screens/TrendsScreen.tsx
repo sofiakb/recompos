@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Ruler, Scale } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { LineChart } from '@/components/charts/LineChart'
+import { LineChart, type SecondaryAxis } from '@/components/charts/LineChart'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { ConsistencyHeatmap } from '@/features/floor/ConsistencyHeatmap'
 import { useFloor } from '@/features/floor/useFloor'
@@ -10,10 +10,13 @@ import { StrengthCard } from '@/features/trends/StrengthCard'
 import { TrendSection } from '@/features/trends/TrendSection'
 import { WaistSheet } from '@/features/trends/WaistSheet'
 import { useWaist } from '@/features/trends/useWaist'
+import { BmiCard } from '@/features/weight/BmiCard'
 import { WeightSheet } from '@/features/weight/WeightSheet'
 import { useWeight } from '@/features/weight/useWeight'
 import { useWorkouts } from '@/features/workouts/useWorkouts'
+import { useSettingsStore } from '@/stores/settingsStore'
 import { useUiStore } from '@/stores/uiStore'
+import { bmi } from '@/lib/bmi'
 import { formatCalendarDate, formatLongDate, parseIsoDate } from '@/lib/date'
 import { formatDecimal } from '@/lib/format'
 import { t } from '@/i18n/fr'
@@ -28,6 +31,18 @@ function signed(value: number, unit: string): string {
 }
 
 /**
+ * One sentence under the weight section, never two.
+ *
+ * The BMI legend explains the same chart the smoothing note explains, so when
+ * the second axis is drawn it takes the slot rather than stacking below it.
+ */
+function weightHint(hasWeight: boolean, showsBmi: boolean): string {
+  if (!hasWeight) return t.weight.emptyHint
+  if (showsBmi) return t.trends.weightBmiHint
+  return t.weight.smoothedHint
+}
+
+/**
  * The long view, one measure per section: consistency, weight, strength, waist,
  * past sessions, photos.
  *
@@ -39,6 +54,7 @@ export function TrendsScreen() {
   const { exerciseById, history } = useWorkouts()
   const weight = useWeight()
   const waist = useWaist()
+  const heightCm = useSettingsStore((state) => state.settings.heightCm) ?? null
   const showToast = useUiStore((state) => state.showToast)
   const [weighInOpen, setWeighInOpen] = useState(false)
   const [waistOpen, setWaistOpen] = useState(false)
@@ -46,6 +62,14 @@ export function TrendsScreen() {
   // Oldest first for the chart; the hook hands back newest first. The waist
   // hook already exposes its own oldest-first series and rolling mean.
   const weightSeries = [...weight.entries].reverse()
+
+  // One curve, two graduations: at a constant height the BMI is the weight over
+  // a constant, so a second polyline would lie exactly on the first.
+  const bmiAxis: SecondaryAxis | undefined =
+    heightCm === null
+      ? undefined
+      : { label: t.trends.bmi, convert: (kg: number) => bmi(kg, heightCm) }
+  const showsBmiChart = weightSeries.length > 1 && bmiAxis !== undefined
 
   return (
     <>
@@ -75,7 +99,7 @@ export function TrendsScreen() {
 
         <TrendSection
           title={t.weight.title}
-          hint={weight.hasWeight ? t.weight.smoothedHint : t.weight.emptyHint}
+          hint={weightHint(weight.hasWeight, showsBmiChart)}
           aside={
             weight.trendKg !== null && weight.trendKg !== 0 ? signed(weight.trendKg, 'kg') : null
           }
@@ -83,14 +107,19 @@ export function TrendsScreen() {
           {weight.hasWeight ? (
             <>
               {weight.smoothedKg !== null ? (
-                <p className="tnum text-3xl font-semibold">
-                  {formatDecimal(weight.smoothedKg)}
-                  <span className="ml-1 text-sm font-normal text-muted-foreground">kg</span>
-                </p>
+                <>
+                  <p className="tnum text-3xl font-semibold">
+                    {formatDecimal(weight.smoothedKg)}
+                    <span className="ml-1 text-sm font-normal text-muted-foreground">kg</span>
+                  </p>
+                  <BmiCard smoothedKg={weight.smoothedKg} heightCm={heightCm} />
+                </>
               ) : null}
               {weightSeries.length > 1 ? (
                 <LineChart
-                  ariaLabel={t.weight.title}
+                  ariaLabel={showsBmiChart ? t.trends.weightBmiChart : t.weight.title}
+                  unit="kg"
+                  secondaryAxis={bmiAxis}
                   points={weightSeries.map((entry) => ({
                     label: shortDate(entry.date),
                     value: entry.weightKg ?? null,
