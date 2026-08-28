@@ -1,29 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Camera, ScanBarcode, Sparkles, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { buttonVariants } from '@/components/ui/button-variants'
 import { Sheet } from '@/components/ui/sheet'
 import { useFloor } from '@/features/floor/useFloor'
-import { BarcodeScanSheet } from '@/features/meals/BarcodeScanSheet'
+import { AddSheet } from '@/features/meals/add/AddSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
-import { DescribeMealSheet } from '@/features/meals/DescribeMealSheet'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
 import { ProductSheet } from '@/features/meals/ProductSheet'
 import { useBarcode } from '@/features/meals/useBarcode'
+import { useRecentMeals, type RecentMeal } from '@/features/meals/useRecentMeals'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
 import { DayNav } from '@/features/nutrition/DayNav'
 import { DayTotals } from '@/features/nutrition/DayTotals'
 import { buildSlotJournal } from '@/features/nutrition/journal'
 import { MealSlotList } from '@/features/nutrition/MealSlotList'
-import { QuickAddRow } from '@/features/nutrition/QuickAddRow'
 import { useCalorieTarget, type CalorieTargetState } from '@/features/nutrition/useCalorieTarget'
 import { useMeals, type StagedPhoto } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget, type ProteinTargetState } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
-import { macroTargetsG } from '@/lib/nutrition'
+import { macroTargetsG, mealTargetKcal } from '@/lib/nutrition'
 import { t } from '@/i18n/fr'
 import type { MealEntry, MealSlot, ProteinLog, ProteinSource } from '@/types/models'
 
@@ -63,7 +60,6 @@ export function NutritionScreen() {
 
   const fileInput = useRef<HTMLInputElement>(null)
   const [customOpen, setCustomOpen] = useState(false)
-  const [capturing, setCapturing] = useState(false)
   const [staged, setStaged] = useState<StagedPhoto | null>(null)
   const [analysingCapture, setAnalysingCapture] = useState(false)
   const barcode = useBarcode()
@@ -71,12 +67,21 @@ export function NutritionScreen() {
   useEffect(() => {
     if (barcode.error) showToast(barcode.error)
   }, [barcode.error, showToast])
-  const [describeOpen, setDescribeOpen] = useState(false)
   const [describing, setDescribing] = useState(false)
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
   const [mealSheetOpen, setMealSheetOpen] = useState(false)
   const [editingLog, setEditingLog] = useState<ProteinLog | null>(null)
-  const [newMealSlot, setNewMealSlot] = useState<MealSlot>('lunch')
+  /** Which meal the add sheet is on; `null` closes it. */
+  const [addingSlot, setAddingSlot] = useState<MealSlot | null>(null)
+  /**
+   * The meal an in-flight add belongs to, kept apart from the sheet's own state.
+   *
+   * Taking a photo hands the screen to the OS camera, and the product sheet
+   * opens over the add sheet. Both outlive the sheet that started them, and both
+   * still have to land on the right meal.
+   */
+  const [targetSlot, setTargetSlot] = useState<MealSlot>('lunch')
+  const recent = useRecentMeals()
 
   const journal = useMemo(
     () => buildSlotJournal(protein.logs, meals.meals),
@@ -84,6 +89,7 @@ export function NutritionScreen() {
   )
 
   const macroTargets = macroTargetsG(calories.targetKcal, target.targetGrams)
+  const slotKcal = journal.find((group) => group.slot === targetSlot)?.kcal ?? 0
   // Protein comes from the ledger, not from the meals: a meal writes its protein
   // into that same ledger, so adding the two would count every photographed
   // meal twice.
@@ -105,13 +111,15 @@ export function NutritionScreen() {
 
   const onFile = async (file: File | undefined) => {
     if (!file) return
-    setCapturing(true)
+    setAddingSlot(null)
+    // Encoding a 12 Mpx photo takes a beat on a phone, and the add sheet has
+    // just closed. Without this the screen sits blank and reads as « it did
+    // not take ».
+    showToast(t.meals.capturing)
     try {
       setStaged(await meals.stageCapture(file))
     } catch {
       showToast(t.photos.failed)
-    } finally {
-      setCapturing(false)
     }
   }
 
@@ -120,10 +128,33 @@ export function NutritionScreen() {
     setMealSheetOpen(true)
   }
 
-  /** Adding to a named meal, until the tabbed add sheet replaces this. */
-  const addToSlot = (slot: MealSlot) => {
-    setNewMealSlot(slot)
-    openMeal(null)
+  const openAdd = (slot: MealSlot) => {
+    setTargetSlot(slot)
+    setAddingSlot(slot)
+  }
+
+  const addRecent = (meal: RecentMeal) => {
+    setAddingSlot(null)
+    void meals
+      .addManual(meal.label, meal.items, targetSlot)
+      .then(() => showToast(t.meals.saved(meal.kcal)))
+  }
+
+  const describe = (description: string) => {
+    setDescribing(true)
+    setAddingSlot(null)
+    void meals
+      .describeMeal(description, targetSlot)
+      .catch(() => showToast(t.meals.unknownError))
+      .finally(() => setDescribing(false))
+  }
+
+  const addKcalOnly = (kcal: number) => {
+    setAddingSlot(null)
+    const item = { name: t.nutrition.kcalOnly, quantity: '', kcal, proteinG: 0, carbsG: 0, fatG: 0 }
+    void meals
+      .addManual(t.nutrition.kcalOnly, [item], targetSlot)
+      .then(() => showToast(t.meals.saved(kcal)))
   }
 
   return (
@@ -143,57 +174,36 @@ export function NutritionScreen() {
 
       <DayNav date={day} onChange={setDay} />
 
-      <div className="flex flex-col gap-7 px-5 pt-2">
-        <QuickAddRow
-          onAdd={(grams) => void addWithUndo(grams, 'meal')}
-          onCustom={() => setCustomOpen(true)}
-        />
-
-        <div className="grid grid-cols-2 gap-2">
-          {/* A link, not a button: it navigates, so it should behave like one
-              (middle-click, long-press) while wearing the button's clothes. */}
-          <Link
-            to="/nutrition/catalogues"
-            className={buttonVariants({ variant: 'outline', size: 'lg' })}
-          >
-            {t.nutrition.whatToEat}
-          </Link>
-          <Button
-            variant="secondary"
-            size="lg"
-            disabled={!meals.canAnalyse || capturing}
-            onClick={() => fileInput.current?.click()}
-          >
-            <Camera size={18} aria-hidden />
-            {capturing ? t.meals.capturing : t.nutrition.aMeal}
-          </Button>
-          <Button
-            variant="secondary"
-            size="lg"
-            disabled={!meals.canAnalyse}
-            onClick={() => setDescribeOpen(true)}
-          >
-            <Sparkles size={18} aria-hidden />
-            {t.nutrition.describeMeal}
-          </Button>
-          <Button variant="secondary" size="lg" onClick={barcode.start}>
-            <ScanBarcode size={18} aria-hidden />
-            {t.nutrition.scanProduct}
-          </Button>
-        </div>
-
-        {!meals.canAnalyse ? (
-          <p className="-mt-4 text-xs text-muted-foreground">{t.meals.noProvider}</p>
-        ) : null}
-      </div>
-
       <MealSlotList
         groups={journal}
         targetKcal={calories.targetKcal}
         analysing={meals.analysing}
-        onAdd={addToSlot}
+        onAdd={openAdd}
         onOpenMeal={openMeal}
         onOpenProtein={setEditingLog}
+      />
+
+      <AddSheet
+        slot={addingSlot}
+        consumedKcal={slotKcal}
+        targetKcal={mealTargetKcal(calories.targetKcal, targetSlot)}
+        canAnalyse={meals.canAnalyse}
+        describing={describing}
+        recent={recent}
+        onClose={() => setAddingSlot(null)}
+        onPickRecent={addRecent}
+        onProtein={(grams) => {
+          setAddingSlot(null)
+          void addWithUndo(grams, 'meal')
+        }}
+        onCustomProtein={() => {
+          setAddingSlot(null)
+          setCustomOpen(true)
+        }}
+        onKcalOnly={addKcalOnly}
+        onOpenCamera={() => fileInput.current?.click()}
+        onDescribe={describe}
+        onBarcode={(code) => void barcode.submit(code)}
       />
 
       <input
@@ -219,19 +229,15 @@ export function NutritionScreen() {
         }}
       />
 
-      <BarcodeScanSheet
-        open={barcode.open}
-        onClose={barcode.close}
-        onDetected={(code) => void barcode.submit(code)}
-      />
       {barcode.product ? (
         <ProductSheet
           open
           product={barcode.product}
           onClose={barcode.close}
           onAdd={(item) => {
-            void meals.addProduct(item).then(() => showToast(t.meals.productAdded))
+            void meals.addProduct(item, targetSlot).then(() => showToast(t.meals.productAdded))
             barcode.close()
+            setAddingSlot(null)
           }}
         />
       ) : null}
@@ -248,7 +254,7 @@ export function NutritionScreen() {
           onConfirm={(context) => {
             setAnalysingCapture(true)
             void meals
-              .confirmCapture(staged, context || undefined)
+              .confirmCapture(staged, { context: context || undefined, slot: targetSlot })
               .catch(() => showToast(t.meals.unknownError))
               .finally(() => {
                 setAnalysingCapture(false)
@@ -258,26 +264,10 @@ export function NutritionScreen() {
         />
       ) : null}
 
-      <DescribeMealSheet
-        open={describeOpen}
-        pending={describing}
-        onClose={() => setDescribeOpen(false)}
-        onSubmit={(description) => {
-          setDescribing(true)
-          void meals
-            .describeMeal(description)
-            .catch(() => showToast(t.meals.unknownError))
-            .finally(() => {
-              setDescribing(false)
-              setDescribeOpen(false)
-            })
-        }}
-      />
-
       <MealEditorSheet
         open={mealSheetOpen}
         meal={editingMeal}
-        defaultSlot={newMealSlot}
+        defaultSlot={targetSlot}
         photoUrlFor={meals.photoUrlFor}
         onClose={() => setMealSheetOpen(false)}
         onSave={async (label, slot, items) => {
