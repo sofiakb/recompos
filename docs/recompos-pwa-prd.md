@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 1.9 — refonte complète des écrans (handoff `docs/design`) |
-| Date | 2026-08-27 |
+| Version | 2.0 — trois sources de repas : photo, texte, code-barres |
+| Date | 2026-08-28 |
 | Statut | Jalons 1 à 7 livrés ; refonte livrée |
-| Remplace | v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Remplace | v1.9 (refonte complète des écrans), v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -52,6 +52,8 @@ une décision d'implémentation.
 | 18 | Refonte de la navigation | **Onglets Aujourd'hui · Nutrition · Séances · Progression, et Réglages en 6 rubriques menant à des sous-pages.** Décidé le 27/08/2026 sur le handoff `docs/design` | Une seule maison par donnée : la carte de pesée vivait à la fois dans Réglages et dans Progression, elle ne reste que dans Progression. La route `/trends` ne bouge pas malgré le renommage de l'onglet — renommer ne doit pas casser un signet |
 | 19 | Nommage « empilées » | **L'UI garde « Habitudes empilées », contre la proposition « En plus » du handoff** | Écart assumé, pas un oubli d'implémentation : le terme dit le mécanisme, une habitude accrochée à une ancre existante. Le modèle gardait déjà `kind: 'stack'` dans les deux cas |
 | 20 | Numéro de version affiché | **`package.json`, injecté au build**, jamais `SCHEMA_VERSION` | L'écran affichait « Version 3.0 » en beta : c'était le compteur de migrations Dexie déguisé en livraison. Le numéro de schéma reste visible, mais dans Réglages → Données, à côté de l'export, seul endroit où il veut dire quelque chose |
+| 21 | Sources d'un repas | **Trois entrées : photo, description en texte, code-barres OpenFoodFacts.** Ajoutée le 28/08/2026 | La photo n'est plus la seule porte. Le texte passe par un modèle réglé à part du modèle vision, sur la même clé ; le code-barres n'appelle aucun modèle et ne coûte rien |
+| 22 | Contexte d'analyse | **Une précision facultative est demandée avant l'envoi de la photo**, pas seulement après une lecture ratée | Une information que l'utilisateur avait avant la photo coûtait jusqu'ici un second appel. Le prompt distingue une précision d'une correction |
 
 ---
 
@@ -509,6 +511,48 @@ en regardant ce que fait la courbe de poids.
 
 ---
 
+### 6.8 Les trois sources d'un repas (décisions n°21 et n°22)
+
+**Ce que chaque source garantit, et pourquoi `source` est stocké**
+
+Un repas inscrit par code-barres porte la table nutritionnelle du fabricant : c'est une valeur
+déclarée, pas une estimation. Une photo et une description portent une lecture de modèle, qui se
+trompe surtout sur les portions. La différence ne se voit pas dans les chiffres — 162 kcal ressemble
+à 162 kcal — donc elle est enregistrée dans `MealSource`, affichée en badge au journal, et disponible
+à toute question ultérieure sur la provenance d'un nombre. `barcode` n'est pas `manual`, et `ai_text`
+n'est pas `ai` : seul ce dernier peut être rejoué contre une image.
+
+**Ce qui est écrit avant l'appel, et ce qui ne l'est pas**
+
+La photo et la description sont écrites en base *avant* que la requête parte, et pour la même
+raison : un repas pris dans un sous-sol sans réseau est un repas qui a eu lieu, et la file de reprise
+doit pouvoir le récupérer après un onglet fermé. La description vit dans `hint`, le champ qui veut
+déjà dire « ce que l'utilisateur a dit au modèle », si bien qu'une correction sur un repas texte est
+simplement la nouvelle description. Un scan raté, lui, n'écrit rien : il se refait en une seconde, et
+une file de recherches échouées dans le journal serait du bruit.
+
+**Un seul prompt pour deux modalités**
+
+Les règles nutritionnelles, le schéma JSON de sortie et le parseur sont communs à la photo et au
+texte. Chaque modalité n'ajoute que le paragraphe qui décrit ce qu'elle regarde — les repères
+d'échelle visuelle d'un côté, l'autorité des quantités données de l'autre. Un modèle de texte ment
+exactement comme un modèle de vision : rien ne traverse cette frontière sans passer par
+`parseAnalysis`. La précision donnée *avant* l'analyse et la correction donnée *après* sont la même
+phrase et deux instructions différentes — une correction annule une lecture précédente, un contexte
+n'en a aucune à annuler, et dire à un modèle d'écarter une lecture qui n'a pas eu lieu, c'est
+l'inviter à l'inventer.
+
+**Ce qu'OpenFoodFacts ne garantit pas**
+
+C'est une base communautaire : les champs sont facultatifs, les unités varient, et un produit peut
+exister avec un nom et rien d'autre. Un code inconnu répond `200` avec `status: 0`, jamais un `404`.
+L'énergie arrive parfois en kilojoules seulement. Une fiche sans énergie, ou sans aucune des trois
+macros, est **refusée** plutôt que présentée à zéro — une fiche pleine de zéros serait un mensonge
+avec un bouton dessus. Une macro isolée qui manque est comptée à zéro *et signalée* à l'écran :
+l'utilisateur a le droit de savoir que « 0 g de glucides » était une absence.
+
+---
+
 ## 7. Architecture applicative
 
 ```text
@@ -537,10 +581,17 @@ src/
 │   ├── consistency.ts          # calcul des scores élastiques
 │   ├── overload.ts             # règles de surcharge progressive
 │   ├── image.ts                # redimensionnement et conversion WebP
+│   ├── llm/
+│   │   ├── client.ts           # transport OpenAI-compatible : clés, endpoints, modalités
+│   │   └── meal.ts             # les deux lectures d'un repas, photo et texte
+│   ├── off/
+│   │   ├── product.ts          # parseur OpenFoodFacts, pur : kJ, portions, macros absentes
+│   │   ├── client.ts           # requête v2, erreurs typées
+│   │   └── barcode.ts          # somme de contrôle EAN, détection par le navigateur
 │   └── vision/
-│       ├── prompt.ts           # consignes d'analyse d'une assiette
+│       ├── prompt.ts           # consignes partagées par les deux modalités
 │       ├── schema.ts           # validation stricte de la réponse du modèle
-│       └── providers.ts        # chaîne d'endpoints OpenAI-compatibles
+│       └── providers.ts        # façade historique, ré-exporte llm/
 ├── i18n/
 │   └── fr.ts                   # tous les textes utilisateur, clé → chaîne
 └── types/
@@ -864,9 +915,10 @@ Explicitement exclu, pour éviter la dérive :
 - Notifications push ou locales (décision n°6). Réexaminé le 23/08/2026 : maintenu, avec deux
   contournements sans serveur documentés en annexe B.
 - Chiffrement des photos et code PIN (décision n°7).
-- ~~Suivi calorique complet~~ — **levé le 27/08/2026, voir décision n°15 et §6.6.** Reste exclu :
-  base alimentaire embarquée et scan de code-barres. Les calories viennent d'une photo analysée, pas
-  d'une table nutritionnelle à maintenir.
+- ~~Suivi calorique complet~~ — **levé le 27/08/2026, voir décision n°15 et §6.6.**
+  ~~Scan de code-barres~~ — **levé le 28/08/2026, voir décision n°21 et §6.8.** Reste
+  exclu : la base alimentaire embarquée. OpenFoodFacts est interrogé à la demande, rien
+  n'est stocké ni maintenu ici — c'est un appel sortant, comme les services de vision.
 - Intégrations santé (Apple Health, Google Fit), objets connectés, balances.
 - Fonctions sociales, partage, classements.
 - Portage React Native ou Expo (conséquence de la décision n°2).
