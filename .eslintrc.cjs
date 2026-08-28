@@ -29,5 +29,13 @@ module.exports = {
       files: ['tools/*.mjs'],
       env: { browser: false, node: true, es2022: true },
     },
+    {
+      // The one file where an invisible space is content, not a typo: French
+      // typography puts an unbreakable space before « ? », « : » and « % » so a
+      // phone never leaves the punctuation stranded on its own line. `fr.test.ts`
+      // checks that spacing on purpose, which is the guard this rule gives up.
+      files: ['src/i18n/*.ts'],
+      rules: { 'no-irregular-whitespace': 'off' },
+    },
   ],
 }
