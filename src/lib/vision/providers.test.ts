@@ -111,7 +111,7 @@ describe('analyseWithProvider', () => {
     const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
     await analyseWithProvider(
       groq(),
-      { dataUrl: DATA_URL, hint: 'couscous, pas du riz' },
+      { dataUrl: DATA_URL, hint: 'couscous, pas du riz', isCorrection: true },
       fetchMock,
     )
     const text = JSON.parse(fetchMock.mock.calls[0][1].body as string).messages[1].content[0].text
@@ -120,6 +120,18 @@ describe('analyseWithProvider', () => {
     expect(text).toMatch(/fait autorité/i)
     // …but the portions are re-read from the photo, not carried over.
     expect(text).toMatch(/réestime les portions/i)
+  })
+
+  it('frames a pre-analysis precision without disowning a reading that never was', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(ANSWER))
+    await analyseWithProvider(groq(), { dataUrl: DATA_URL, hint: 'le riz est complet' }, fetchMock)
+    const text = JSON.parse(fetchMock.mock.calls[0][1].body as string).messages[1].content[0].text
+    expect(text).toContain('le riz est complet')
+    // Still authoritative on what the food is…
+    expect(text).toMatch(/fait autorité/i)
+    // …but there is no earlier answer to overrule, and saying otherwise is how
+    // a model starts inventing the reading it is being told to discard.
+    expect(text).not.toMatch(/précédente/i)
   })
 
   it('sends no correction framing when there is nothing to correct', async () => {

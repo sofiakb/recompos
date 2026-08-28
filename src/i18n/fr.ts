@@ -369,6 +369,13 @@ export const fr = {
     noProvider: 'Ajoute une clé dans les réglages pour analyser tes photos.',
     addManual: 'Saisir à la main',
     manualTitle: 'Repas saisi à la main',
+    previewTitle: 'Avant d’analyser',
+    previewAlt: 'Photo du repas à analyser',
+    previewHint:
+      'Ajoute ce que la photo ne dit pas — une cuisson, un ingrédient caché, une marque. Facultatif.',
+    previewFieldLabel: 'Précisions (facultatif)',
+    previewPlaceholder: 'riz complet, cuit sans huile',
+    previewSubmit: 'Analyser',
     describeTitle: 'Décrire un repas',
     describeHint:
       'Dis ce que tu as mangé, avec les quantités si tu les connais. Ce que tu ne précises pas sera estimé — et l’estimation le dira.',

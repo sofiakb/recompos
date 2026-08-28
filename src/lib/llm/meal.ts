@@ -13,6 +13,7 @@ import {
   type ConfiguredProvider,
 } from '@/lib/llm/client'
 import {
+  contextPrompt,
   hintPrompt,
   MEAL_PHOTO_SYSTEM_PROMPT,
   MEAL_PHOTO_USER_PROMPT,
@@ -26,14 +27,23 @@ import type { VisionProviderId } from '@/types/models'
 export interface AnalyseInput {
   /** `data:image/webp;base64,…` — the bytes travel in the request, never hosted. */
   dataUrl: string
-  /** Optional nudge from the user, e.g. « le riz est complet ». */
+  /** What the user said about the plate, e.g. « le riz est complet ». */
   hint?: string
+  /**
+   * True when `hint` answers a reading that was wrong, false when it is what the
+   * user knew before anyone looked.
+   *
+   * The two are the same sentence and a different instruction: a correction
+   * overrides a previous answer, a context has none to override. Telling a model
+   * to discard a reading that never happened is how it starts inventing one.
+   */
+  isCorrection?: boolean
 }
 
 function messageContent(input: AnalyseInput) {
-  const text = input.hint?.trim()
-    ? `${MEAL_PHOTO_USER_PROMPT}\n\n${hintPrompt(input.hint)}`
-    : MEAL_PHOTO_USER_PROMPT
+  const said = input.hint?.trim()
+  const framed = said ? (input.isCorrection ? hintPrompt(said) : contextPrompt(said)) : null
+  const text = framed ? `${MEAL_PHOTO_USER_PROMPT}\n\n${framed}` : MEAL_PHOTO_USER_PROMPT
   return [
     { type: 'text', text },
     { type: 'image_url', image_url: { url: input.dataUrl } },

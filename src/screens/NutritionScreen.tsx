@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/button-variants'
 import { Sheet } from '@/components/ui/sheet'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { CalorieCard } from '@/features/meals/CalorieCard'
+import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
 import { DescribeMealSheet } from '@/features/meals/DescribeMealSheet'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
@@ -13,7 +14,7 @@ import { DayJournal } from '@/features/nutrition/DayJournal'
 import { buildDayJournal } from '@/features/nutrition/journal'
 import { ProteinRing } from '@/features/nutrition/ProteinRing'
 import { QuickAddRow } from '@/features/nutrition/QuickAddRow'
-import { useMeals } from '@/features/nutrition/useMeals'
+import { useMeals, type StagedPhoto } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
@@ -38,6 +39,8 @@ export function NutritionScreen() {
   const fileInput = useRef<HTMLInputElement>(null)
   const [customOpen, setCustomOpen] = useState(false)
   const [capturing, setCapturing] = useState(false)
+  const [staged, setStaged] = useState<StagedPhoto | null>(null)
+  const [analysingCapture, setAnalysingCapture] = useState(false)
   const [describeOpen, setDescribeOpen] = useState(false)
   const [describing, setDescribing] = useState(false)
   const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
@@ -62,7 +65,7 @@ export function NutritionScreen() {
     if (!file) return
     setCapturing(true)
     try {
-      await meals.capture(file)
+      setStaged(await meals.stageCapture(file))
     } catch {
       showToast(t.photos.failed)
     } finally {
@@ -173,6 +176,28 @@ export function NutritionScreen() {
           void addWithUndo(grams, 'meal')
         }}
       />
+
+      {staged ? (
+        <CapturePreviewSheet
+          open
+          previewUrl={staged.previewUrl}
+          pending={analysingCapture}
+          onCancel={() => {
+            meals.discardCapture(staged)
+            setStaged(null)
+          }}
+          onConfirm={(context) => {
+            setAnalysingCapture(true)
+            void meals
+              .confirmCapture(staged, context || undefined)
+              .catch(() => showToast(t.meals.unknownError))
+              .finally(() => {
+                setAnalysingCapture(false)
+                setStaged(null)
+              })
+          }}
+        />
+      ) : null}
 
       <DescribeMealSheet
         open={describeOpen}
