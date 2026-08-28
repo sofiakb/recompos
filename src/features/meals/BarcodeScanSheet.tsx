@@ -39,6 +39,21 @@ export function BarcodeScanSheet({ open, onClose, onDetected }: BarcodeScanSheet
     let timer: number | null = null
     let stopped = false
 
+    // Both named rather than inlined into `setInterval(… .then(…))`: three
+    // anonymous callbacks deep, the thing that actually happens on a hit stops
+    // being findable.
+    const accept = (code: string | null) => {
+      if (!code || stopped) return
+      stopped = true
+      onDetected(code)
+    }
+
+    const scanFrame = () => {
+      const video = videoRef.current
+      if (!video) return
+      void detectBarcode(video).then(accept)
+    }
+
     const start = async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -58,15 +73,7 @@ export function BarcodeScanSheet({ open, onClose, onDetected }: BarcodeScanSheet
       await video.play().catch(() => undefined)
       setScanning(true)
 
-      timer = window.setInterval(() => {
-        if (!videoRef.current) return
-        void detectBarcode(videoRef.current).then((code) => {
-          if (code && !stopped) {
-            stopped = true
-            onDetected(code)
-          }
-        })
-      }, FRAME_INTERVAL_MS)
+      timer = window.setInterval(scanFrame, FRAME_INTERVAL_MS)
     }
 
     void start()

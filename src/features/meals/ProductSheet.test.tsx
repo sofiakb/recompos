@@ -13,6 +13,8 @@ const PRODUCT: OffProduct = {
   missingMacros: [],
 }
 
+const GRAMS = 'Quantité (g)'
+
 function setup(product: OffProduct = PRODUCT) {
   const onAdd = vi.fn()
   render(<ProductSheet open product={product} onClose={vi.fn()} onAdd={onAdd} />)
@@ -22,7 +24,7 @@ function setup(product: OffProduct = PRODUCT) {
 describe('ProductSheet', () => {
   it('pré-remplit la quantité avec la portion du produit', () => {
     setup()
-    expect(screen.getByLabelText('Quantité (g)')).toHaveValue('15')
+    expect(screen.getByLabelText(GRAMS)).toHaveValue('15')
   })
 
   it('affiche les macros de cette quantité', () => {
@@ -32,7 +34,7 @@ describe('ProductSheet', () => {
 
   it('recalcule les macros quand la quantité change', async () => {
     const { user } = setup()
-    const field = screen.getByLabelText('Quantité (g)')
+    const field = screen.getByLabelText(GRAMS)
     await user.clear(field)
     await user.type(field, '30')
     expect(screen.getByText('162 kcal')).toBeInTheDocument()
@@ -40,7 +42,7 @@ describe('ProductSheet', () => {
 
   it('rend un MealItem à la quantité choisie', async () => {
     const { onAdd, user } = setup()
-    const field = screen.getByLabelText('Quantité (g)')
+    const field = screen.getByLabelText(GRAMS)
     await user.clear(field)
     await user.type(field, '30')
     await user.click(screen.getByRole('button', { name: 'Ajouter' }))
@@ -51,7 +53,7 @@ describe('ProductSheet', () => {
 
   it("refuse d'ajouter une quantité nulle", async () => {
     const { user } = setup()
-    const field = screen.getByLabelText('Quantité (g)')
+    const field = screen.getByLabelText(GRAMS)
     await user.clear(field)
     expect(screen.getByRole('button', { name: 'Ajouter' })).toBeDisabled()
   })

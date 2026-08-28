@@ -63,6 +63,19 @@ function servingGrams(record: Record<string, unknown>): number {
   return DEFAULT_SERVING_G
 }
 
+/**
+ * Energy per 100 g, in kcal.
+ *
+ * A good part of the database carries kilojoules only, so a missing
+ * `energy-kcal_100g` is a conversion away rather than a missing product.
+ */
+function kcalPer100g(nutriments: Record<string, unknown>): number | null {
+  const direct = asNumber(nutriments['energy-kcal_100g'])
+  if (direct !== null) return Math.round(direct)
+  const kj = asNumber(nutriments.energy_100g)
+  return kj !== null ? Math.round(kj / KJ_PER_KCAL) : null
+}
+
 export function parseProduct(raw: unknown): OffProduct {
   if (!raw || typeof raw !== 'object') {
     throw new OffError('bad_response', 'Réponse illisible')
@@ -70,10 +83,7 @@ export function parseProduct(raw: unknown): OffProduct {
   const record = raw as Record<string, unknown>
   const nutriments = (record.nutriments ?? {}) as Record<string, unknown>
 
-  const kcalDirect = asNumber(nutriments['energy-kcal_100g'])
-  const kj = asNumber(nutriments.energy_100g)
-  const kcal =
-    kcalDirect !== null ? Math.round(kcalDirect) : kj !== null ? Math.round(kj / KJ_PER_KCAL) : null
+  const kcal = kcalPer100g(nutriments)
 
   const macros = {
     proteinG: asNumber(nutriments.proteins_100g),

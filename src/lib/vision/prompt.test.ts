@@ -36,15 +36,19 @@ describe('prompts partagés', () => {
   })
 })
 
+const PRECISION = 'riz complet'
+
+const CORRECTION = 'couscous, pas du riz'
+
 describe('contexte et correction', () => {
   it("ne désavoue pas une lecture précédente quand il n'y en a pas eu", () => {
-    expect(contextPrompt('riz complet')).not.toMatch(/précédente/i)
-    expect(contextPrompt('riz complet')).toContain('riz complet')
+    expect(contextPrompt(PRECISION)).not.toMatch(/précédente/i)
+    expect(contextPrompt(PRECISION)).toContain(PRECISION)
   })
 
   it('désavoue explicitement la lecture ratée dans une correction', () => {
-    expect(hintPrompt('couscous, pas du riz')).toMatch(/précédente/i)
-    expect(hintPrompt('couscous, pas du riz')).toContain('couscous, pas du riz')
+    expect(hintPrompt(CORRECTION)).toMatch(/précédente/i)
+    expect(hintPrompt(CORRECTION)).toContain(CORRECTION)
   })
 
   it('coupe les espaces autour du texte reçu', () => {

@@ -291,13 +291,15 @@ describe('pruneMealPhotos', () => {
   })
 })
 
+const DESCRIPTION = '200 g de poulet'
+
 describe('createTextMeal', () => {
   it('écrit un repas en attente qui porte sa description', async () => {
-    const meal = await createTextMeal('200 g de poulet', {}, db)
+    const meal = await createTextMeal(DESCRIPTION, {}, db)
     expect(meal.status).toBe('pending')
     expect(meal.source).toBe('ai_text')
-    expect(meal.hint).toBe('200 g de poulet')
-    expect(meal.label).toBe('200 g de poulet')
+    expect(meal.hint).toBe(DESCRIPTION)
+    expect(meal.label).toBe(DESCRIPTION)
     expect(meal.items).toEqual([])
   })
 

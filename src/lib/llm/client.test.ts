@@ -3,6 +3,8 @@ import { postCompletion, resolveEndpoint } from '@/lib/llm/client'
 
 const KEY = { apiKey: 'gsk_test', enabled: true } as const
 
+const TEXT_MODEL = 'un-modele-texte'
+
 describe('resolveEndpoint, modalité texte', () => {
   it('sert le modèle texte par défaut de Groq', () => {
     expect(resolveEndpoint('groq', KEY, 'text')?.model).toBe('openai/gpt-oss-120b')
@@ -13,8 +15,8 @@ describe('resolveEndpoint, modalité texte', () => {
   })
 
   it('lit textModel, pas model, en texte', () => {
-    const settings = { ...KEY, model: 'un-modele-vision', textModel: 'un-modele-texte' }
-    expect(resolveEndpoint('groq', settings, 'text')?.model).toBe('un-modele-texte')
+    const settings = { ...KEY, model: 'un-modele-vision', textModel: TEXT_MODEL }
+    expect(resolveEndpoint('groq', settings, 'text')?.model).toBe(TEXT_MODEL)
     expect(resolveEndpoint('groq', settings, 'vision')?.model).toBe('un-modele-vision')
   })
 
@@ -42,13 +44,13 @@ describe('postCompletion, modalité texte', () => {
       )
     await postCompletion(
       'groq',
-      { ...KEY, textModel: 'un-modele-texte' },
+      { ...KEY, textModel: TEXT_MODEL },
       [{ role: 'user', content: 'coucou' }],
       fetchImpl as unknown as typeof fetch,
       false,
       'text',
     )
     const body = JSON.parse(String(fetchImpl.mock.calls[0][1].body))
-    expect(body.model).toBe('un-modele-texte')
+    expect(body.model).toBe(TEXT_MODEL)
   })
 })

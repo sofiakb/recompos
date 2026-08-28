@@ -42,8 +42,10 @@ export interface AnalyseInput {
 
 function messageContent(input: AnalyseInput) {
   const said = input.hint?.trim()
-  const framed = said ? (input.isCorrection ? hintPrompt(said) : contextPrompt(said)) : null
-  const text = framed ? `${MEAL_PHOTO_USER_PROMPT}\n\n${framed}` : MEAL_PHOTO_USER_PROMPT
+  // Which framing, not whether: the two differ only in whether they disown a
+  // previous reading, so picking the function keeps the branch flat.
+  const frame = input.isCorrection ? hintPrompt : contextPrompt
+  const text = said ? `${MEAL_PHOTO_USER_PROMPT}\n\n${frame(said)}` : MEAL_PHOTO_USER_PROMPT
   return [
     { type: 'text', text },
     { type: 'image_url', image_url: { url: input.dataUrl } },

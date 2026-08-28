@@ -135,6 +135,19 @@ export const MAX_REQUEST_BYTES = 20 * 1024 * 1024
 /** Headroom for the prompt, the headers and the JSON framing around the image. */
 const REQUEST_OVERHEAD_BYTES = 64 * 1024
 
+/**
+ * Trailing slashes off, without a regular expression.
+ *
+ * `/\/+$/` backtracks on a long run of slashes. Harmless against an endpoint
+ * someone typed by hand — but a linear scan costs nothing and cannot be made to
+ * misbehave, and this string comes from a settings field.
+ */
+function withoutTrailingSlashes(url: string): string {
+  let end = url.length
+  while (end > 0 && url[end - 1] === '/') end -= 1
+  return url.slice(0, end)
+}
+
 export function resolveEndpoint(
   id: VisionProviderId,
   settings: VisionProviderSettings,
@@ -142,10 +155,8 @@ export function resolveEndpoint(
   useFallbackModel = false,
 ): { url: string; model: string } | null {
   const definition = PROVIDERS[id]
-  const baseUrl = (definition.needsBaseUrl ? settings.baseUrl : definition.baseUrl)?.replace(
-    /\/+$/,
-    '',
-  )
+  const configured = definition.needsBaseUrl ? settings.baseUrl : definition.baseUrl
+  const baseUrl = configured ? withoutTrailingSlashes(configured) : configured
   const text = modality === 'text'
   const chosen = (text ? settings.textModel : settings.model)?.trim()
   const fallback = text ? definition.fallbackTextModel : definition.fallbackModel
@@ -206,6 +217,32 @@ export function mentionsJson(messages: unknown[]): boolean {
   return texts.some((text) => /json/i.test(text))
 }
 
+/**
+ * What a failed response means, in terms the settings screen can act on.
+ *
+ * Held apart from the request itself: the happy path is four lines, and burying
+ * it under five status branches is how a reader stops seeing it.
+ */
+async function errorForResponse(
+  response: Response,
+  model: string,
+  id: VisionProviderId,
+): Promise<LlmError> {
+  const detail = await response.text().catch(() => '')
+  if (response.status === 401 || response.status === 403) {
+    return new LlmError('auth', 'Clé refusée', id)
+  }
+  if (response.status === 429) return new LlmError('rate_limit', 'Quota atteint', id)
+  // A retired or misspelled model id answers 404 with a body naming it. Kept
+  // apart from a server fault because it is the user's to fix — and because a
+  // built-in default going stale earns one automatic retry on the backup.
+  if (response.status === 404 || /model_not_found|does not exist/i.test(detail)) {
+    return new LlmError('model', `Modèle inconnu : ${model}`, id)
+  }
+  const explanation = detail ? ` — ${detail.slice(0, 120)}` : ''
+  return new LlmError('server', `Erreur ${response.status}${explanation}`, id)
+}
+
 export async function postCompletion(
   id: VisionProviderId,
   settings: VisionProviderSettings,
@@ -250,24 +287,7 @@ export async function postCompletion(
     clearTimeout(timeout)
   }
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '')
-    if (response.status === 401 || response.status === 403) {
-      throw new LlmError('auth', 'Clé refusée', id)
-    }
-    if (response.status === 429) throw new LlmError('rate_limit', 'Quota atteint', id)
-    // A retired or misspelled model id answers 404 with a body naming it. Kept
-    // apart from a server fault because it is the user's to fix — and because a
-    // built-in default going stale earns one automatic retry on the backup.
-    if (response.status === 404 || /model_not_found|does not exist/i.test(detail)) {
-      throw new LlmError('model', `Modèle inconnu : ${endpoint.model}`, id)
-    }
-    throw new LlmError(
-      'server',
-      `Erreur ${response.status}${detail ? ` — ${detail.slice(0, 120)}` : ''}`,
-      id,
-    )
-  }
+  if (!response.ok) throw await errorForResponse(response, endpoint.model, id)
 
   const payload = (await response.json().catch(() => null)) as {
     choices?: Array<{ message?: { content?: unknown } }>
@@ -286,11 +306,37 @@ export async function postCompletion(
  * that cannot be checked from anywhere but a browser — that the provider answers
  * a cross-origin request from this page at all.
  */
+type ProbeResult = { ok: true; model: string } | { ok: false; kind: LlmErrorKind; message: string }
+
+/**
+ * Second probe, on the backup model.
+ *
+ * Null means it settled nothing and the first failure is still the answer —
+ * which is why the caller keeps its own error rather than inventing one here.
+ */
+async function probeFallback(
+  id: VisionProviderId,
+  settings: VisionProviderSettings,
+  probe: unknown[],
+  fetchImpl: typeof fetch,
+): Promise<ProbeResult | null> {
+  try {
+    await postCompletion(id, settings, probe, fetchImpl, true)
+    // Reports the model that actually answered, so the settings screen never
+    // names one the real requests will not use.
+    const backup = resolveEndpoint(id, settings, 'vision', true)
+    return backup ? { ok: true, model: backup.model } : null
+  } catch (error) {
+    if (error instanceof LlmError) return { ok: false, kind: error.kind, message: error.message }
+    return null
+  }
+}
+
 export async function testProvider(
   id: VisionProviderId,
   settings: VisionProviderSettings,
   fetchImpl: typeof fetch = fetch,
-): Promise<{ ok: true; model: string } | { ok: false; kind: LlmErrorKind; message: string }> {
+): Promise<ProbeResult> {
   const endpoint = resolveEndpoint(id, settings)
   if (!endpoint) return { ok: false, kind: 'bad_response', message: 'Endpoint ou modèle manquant' }
   // Says « JSON » on purpose: the probe should exercise the same JSON mode the
@@ -301,20 +347,13 @@ export async function testProvider(
     await postCompletion(id, settings, probe, fetchImpl)
     return { ok: true, model: endpoint.model }
   } catch (error) {
-    if (error instanceof LlmError && error.kind === 'model' && hasFallbackModel(id, settings)) {
-      // Reports the model that actually answered, so the settings screen never
-      // names one the real requests will not use.
-      try {
-        await postCompletion(id, settings, probe, fetchImpl, true)
-        const backup = resolveEndpoint(id, settings, 'vision', true)
-        if (backup) return { ok: true, model: backup.model }
-      } catch (fallbackError) {
-        if (fallbackError instanceof LlmError) {
-          return { ok: false, kind: fallbackError.kind, message: fallbackError.message }
-        }
-      }
+    if (!(error instanceof LlmError)) {
+      return { ok: false, kind: 'network', message: 'Échec inattendu' }
     }
-    if (error instanceof LlmError) return { ok: false, kind: error.kind, message: error.message }
-    return { ok: false, kind: 'network', message: 'Échec inattendu' }
+    if (error.kind === 'model' && hasFallbackModel(id, settings)) {
+      const retried = await probeFallback(id, settings, probe, fetchImpl)
+      if (retried) return retried
+    }
+    return { ok: false, kind: error.kind, message: error.message }
   }
 }
