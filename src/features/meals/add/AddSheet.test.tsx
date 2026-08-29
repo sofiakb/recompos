@@ -3,10 +3,29 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AddSheet } from '@/features/meals/add/AddSheet'
 import { t } from '@/i18n/fr'
+import type { Food } from '@/lib/foods/food'
 import type { RecentMeal } from '@/features/meals/useRecentMeals'
 
+const SKYR: Food = {
+  id: '3033491',
+  source: 'off',
+  name: 'Skyr nature',
+  brand: 'Danone',
+  servingGrams: 150,
+  per100g: { kcal: 63, proteinG: 11, carbsG: 4, fatG: 0 },
+  missingMacros: [],
+}
+
+const searchFoods = vi.hoisted(() => vi.fn())
+vi.mock('@/lib/foods/search', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/foods/search')>()),
+  searchFoods,
+}))
+
+const SKYR_HABIT = 'Skyr et myrtilles'
+
 const RECENT: RecentMeal[] = [
-  { label: 'Skyr et myrtilles', kcal: 248, proteinG: 46, items: [] },
+  { label: SKYR_HABIT, kcal: 248, proteinG: 46, items: [] },
   { label: 'Poulet, riz, brocolis', kcal: 612, proteinG: 52, items: [] },
 ]
 
@@ -20,6 +39,7 @@ function renderSheet(overrides: Partial<Parameters<typeof AddSheet>[0]> = {}) {
     recent: RECENT,
     onClose: vi.fn(),
     onPickRecent: vi.fn(),
+    onPickFood: vi.fn(),
     onProtein: vi.fn(),
     onCustomProtein: vi.fn(),
     onKcalOnly: vi.fn(),
@@ -46,7 +66,7 @@ describe('AddSheet', () => {
     renderSheet()
 
     expect(tab(new RegExp(t.nutrition.tabSearch)).getAttribute('aria-selected')).toBe('true')
-    expect(screen.getByText('Skyr et myrtilles')).toBeTruthy()
+    expect(screen.getByText(SKYR_HABIT)).toBeTruthy()
     expect(screen.getByText(t.nutrition.habitLine(248, 46))).toBeTruthy()
   })
 
@@ -56,7 +76,7 @@ describe('AddSheet', () => {
 
     await user.type(screen.getByRole('searchbox'), 'skyr')
 
-    expect(screen.getByText('Skyr et myrtilles')).toBeTruthy()
+    expect(screen.getByText(SKYR_HABIT)).toBeTruthy()
     expect(screen.queryByText('Poulet, riz, brocolis')).toBeNull()
   })
 
@@ -64,9 +84,7 @@ describe('AddSheet', () => {
     const user = userEvent.setup()
     const props = renderSheet()
 
-    await user.click(
-      screen.getByRole('button', { name: t.nutrition.addAgain('Skyr et myrtilles') }),
-    )
+    await user.click(screen.getByRole('button', { name: t.nutrition.addAgain(SKYR_HABIT) }))
 
     expect(props.onPickRecent).toHaveBeenCalledWith(RECENT[0])
   })
@@ -134,5 +152,37 @@ describe('AddSheet', () => {
     renderSheet({ slot: null })
 
     expect(screen.queryByRole('tablist')).toBeNull()
+  })
+})
+
+describe('AddSheet — recherche d’aliment', () => {
+  it('cherche dans les tables sous les habitudes, sans les remplacer', async () => {
+    searchFoods.mockResolvedValue({ foods: [SKYR], networkFailed: false })
+    renderSheet()
+    const user = userEvent.setup()
+
+    await user.type(screen.getByLabelText(t.nutrition.searchPlaceholder), 'skyr')
+
+    expect(await screen.findByText(SKYR.name)).toBeTruthy()
+    // L'habitude qui correspond reste au-dessus : c'est le chemin le plus court.
+    expect(screen.getByText(SKYR_HABIT)).toBeTruthy()
+    expect(screen.getByText(`Danone · ${t.foods.per100(63, 11)}`)).toBeTruthy()
+  })
+
+  it('rend l’aliment choisi à l’écran, la portion restant à demander', async () => {
+    searchFoods.mockResolvedValue({ foods: [SKYR], networkFailed: false })
+    const props = renderSheet()
+    const user = userEvent.setup()
+
+    await user.type(screen.getByLabelText(t.nutrition.searchPlaceholder), 'skyr')
+    await user.click(await screen.findByLabelText(t.foods.add(SKYR.name)))
+
+    expect(props.onPickFood).toHaveBeenCalledWith(SKYR)
+  })
+
+  it('ne montre la section aliments qu’une fois quelque chose tapé', () => {
+    renderSheet()
+
+    expect(screen.queryByText(t.foods.title)).toBeNull()
   })
 })

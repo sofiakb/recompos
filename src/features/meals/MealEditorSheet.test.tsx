@@ -2,7 +2,24 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
+import { t } from '@/i18n/fr'
+import type { Food } from '@/lib/foods/food'
 import type { MealEntry } from '@/types/models'
+
+const CREME: Food = {
+  id: '19548',
+  source: 'ciqual',
+  name: 'Crème fraîche épaisse, 30 % MG',
+  servingGrams: 100,
+  per100g: { kcal: 293, proteinG: 2, carbsG: 3, fatG: 30 },
+  missingMacros: [],
+}
+
+const searchFoods = vi.hoisted(() => vi.fn())
+vi.mock('@/lib/foods/search', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/foods/search')>()),
+  searchFoods,
+}))
 
 const AT = '2026-08-28T20:00:00.000Z'
 
@@ -94,5 +111,26 @@ describe('MealEditorSheet — la portion entraîne les macros', () => {
     await retype(user, PORTION, 'une poignée')
 
     expect(screen.getByLabelText(KCAL)).toHaveValue('195')
+  })
+})
+
+describe('MealEditorSheet — chercher un aliment', () => {
+  it('ajoute une ligne avec les macros de la portion choisie', async () => {
+    searchFoods.mockResolvedValue({ foods: [CREME], networkFailed: false })
+    const { user } = setup()
+
+    await user.click(screen.getByRole('button', { name: t.foods.fromEditor }))
+    await user.type(screen.getByLabelText(t.nutrition.searchPlaceholder), 'creme')
+    await user.click(await screen.findByLabelText(t.foods.add(CREME.name)))
+
+    // La table est pour 100 g ; la seule question qui reste est la portion.
+    const grams = screen.getByLabelText(t.foods.portion.gramsLabel)
+    await user.clear(grams)
+    await user.type(grams, '30')
+    await user.click(screen.getByRole('button', { name: t.foods.portion.add }))
+
+    expect(screen.getByLabelText('Aliment 2')).toHaveValue(CREME.name)
+    expect(screen.getByLabelText('kcal 2')).toHaveValue('88')
+    expect(screen.getByLabelText('Lipides (g) 2')).toHaveValue('9')
   })
 })

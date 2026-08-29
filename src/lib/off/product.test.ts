@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { OffError, parseProduct, toMealItem } from '@/lib/off/product'
+import { OffError, parseProduct } from '@/lib/off/product'
+import { toMealItem } from '@/lib/foods/food'
 
 function raw(overrides: Record<string, unknown> = {}) {
   return {

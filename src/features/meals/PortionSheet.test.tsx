@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ProductSheet } from '@/features/meals/ProductSheet'
-import type { OffProduct } from '@/lib/off/product'
+import { PortionSheet } from '@/features/meals/PortionSheet'
+import type { Food } from '@/lib/foods/food'
 
-const PRODUCT: OffProduct = {
-  code: '3017620422003',
+const PRODUCT: Food = {
+  id: '3017620422003',
+  source: 'off',
   name: 'Nutella',
   brand: 'Ferrero',
   servingGrams: 15,
@@ -15,13 +16,13 @@ const PRODUCT: OffProduct = {
 
 const GRAMS = 'Quantité (g)'
 
-function setup(product: OffProduct = PRODUCT) {
+function setup(food: Food = PRODUCT) {
   const onAdd = vi.fn()
-  render(<ProductSheet open product={product} onClose={vi.fn()} onAdd={onAdd} />)
+  render(<PortionSheet open food={food} onClose={vi.fn()} onAdd={onAdd} />)
   return { onAdd, user: userEvent.setup() }
 }
 
-describe('ProductSheet', () => {
+describe('PortionSheet', () => {
   it('pré-remplit la quantité avec la portion du produit', () => {
     setup()
     expect(screen.getByLabelText(GRAMS)).toHaveValue('15')

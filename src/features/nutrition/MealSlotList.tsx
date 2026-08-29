@@ -28,8 +28,22 @@ const SOURCE_BADGE: Record<MealSource, string | null> = {
   ai: null,
   ai_text: t.meals.textBadge,
   barcode: t.barcode.badge,
+  food: t.foods.badge,
   corrected: t.meals.correctedBadge,
   manual: t.meals.manualBadge,
+}
+
+/**
+ * The table that stated the figures, named rather than hinted at.
+ *
+ * « Riz blanc, cuit · Ciqual » says where to go and disagree; « aliment » only
+ * says it was not a photo. The name is kept in `analysedBy`, the field that
+ * already answers « who produced these numbers ».
+ */
+function badgeFor(meal: MealEntry): string | null {
+  if (meal.source !== 'food') return SOURCE_BADGE[meal.source]
+  const table = meal.analysedBy
+  return table === 'ciqual' || table === 'off' ? t.foods.source[table] : t.foods.badge
 }
 
 function subline(group: SlotGroup, target: number): string {
@@ -104,7 +118,7 @@ function MealRow({
     )
   }
 
-  const badge = SOURCE_BADGE[meal.source]
+  const badge = badgeFor(meal)
   return (
     <EntryRow
       label={badge ? `${meal.label || t.meals.title} · ${badge}` : meal.label || t.meals.title}

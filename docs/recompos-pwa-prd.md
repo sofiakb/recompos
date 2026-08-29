@@ -58,7 +58,7 @@ une décision d'implémentation.
 | 24 | Écran Nutrition | **Calories d'abord, journal rangé par repas, une seule feuille d'ajout.** Décidée le 28/08/2026 sur le handoff « Refonte de l'écran Nutrition » | Les protéines quittent le grand anneau mais gardent l'accent : c'est toujours le nombre dont l'app parle. Le journal chronologique devient un budget par repas. Les quatre points d'entrée de saisie deviennent le `+` d'un repas, ce qui répond « quel repas ? » avant d'ouvrir plutôt qu'après. Voir §6.9 |
 | 25 | Cibles dérivées | **Cible kcal par repas en 25 / 40 / 30 / 5 %, figée ; glucides et lipides = le reste des calories après protéines, réparti 55/45** | Aucun réglage de plus à tenir à jour. Les protéines restent la seule cible que l'app calcule vraiment ; les deux autres sont ce qu'il reste du budget, et le disent. Une cible protéines qui mange tout le budget rend zéro, jamais un gramme négatif — et un dénominateur nul disparaît de l'écran au lieu d'inventer une cible |
 | 26 | IMC | **Affiché dans la section Poids de Progression, calculé sur le poids lissé, et jamais sans la taille** | L'IMC est une lecture du poids, pas une mesure de plus : pas de section à lui. Sans `heightCm`, aucun chiffre — la carte se réduit au lien qui répare. Le graphique gagne une seconde graduation, pas une seconde courbe : à taille constante les deux tracés seraient superposés. Voir §6.5 |
-
+| 27 | Recherche d'aliment | **Deux tables derrière un seul champ : CIQUAL en local, OpenFoodFacts en réseau.** Décidée le 29/08/2026 | Le code-barres suppose l'emballage en main ; la moitié de ce qui se mange n'en a pas. CIQUAL connaît les aliments nus — « riz blanc, cuit » — et répond hors ligne ; OFF connaît les produits de marque. Les deux rendent une table pour 100 g, donc une seule forme interne et une seule question restante : la portion. La table CIQUAL n'est pas encore au dépôt, et son absence est un cas prévu, pas une panne. Voir §6.10 |
 ---
 
 ## 3. Principes produit
@@ -543,7 +543,8 @@ en regardant ce que fait la courbe de poids.
 Un repas inscrit par code-barres porte la table nutritionnelle du fabricant : c'est une valeur
 déclarée, pas une estimation. Une photo et une description portent une lecture de modèle, qui se
 trompe surtout sur les portions. La différence ne se voit pas dans les chiffres — 162 kcal ressemble
-à 162 kcal — donc elle est enregistrée dans `MealSource`, affichée en badge au journal, et disponible
+à 162 kcal — donc elle est enregistrée dans `MealSource` (`food` depuis la décision n°27, voir §6.10),
+affichée en badge au journal, et disponible
 à toute question ultérieure sur la provenance d'un nombre. `barcode` n'est pas `manual`, et `ai_text`
 n'est pas `ai` : seul ce dernier peut être rejoué contre une image.
 
@@ -675,6 +676,52 @@ quand même atterrir sur le bon repas.
 
 ---
 
+### 6.10 Chercher un aliment par son nom (décision n°27)
+
+**Pourquoi le code-barres ne suffisait pas**
+
+Scanner suppose l'emballage en main. Une nectarine, du riz cuit, la crème fraîche déjà reversée dans
+la casserole : rien de tout cela n'a de code-barres au moment où on le mange, et c'est une bonne part
+de ce qui se cuisine. Les corriger à la main demandait quatre chiffres par ligne, dont personne ne
+connaît le premier — « combien de kcal dans 30 g de crème fraîche » n'est pas une question à laquelle
+on répond de mémoire.
+
+**Deux tables, une seule forme**
+
+CIQUAL (ANSES) est la table de composition française : des aliments nus, sans marque, avec des
+valeurs pour 100 g. OpenFoodFacts est une base de produits emballés. Elles répondent à la même
+question, donc elles rendent le même type interne — `Food` — et tout ce qui vient après ignore
+laquelle a répondu. CIQUAL passe devant quand elle a quelque chose : chercher « riz », c'est chercher
+du riz, pas les onze plats préparés qui en contiennent.
+
+Une entrée sans énergie exploitable est écartée plutôt que proposée à zéro, comme au §6.8 — la
+raison d'être de la liste, ce sont les macros, et une proposition qui n'en a pas est un piège avec
+un bouton dessus.
+
+**Ce que la recherche fait du réseau**
+
+CIQUAL est locale et répond dans le métro. OFF demande le réseau. Quand le réseau manque, la liste
+n'est pas vide en silence : elle porte les résultats locaux et dit pourquoi elle est courte. La
+requête en vol est annulée à chaque frappe, et une réponse en retard ne remplace jamais une liste
+plus récente.
+
+**La table CIQUAL n'est pas encore là**
+
+Le JSON n'est pas au dépôt. C'est un état prévu, pas une panne : le module le charge par
+`import.meta.glob`, ce qui fait d'un chemin absent une carte vide à la compilation plutôt qu'un
+import cassé. Sans le fichier, la recherche interroge OFF seule. Le jour où `src/data/ciqual.json`
+est déposé, rien d'autre ne change — le parseur accepte déjà les noms de colonnes officiels
+(« Energie, Règlement UE N° 1169/2011 (kcal/100 g) ») comme les exports simplifiés, la virgule
+décimale, et lit « < 0,5 » comme 0,5, majorant une trace plutôt que de la perdre.
+
+**Un repas peut désormais venir d'une table**
+
+`MealSource` gagne `food`, distinct de `barcode` : un aliment trouvé par son nom n'a pas été scanné, et
+le journal ne doit pas dire le contraire. La table qui a répondu est gardée dans `analysedBy`, si
+bien que la ligne affiche « Riz blanc, cuit · Ciqual » — de quoi savoir où aller contredire le chiffre.
+
+---
+
 ## 7. Architecture applicative
 
 ```text
@@ -710,9 +757,14 @@ src/
 │   ├── llm/
 │   │   ├── client.ts           # transport OpenAI-compatible : clés, endpoints, modalités
 │   │   └── meal.ts             # les deux lectures d'un repas, photo et texte
+│   ├── foods/
+│   │   ├── food.ts             # `Food` : la forme commune aux deux tables, et sa mise à l'échelle
+│   │   ├── ciqual.ts           # table locale, absente pour l'instant : glob, parseur, classement
+│   │   └── search.ts           # les deux sources fondues en une liste, réseau en panne compris
 │   ├── off/
 │   │   ├── product.ts          # parseur OpenFoodFacts, pur : kJ, portions, macros absentes
-│   │   ├── client.ts           # requête v2, erreurs typées
+│   │   ├── client.ts           # requête v2 par code-barres, erreurs typées
+│   │   ├── search.ts           # recherche par nom sur l'instance française
 │   │   └── barcode.ts          # somme de contrôle EAN, détecteur natif ou WASM à la demande
 │   └── vision/
 │       ├── prompt.ts           # consignes partagées par les deux modalités

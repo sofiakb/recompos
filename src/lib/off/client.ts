@@ -7,12 +7,13 @@
  * identification is impossible from a browser, which forbids writing that
  * header, so the app names itself in the query string instead.
  */
-import { OffError, parseProduct, type OffProduct } from '@/lib/off/product'
+import { OffError, parseProduct } from '@/lib/off/product'
+import type { Food } from '@/lib/foods/food'
 
 const BASE_URL = 'https://world.openfoodfacts.org/api/v2/product'
 
 /** Asking for everything costs seconds on a phone; these are what the sheet reads. */
-const FIELDS = [
+export const FIELDS = [
   'code',
   'product_name',
   'product_name_fr',
@@ -23,12 +24,12 @@ const FIELDS = [
   'nutriments',
 ].join(',')
 
-const REQUEST_TIMEOUT_MS = 10_000
+export const REQUEST_TIMEOUT_MS = 10_000
 
 export async function fetchProduct(
   barcode: string,
   fetchImpl: typeof fetch = fetch,
-): Promise<OffProduct> {
+): Promise<Food> {
   const url =
     `${BASE_URL}/${encodeURIComponent(barcode)}.json` +
     `?fields=${FIELDS}&app_name=RecompOS&app_version=${encodeURIComponent(__APP_VERSION__)}`

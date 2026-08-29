@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, RefreshCw, ScanBarcode, Trash2 } from 'lucide-react'
+import { Plus, RefreshCw, ScanBarcode, Search, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
 import { Segmented } from '@/components/ui/segmented'
 import { Sheet } from '@/components/ui/sheet'
 import { BarcodeScanSheet } from '@/features/meals/BarcodeScanSheet'
+import { FoodSearchSheet } from '@/features/meals/FoodSearchSheet'
 import { MealPhoto } from '@/features/meals/MealPhoto'
-import { ProductSheet } from '@/features/meals/ProductSheet'
-import { useBarcode } from '@/features/meals/useBarcode'
+import { PortionSheet } from '@/features/meals/PortionSheet'
+import { useFoodPick } from '@/features/meals/useFoodPick'
 import { rescale, type Macros, type Portion } from '@/lib/portion'
 import { totalsFromItems } from '@/lib/vision/schema'
 import { t } from '@/i18n/fr'
@@ -75,7 +76,8 @@ export function MealEditorSheet({
   const [label, setLabel] = useState('')
   const [slot, setSlot] = useState<MealSlot>(defaultSlot)
   const [items, setItems] = useState<MealItem[]>([])
-  const barcode = useBarcode()
+  const barcode = useFoodPick()
+  const [searchOpen, setSearchOpen] = useState(false)
   const [hint, setHint] = useState('')
   /**
    * The portion an item's macros were last stated for, kept aside so every
@@ -249,6 +251,13 @@ export function MealEditorSheet({
           {t.meals.addItem}
         </Button>
 
+        {/* Named before scanned: most of what goes wrong in a breakdown is a
+            loose ingredient — 30 g de crème fraîche — that never had a box. */}
+        <Button variant="secondary" block onClick={() => setSearchOpen(true)}>
+          <Search size={16} aria-hidden />
+          {t.foods.fromEditor}
+        </Button>
+
         <Button variant="secondary" block onClick={barcode.start}>
           <ScanBarcode size={16} aria-hidden />
           {t.barcode.addProduct}
@@ -284,15 +293,23 @@ export function MealEditorSheet({
         {/* Last children on purpose: `Sheet` is `fixed inset-0 z-50` with no
             portal, so at equal z-index it is DOM order that puts one above the
             other. */}
+        <FoodSearchSheet
+          open={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          onPick={(food) => {
+            setSearchOpen(false)
+            barcode.pick(food)
+          }}
+        />
         <BarcodeScanSheet
           open={barcode.open}
           onClose={barcode.close}
           onDetected={(code) => void barcode.submit(code)}
         />
-        {barcode.product ? (
-          <ProductSheet
+        {barcode.food ? (
+          <PortionSheet
             open
-            product={barcode.product}
+            food={barcode.food}
             onClose={barcode.close}
             onAdd={(item) => {
               // Straight into the local list: the user saves the meal as they

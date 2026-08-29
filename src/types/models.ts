@@ -189,7 +189,7 @@ export type MealAnalysisStatus = 'pending' | 'analysing' | 'done' | 'failed'
  * `ai_text` is not `ai`: one read a photo, the other read a sentence, and only
  * the first can be re-run against an image.
  */
-export type MealSource = 'ai' | 'ai_text' | 'barcode' | 'manual' | 'corrected'
+export type MealSource = 'ai' | 'ai_text' | 'barcode' | 'food' | 'manual' | 'corrected'
 
 export type MealConfidence = 'low' | 'medium' | 'high'
 

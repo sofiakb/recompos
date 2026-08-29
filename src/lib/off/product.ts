@@ -6,7 +6,7 @@
  * here, in pure functions, so the network layer stays a network layer and the
  * screen never has to ask what `serving_size: ""` means.
  */
-import type { MealItem } from '@/types/models'
+import type { Food } from '@/lib/foods/food'
 
 export type OffErrorKind = 'not_found' | 'no_nutriments' | 'network' | 'server' | 'bad_response'
 
@@ -18,22 +18,6 @@ export class OffError extends Error {
     super(message)
     this.name = 'OffError'
   }
-}
-
-export interface OffProduct {
-  code: string
-  name: string
-  brand?: string
-  /** Grams for one serving; 100 when the record does not say. */
-  servingGrams: number
-  per100g: { kcal: number; proteinG: number; carbsG: number; fatG: number }
-  /**
-   * Macros the record was missing, counted as zero.
-   *
-   * Surfaced rather than swallowed: a product sheet reading « 0 g de glucides »
-   * is a claim, and the user is entitled to know it was an absence.
-   */
-  missingMacros: string[]
 }
 
 /** kJ per kcal, the factor the food industry rounds with. */
@@ -76,7 +60,7 @@ function kcalPer100g(nutriments: Record<string, unknown>): number | null {
   return kj !== null ? Math.round(kj / KJ_PER_KCAL) : null
 }
 
-export function parseProduct(raw: unknown): OffProduct {
+export function parseProduct(raw: unknown): Food {
   if (!raw || typeof raw !== 'object') {
     throw new OffError('bad_response', 'Réponse illisible')
   }
@@ -102,7 +86,8 @@ export function parseProduct(raw: unknown): OffProduct {
 
   const code = asText(record.code)
   return {
-    code,
+    id: code,
+    source: 'off',
     name: asText(record.product_name_fr) || asText(record.product_name) || code,
     brand: asText(record.brands).split(',')[0]?.trim() || undefined,
     servingGrams: servingGrams(record),
@@ -113,19 +98,5 @@ export function parseProduct(raw: unknown): OffProduct {
       fatG: macros.fatG ?? 0,
     },
     missingMacros,
-  }
-}
-
-/** Scales the per-100 g figures to what the user says they ate. */
-export function toMealItem(product: OffProduct, grams: number): MealItem {
-  const ratio = Math.max(0, grams) / 100
-  const scale = (value: number) => Math.round(value * ratio)
-  return {
-    name: product.brand ? `${product.name} (${product.brand})` : product.name,
-    quantity: `${Math.round(Math.max(0, grams))} g`,
-    kcal: scale(product.per100g.kcal),
-    proteinG: scale(product.per100g.proteinG),
-    carbsG: scale(product.per100g.carbsG),
-    fatG: scale(product.per100g.fatG),
   }
 }
