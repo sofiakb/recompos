@@ -147,10 +147,14 @@ describe('MealEditorSheet — chercher un aliment', () => {
 })
 
 describe('MealEditorSheet — reprendre un favori', () => {
-  it('ne propose rien tant que rien n’est épinglé', () => {
-    setup()
+  it('propose la reprise même sans favori, et dit où est l’étoile', async () => {
+    // Cacher le bouton tant qu'il n'y a rien rendait la fonction introuvable
+    // pour qui n'avait pas déjà trouvé l'étoile.
+    const { user } = setup()
 
-    expect(screen.queryByRole('button', { name: t.favorites.fromEditor })).toBeNull()
+    await user.click(screen.getByRole('button', { name: t.favorites.fromEditor }))
+
+    expect(screen.getByText(t.favorites.emptyFromEditor)).toBeTruthy()
   })
 
   it('ajoute les lignes du favori au repas ouvert', async () => {
@@ -175,5 +179,53 @@ describe('MealEditorSheet — reprendre un favori', () => {
     await user.click(await screen.findByRole('button', { name: t.favorites.fromEditor }))
 
     expect(screen.queryByLabelText(t.favorites.remove(COFFEE))).toBeNull()
+  })
+})
+
+describe('MealEditorSheet — épingler une ligne', () => {
+  it('épingle l’aliment de la ligne, sa quantité et ses macros', async () => {
+    const { user } = setup()
+
+    await user.click(screen.getByLabelText(t.favorites.add('penne')))
+
+    await expect
+      .poll(async () => (await db.favorites.toArray()).map((row) => row.items))
+      .toEqual([MEAL.items])
+  })
+
+  it('montre l’étoile pleine et la retouche pour désépingler', async () => {
+    const { user } = setup()
+
+    await user.click(screen.getByLabelText(t.favorites.add('penne')))
+    const star = await screen.findByLabelText(t.favorites.remove('penne'))
+    expect(star.getAttribute('aria-pressed')).toBe('true')
+
+    await user.click(star)
+
+    await expect.poll(async () => db.favorites.count()).toBe(0)
+  })
+
+  it('n’épingle pas une ligne encore sans nom', async () => {
+    const { user } = setup()
+
+    await user.click(screen.getByRole('button', { name: t.meals.addItem }))
+    const blank = screen.getByLabelText(t.favorites.add('2'))
+
+    expect(blank.hasAttribute('disabled')).toBe(true)
+    await user.click(blank)
+    expect(await db.favorites.count()).toBe(0)
+  })
+
+  it('rend la ligne épinglée à un autre repas', async () => {
+    const { user } = setup()
+    await user.click(screen.getByLabelText(t.favorites.add('penne')))
+    await screen.findByLabelText(t.favorites.remove('penne'))
+
+    await user.click(screen.getByRole('button', { name: t.favorites.fromEditor }))
+    await user.click(await screen.findByRole('button', { name: t.nutrition.addAgain('penne') }))
+
+    // La quantité revient telle quelle : une dosette est toujours la même dosette.
+    expect(screen.getByLabelText('Portion 2')).toHaveValue('150 g')
+    expect(screen.getByLabelText('kcal 2')).toHaveValue('195')
   })
 })

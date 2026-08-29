@@ -32,7 +32,7 @@ export function FavoritePickSheet({
   return (
     <Sheet open={open} onClose={onClose} title={t.favorites.pickTitle}>
       {favorites.length === 0 ? (
-        <p className="py-2 text-sm text-muted-foreground">{t.favorites.empty}</p>
+        <p className="py-2 text-sm text-muted-foreground">{t.favorites.emptyFromEditor}</p>
       ) : (
         <MealPickList meals={favorites} onPick={(favorite) => onPick(linesOf(favorite))} />
       )}

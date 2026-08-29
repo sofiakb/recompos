@@ -59,7 +59,7 @@ une décision d'implémentation.
 | 25 | Cibles dérivées | **Cible kcal par repas en 25 / 40 / 30 / 5 %, figée ; glucides et lipides = le reste des calories après protéines, réparti 55/45** | Aucun réglage de plus à tenir à jour. Les protéines restent la seule cible que l'app calcule vraiment ; les deux autres sont ce qu'il reste du budget, et le disent. Une cible protéines qui mange tout le budget rend zéro, jamais un gramme négatif — et un dénominateur nul disparaît de l'écran au lieu d'inventer une cible |
 | 26 | IMC | **Affiché dans la section Poids de Progression, calculé sur le poids lissé, et jamais sans la taille** | L'IMC est une lecture du poids, pas une mesure de plus : pas de section à lui. Sans `heightCm`, aucun chiffre — la carte se réduit au lien qui répare. Le graphique gagne une seconde graduation, pas une seconde courbe : à taille constante les deux tracés seraient superposés. Voir §6.5 |
 | 27 | Recherche d'aliment | **Deux tables derrière un seul champ : CIQUAL en local, OpenFoodFacts en réseau.** Décidée le 29/08/2026 | Le code-barres suppose l'emballage en main ; la moitié de ce qui se mange n'en a pas. CIQUAL connaît les aliments nus — « riz blanc, cuit » — et répond hors ligne ; OFF connaît les produits de marque. Les deux rendent une table pour 100 g, donc une seule forme interne et une seule question restante : la portion. La table CIQUAL n'est pas encore au dépôt, et son absence est un cas prévu, pas une panne. Voir §6.10 |
-| 28 | Favoris | **Un onglet « Favoris » dans la feuille d'ajout, alimenté par une étoile sur chaque ligne, et une table Dexie à lui.** Décidée le 29/08/2026 | « Vos habitudes » est dérivé des trente derniers jours : c'est un constat, pas un choix, et une semaine d'absence le vide. Un favori est l'inverse — il tient jusqu'à ce que l'étoile soit retouchée. La feuille s'ouvre dessus dès qu'il y en a un, ce qui met le café du matin à un geste du `+`. Voir §6.11 |
+| 28 | Favoris | **Une seule liste : un aliment épinglé est un favori à une ligne, un repas épinglé en a plusieurs. Étoile sur la ligne dans le détail d'un repas, et sur la rangée dans « Vos habitudes ».** Décidée le 29/08/2026 | « Vos habitudes » est dérivé des trente derniers jours : c'est un constat, pas un choix, et une semaine d'absence le vide. Un favori est l'inverse — il tient jusqu'à ce que l'étoile soit retouchée. La feuille s'ouvre dessus dès qu'il y en a un, ce qui met le café du matin à un geste du `+`. Voir §6.11 |
 ---
 
 ## 3. Principes produit
@@ -771,21 +771,37 @@ composant : ce sont les mêmes objets vus deux fois. Toute la gauche de la rang�
 enregistre le repas ; l'étoile, au bord, est le seul endroit où un doigt fait autre chose. Elle est
 pleine plutôt que colorée, l'accent restant à l'action principale.
 
-**Depuis un repas déjà ouvert**
+**Un aliment est un favori à une seule ligne**
 
-L'onglet « Favoris » consigne un repas entier, ce qui n'aide pas une fois le détail d'un repas ouvert
-et court d'une ligne : le café qui accompagne les madeleines de ce matin n'était atteignable qu'en
-refermant l'éditeur pour recommencer. Le bouton « Depuis les favoris » y répond — il précède
-« Chercher un aliment » et « Ajouter un produit », les trois remplissant une ligne depuis une source,
-de la plus personnelle à la plus générale, et il est absent tant qu'il n'y a rien à proposer.
+Un favori tient un libellé et les lignes sous lui, si bien qu'un aliment épinglé n'est qu'un favori
+à une ligne. Même table, même liste, pas de seconde notion de « favori » à comprendre ni à tenir : le
+Cappuccino Dolce Gusto et le petit-déjeuner entier cohabitent, et c'est l'endroit d'où on les reprend
+qui décide de ce qu'ils deviennent — des lignes ajoutées au détail d'un repas, ou un repas à part
+entière depuis le `+`.
 
-Là, un favori est une source de lignes plutôt qu'un repas : ses items sont ajoutés au détail, sans le
-remplacer. Aplatir un repas dans un autre perd son libellé ; quand il ne tient qu'une ligne, ce
-libellé est reporté dessus. La rangée avait promis « Café au lait dosette (Senseo) », et un détail
-qui répondrait « Calories seules » — le nom que la voie « calories seules » donne à son unique item —
-ne serait pas ce qui a été touché. Avec plusieurs lignes il n'y a rien sur quoi le reporter, et
-chacune se nomme déjà. Aucune étoile dans cette feuille : on y vient pour ajouter un favori, pas pour
-en retirer un.
+L'étoile est donc sur la ligne, à côté de la corbeille, dans le détail d'un repas. Elle épingle le
+nom, la quantité et les quatre macros. La quantité voyage avec : une dosette est toujours la même
+dosette, et une reprise qui demandait autre chose est à un champ de là, les macros suivant la
+correction toutes seules (§6.10, décision n°26 bis — le recalcul de portion). Une ligne encore sans
+nom n'a rien par quoi être retrouvée : son étoile est éteinte.
+
+La clé étant le nom replié, épingler une ligne qui porte le nom d'un repas déjà épinglé est le même
+favori — et le retire donc, ce que le message le dit. C'est le prix assumé d'une liste unique, et
+c'est aussi ce qui empêche deux entrées jumelles.
+
+**Reprendre un favori dans un repas ouvert**
+
+Le bouton « Depuis les favoris » précède « Chercher un aliment » et « Ajouter un produit » : les
+trois remplissent une ligne depuis une source, de la plus personnelle à la plus générale. Il est
+montré même quand rien n'est épinglé — le cacher jusqu'au premier favori rendait la fonction
+introuvable pour qui n'avait pas déjà trouvé l'étoile, ce qui est arrivé le jour de sa livraison. La
+feuille vide dit où est l'étoile, ce qu'un bouton absent ne pouvait pas faire.
+
+Aplatir un repas dans un autre perd son libellé ; quand il ne tient qu'une ligne, ce libellé est
+reporté dessus. La rangée avait promis « Café au lait dosette (Senseo) », et un détail qui répondrait
+« Calories seules » — le nom que la voie « calories seules » donne à son unique item — ne serait pas
+ce qui a été touché. Avec plusieurs lignes il n'y a rien sur quoi le reporter, et chacune se nomme
+déjà. Aucune étoile dans cette feuille : on y vient pour ajouter un favori, pas pour en retirer un.
 
 **La feuille s'ouvre sur les favoris**
 
