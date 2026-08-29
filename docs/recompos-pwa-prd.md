@@ -654,8 +654,11 @@ viennent donc toujours du registre, si bien que la somme des quatre groupes fait
 du bandeau. Un repas encore en analyse n'entre dans aucun total : ses chiffres ne sont pas encore des
 chiffres.
 
-Un dépassement de repas se dit sans rouge et sans reproche : « au-dessus du repas — c'est la journée
-qui compte ».
+Un dépassement de repas ne se dit plus du tout. La ligne « au-dessus du repas — c'est la journée qui
+compte » était écrite pour désamorcer un reproche que l'écran ne faisait de toute façon pas : le
+sous-titre donne déjà « 995 / 740 kcal », le lecteur voit le dépassement, et une phrase de plus sous
+le repas concerné y ramenait l'attention au lieu de l'en détourner. Retirée le 29/08/2026 — la
+meilleure façon de ne pas gronder est de ne rien dire.
 
 **La feuille d'ajout unique**
 

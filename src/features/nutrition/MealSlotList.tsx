@@ -156,7 +156,6 @@ export function MealSlotList({
       <ul className="flex flex-col">
         {groups.map((group) => {
           const target = mealTargetKcal(targetKcal, group.slot)
-          const over = group.kcal - target
 
           return (
             <li key={group.slot} className="border-b border-border">
@@ -209,12 +208,6 @@ export function MealSlotList({
                     ),
                   )}
                 </ul>
-              ) : null}
-
-              {over > 0 ? (
-                <p className="px-4 pb-3 text-[13px] text-muted-foreground">
-                  {t.nutrition.overMeal(over)}
-                </p>
               ) : null}
             </li>
           )

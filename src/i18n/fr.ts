@@ -84,10 +84,6 @@ export const fr = {
     slotTotals: (kcal: number, target: number) =>
       `${formatCount(kcal)} / ${formatCount(target)} kcal`,
     slotProtein: (grams: number) => `${grams} g de protéines`,
-    // No red, no scolding: over a meal's share is a fact about one meal, and the
-    // day is what the app actually judges.
-    overMeal: (kcal: number) =>
-      `${formatCount(kcal)} kcal au-dessus du repas — c’est la journée qui compte`,
     addToSlot: {
       breakfast: 'Ajouter au petit-déj',
       lunch: 'Ajouter au déjeuner',

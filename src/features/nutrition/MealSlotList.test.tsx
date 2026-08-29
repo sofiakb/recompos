@@ -86,12 +86,6 @@ describe('MealSlotList', () => {
     expect(within(rowFor('breakfast')).getByText(t.nutrition.slotTotals(0, 460))).toBeTruthy()
   })
 
-  it('says a meal went over without turning it into a failure', () => {
-    renderList([], [meal({ kcal: 835 })])
-
-    expect(within(rowFor('lunch')).getByText(t.nutrition.overMeal(95))).toBeTruthy()
-  })
-
   it('adds to the meal whose button was tapped, without asking again', async () => {
     const user = userEvent.setup()
     const onAdd = vi.fn()
