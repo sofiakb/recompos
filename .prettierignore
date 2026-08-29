@@ -3,3 +3,7 @@ dev-dist
 node_modules
 coverage
 docs
+
+# La table CIQUAL est un export machine de 3 484 lignes : la reformater
+# gonflerait le dépôt sans rendre le fichier plus lisible.
+src/data/ciqual.json
