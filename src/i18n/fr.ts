@@ -1,6 +1,15 @@
 import { formatCount, formatDecimal } from '@/lib/format'
 
 /**
+ * A signed whole number, e.g. « +30 » or « −12 ».
+ *
+ * The typographic minus (U+2212), not the hyphen: it aligns with the digits.
+ */
+function signed(value: number): string {
+  return `${value > 0 ? '+' : '\u2212'}${Math.abs(value)}`
+}
+
+/**
  * Every user-facing string lives here (PRD §7).
  *
  * V1 ships French only, but no component holds a literal, so adding English is
@@ -282,7 +291,7 @@ export const fr = {
     vsStart: (delta: number) =>
       delta === 0
         ? 'Au niveau de ta première semaine'
-        : `${delta > 0 ? '+' : '−'}${Math.abs(delta)} % de volume vs ta première semaine`,
+        : `${signed(delta)} % de volume vs ta première semaine`,
     explainOpen: 'Comment c’est calculé',
     explainClose: 'Masquer le calcul',
     explainBody:

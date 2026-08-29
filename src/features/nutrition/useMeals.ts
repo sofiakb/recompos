@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   applyAnalysis,
-  createManualMeal,
   createFoodMeal,
+  createManualMeal,
   createPendingMeal,
   createTextMeal,
   editMeal,
@@ -17,6 +17,7 @@ import {
   pruneMealPhotos,
   removeMeal,
   type DayMacros,
+  type FoodMealOptions,
   type MealEdit,
 } from '@/db/repositories/mealRepository'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
@@ -32,7 +33,6 @@ import {
   VisionError,
 } from '@/lib/vision/providers'
 import { t } from '@/i18n/fr'
-import type { FoodMealOptions } from '@/db/repositories/mealRepository'
 import type { MealEntry, MealItem, MealSlot } from '@/types/models'
 
 /** Where a food came from, as the journal will record it. */

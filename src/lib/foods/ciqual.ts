@@ -48,38 +48,50 @@ const KEYS = {
  * quantification threshold. « < 0,5 » is read as 0,5 — the upper bound, because
  * over-counting a trace is the harmless direction — and the rest as nothing.
  */
-function asNumber(value: unknown): number | null {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null
-  if (typeof value !== 'string') return null
-  const match = /\d+(?:[.,]\d+)?/.exec(value.replace(',', '.'))
-  if (!match) return null
-  const parsed = Number(match[0])
-  return Number.isFinite(parsed) ? parsed : null
+function asNumber(value: string | null): number | null {
+  if (value === null) return null
+  const decimal = value.replace(',', '.')
+  // The whole cell first: it keeps the exponents a converter may have written,
+  // which reading digit by digit would truncate.
+  const whole = Number(decimal)
+  if (Number.isFinite(whole)) return whole
+  const match = /\d+(?:\.\d+)?/.exec(decimal)
+  return match ? Number(match[0]) : null
 }
 
-function pick(record: Record<string, unknown>, keys: readonly string[]): unknown {
+/**
+ * The first of several spellings that carries something, as text.
+ *
+ * Narrowed to what a table cell can hold — a converter that nests an object
+ * under one of these keys would otherwise reach the row as « [object Object] ».
+ * Numbers come back as text so a cell is one type wherever it is read.
+ */
+function cell(record: Record<string, unknown>, keys: readonly string[]): string | null {
   for (const key of keys) {
-    if (record[key] !== undefined && record[key] !== null && record[key] !== '') return record[key]
+    const value = record[key]
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+    if (typeof value === 'string' && value.trim() !== '') return value.trim()
   }
-  return undefined
+  return null
 }
 
 function parseRow(raw: unknown, index: number): Food | null {
   if (!raw || typeof raw !== 'object') return null
   const record = raw as Record<string, unknown>
-  const name = typeof pick(record, KEYS.name) === 'string' ? String(pick(record, KEYS.name)) : ''
-  const kcal = asNumber(pick(record, KEYS.kcal))
-  if (!name.trim() || kcal === null) return null
+  // `cell` trims, so a name that survives is a name.
+  const name = cell(record, KEYS.name)
+  const kcal = asNumber(cell(record, KEYS.kcal))
+  if (name === null || kcal === null) return null
 
   const macros = {
-    proteinG: asNumber(pick(record, KEYS.proteinG)),
-    carbsG: asNumber(pick(record, KEYS.carbsG)),
-    fatG: asNumber(pick(record, KEYS.fatG)),
+    proteinG: asNumber(cell(record, KEYS.proteinG)),
+    carbsG: asNumber(cell(record, KEYS.carbsG)),
+    fatG: asNumber(cell(record, KEYS.fatG)),
   }
   return {
-    id: String(pick(record, KEYS.id) ?? index),
+    id: String(cell(record, KEYS.id) ?? index),
     source: 'ciqual',
-    name: name.trim(),
+    name,
     // CIQUAL is a per-100 g table and names no portion: the sheet asks.
     servingGrams: 100,
     per100g: {
@@ -97,7 +109,11 @@ function parseRow(raw: unknown, index: number): Food | null {
 /** Every row the file holds that carries a name and an energy figure. */
 export function parseCiqual(raw: unknown): Food[] {
   const rows = Array.isArray(raw) ? raw : []
-  return rows.map(parseRow).filter((food): food is Food => food !== null)
+  // Named arguments rather than `map(parseRow)`: `map` also hands its callback
+  // the array itself, and a signature that grows later would silently receive it.
+  return rows
+    .map((row, index) => parseRow(row, index))
+    .filter((food): food is Food => food !== null)
 }
 
 let loading: Promise<Food[]> | null = null

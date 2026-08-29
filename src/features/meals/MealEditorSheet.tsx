@@ -114,10 +114,8 @@ export function MealEditorSheet({
     const item = items[index]
     if (!item) return
     const held = basis.current
-    const portion =
-      held && held.index === index && sameMacros(held.applied, item)
-        ? held.portion
-        : { quantity: item.quantity, ...macrosOf(item) }
+    const usable = held?.index === index && sameMacros(held.applied, item)
+    const portion = usable ? held.portion : { quantity: item.quantity, ...macrosOf(item) }
     const scaled = rescale(portion, quantity)
     basis.current = { index, portion, applied: scaled ?? macrosOf(item) }
     patch(index, scaled ? { quantity, ...scaled } : { quantity })
