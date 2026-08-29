@@ -395,6 +395,9 @@ export const fr = {
     remove: (label: string) => `Retirer ${label} des favoris`,
     added: 'Ajouté aux favoris',
     removed: 'Retiré des favoris',
+    /** From inside a meal: the favourite is a source of lines, not a whole meal. */
+    fromEditor: 'Depuis les favoris',
+    pickTitle: 'Ajouter un favori',
   },
 
   foods: {

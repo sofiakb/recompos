@@ -1,10 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { db } from '@/db/dexie'
+import { toggleFavorite } from '@/db/repositories/favoriteRepository'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
 import { t } from '@/i18n/fr'
 import type { Food } from '@/lib/foods/food'
-import type { MealEntry } from '@/types/models'
+import type { MealEntry, MealItem } from '@/types/models'
 
 const CREME: Food = {
   id: '19548',
@@ -45,6 +47,15 @@ const PORTION = 'Portion 1'
 const KCAL = 'kcal 1'
 const PROTEIN = 'Protéines (g) 1'
 const CARBS = 'Glucides (g) 1'
+
+const COFFEE = 'Café au lait dosette (Senseo)'
+const COFFEE_ITEMS: MealItem[] = [
+  { name: 'Café au lait', quantity: '1 tasse', kcal: 171, proteinG: 2, carbsG: 18, fatG: 8 },
+]
+
+beforeEach(async () => {
+  await db.favorites.clear()
+})
 
 function setup(meal: MealEntry = MEAL) {
   const onSave = vi.fn()
@@ -132,5 +143,37 @@ describe('MealEditorSheet — chercher un aliment', () => {
     expect(screen.getByLabelText('Aliment 2')).toHaveValue(CREME.name)
     expect(screen.getByLabelText('kcal 2')).toHaveValue('88')
     expect(screen.getByLabelText('Lipides (g) 2')).toHaveValue('9')
+  })
+})
+
+describe('MealEditorSheet — reprendre un favori', () => {
+  it('ne propose rien tant que rien n’est épinglé', () => {
+    setup()
+
+    expect(screen.queryByRole('button', { name: t.favorites.fromEditor })).toBeNull()
+  })
+
+  it('ajoute les lignes du favori au repas ouvert', async () => {
+    await toggleFavorite(COFFEE, COFFEE_ITEMS, db)
+    const { user } = setup()
+
+    await user.click(await screen.findByRole('button', { name: t.favorites.fromEditor }))
+    await user.click(await screen.findByRole('button', { name: t.nutrition.addAgain(COFFEE) }))
+
+    // Les pâtes restent : un favori apporte des lignes, il ne remplace pas le repas.
+    expect(screen.getByLabelText('Aliment 1')).toHaveValue('penne')
+    // La ligne porte le nom touché, pas celui de l'item d'origine.
+    expect(screen.getByLabelText('Aliment 2')).toHaveValue(COFFEE)
+    expect(screen.getByLabelText('kcal 2')).toHaveValue('171')
+    expect(screen.getByText(t.meals.kcal(366))).toBeTruthy()
+  })
+
+  it('n’offre pas de désépingler depuis un repas ouvert', async () => {
+    await toggleFavorite(COFFEE, COFFEE_ITEMS, db)
+    const { user } = setup()
+
+    await user.click(await screen.findByRole('button', { name: t.favorites.fromEditor }))
+
+    expect(screen.queryByLabelText(t.favorites.remove(COFFEE))).toBeNull()
   })
 })

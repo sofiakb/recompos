@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, RefreshCw, ScanBarcode, Search, Trash2 } from 'lucide-react'
+import { Plus, RefreshCw, ScanBarcode, Search, Star, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
 import { Segmented } from '@/components/ui/segmented'
 import { Sheet } from '@/components/ui/sheet'
 import { BarcodeScanSheet } from '@/features/meals/BarcodeScanSheet'
+import { FavoritePickSheet } from '@/features/meals/FavoritePickSheet'
 import { FoodSearchSheet } from '@/features/meals/FoodSearchSheet'
 import { MealPhoto } from '@/features/meals/MealPhoto'
 import { PortionSheet } from '@/features/meals/PortionSheet'
+import { useFavorites } from '@/features/meals/useFavorites'
 import { useFoodPick } from '@/features/meals/useFoodPick'
 import { rescale, type Macros, type Portion } from '@/lib/portion'
 import { totalsFromItems } from '@/lib/vision/schema'
@@ -77,7 +79,9 @@ export function MealEditorSheet({
   const [slot, setSlot] = useState<MealSlot>(defaultSlot)
   const [items, setItems] = useState<MealItem[]>([])
   const barcode = useFoodPick()
+  const favorites = useFavorites()
   const [searchOpen, setSearchOpen] = useState(false)
+  const [favoritesOpen, setFavoritesOpen] = useState(false)
   const [hint, setHint] = useState('')
   /**
    * The portion an item's macros were last stated for, kept aside so every
@@ -251,6 +255,17 @@ export function MealEditorSheet({
           {t.meals.addItem}
         </Button>
 
+        {/* The three buttons under it all fill a line from somewhere, ordered
+            from the most personal source to the most general. A favourite is
+            already yours, so it leads — and it is absent until there is one,
+            rather than opening on an empty list. */}
+        {favorites.list.length > 0 ? (
+          <Button variant="secondary" block onClick={() => setFavoritesOpen(true)}>
+            <Star size={16} aria-hidden />
+            {t.favorites.fromEditor}
+          </Button>
+        ) : null}
+
         {/* Named before scanned: most of what goes wrong in a breakdown is a
             loose ingredient — 30 g de crème fraîche — that never had a box. */}
         <Button variant="secondary" block onClick={() => setSearchOpen(true)}>
@@ -293,6 +308,17 @@ export function MealEditorSheet({
         {/* Last children on purpose: `Sheet` is `fixed inset-0 z-50` with no
             portal, so at equal z-index it is DOM order that puts one above the
             other. */}
+        <FavoritePickSheet
+          open={favoritesOpen}
+          favorites={favorites.list}
+          onClose={() => setFavoritesOpen(false)}
+          onPick={(lines) => {
+            // Lines, not a meal: the breakdown gains them rather than being
+            // replaced by another meal's.
+            reshape((current) => [...current.filter((row) => row.name.trim()), ...lines])
+            setFavoritesOpen(false)
+          }}
+        />
         <FoodSearchSheet
           open={searchOpen}
           onClose={() => setSearchOpen(false)}
