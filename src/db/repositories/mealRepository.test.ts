@@ -87,6 +87,99 @@ describe('createPendingMeal', () => {
   })
 })
 
+describe('applyAnalysis — la lecture rejoint le repas du créneau', () => {
+  const DATE = '2026-08-27'
+
+  it('ajoute les aliments décrits au repas déjà là plutôt qu’un second repas', async () => {
+    const host = await createManualMeal(
+      'Café au lait',
+      [{ name: 'Café au lait', quantity: '1 tasse', kcal: 171, proteinG: 2, carbsG: 18, fatG: 8 }],
+      TARGET,
+      { date: DATE, slot: 'breakfast' },
+      db,
+    )
+    const described = await createTextMeal('poulet, riz', { date: DATE, slot: 'breakfast' }, db)
+    await applyAnalysis(described.id, analysis(), 'groq', TARGET, db)
+
+    const rows = await mealsForDate(DATE, db)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].id).toBe(host.id)
+    expect(rows[0].items.map((item) => item.name)).toEqual(['Café au lait', 'Poulet', 'Riz'])
+    expect(rows[0].label).toBe('Café au lait, Poulet, Riz')
+    expect(rows[0].kcal).toBe(679)
+  })
+
+  it('fait de même pour une photo, et n’en laisse pas la ligne temporaire', async () => {
+    await createManualMeal(
+      'Café au lait',
+      [{ name: 'Café au lait', quantity: '1 tasse', kcal: 171, proteinG: 2, carbsG: 18, fatG: 8 }],
+      TARGET,
+      { date: DATE, slot: 'lunch' },
+      db,
+    )
+    const shot = await createPendingMeal(photo(), { date: DATE, slot: 'lunch' }, db)
+    await applyAnalysis(shot.id, analysis(), 'groq', TARGET, db)
+
+    expect(await mealsForDate(DATE, db)).toHaveLength(1)
+    // La photo part avec la ligne qu’elle portait : les chiffres restent.
+    expect(await getMealPhoto(shot.id, db)).toBeUndefined()
+  })
+
+  it('ne compte les protéines qu’une fois après la fusion', async () => {
+    await createManualMeal(
+      'Skyr',
+      [{ name: 'Skyr', quantity: '150 g', kcal: 90, proteinG: 17, carbsG: 6, fatG: 0 }],
+      TARGET,
+      { date: DATE, slot: 'snack' },
+      db,
+    )
+    const described = await createTextMeal('poulet, riz', { date: DATE, slot: 'snack' }, db)
+    await applyAnalysis(described.id, analysis(), 'groq', TARGET, db)
+
+    expect(await totalProteinForDate(DATE, db)).toBe(68)
+  })
+
+  it('reste un repas à lui quand le créneau est vide', async () => {
+    const described = await createTextMeal('poulet, riz', { date: DATE, slot: 'dinner' }, db)
+    const meal = await applyAnalysis(described.id, analysis(), 'groq', TARGET, db)
+
+    expect(meal?.id).toBe(described.id)
+    expect(await mealsForDate(DATE, db)).toHaveLength(1)
+  })
+
+  it('ne rejoint pas un repas d’un autre créneau', async () => {
+    await createManualMeal(
+      'Café au lait',
+      [{ name: 'Café au lait', quantity: '1 tasse', kcal: 171, proteinG: 2, carbsG: 18, fatG: 8 }],
+      TARGET,
+      { date: DATE, slot: 'breakfast' },
+      db,
+    )
+    const described = await createTextMeal('poulet, riz', { date: DATE, slot: 'dinner' }, db)
+    await applyAnalysis(described.id, analysis(), 'groq', TARGET, db)
+
+    expect(await mealsForDate(DATE, db)).toHaveLength(2)
+  })
+
+  it('laisse une analyse ratée sur sa propre ligne, pour être relancée', async () => {
+    await createManualMeal(
+      'Café au lait',
+      [{ name: 'Café au lait', quantity: '1 tasse', kcal: 171, proteinG: 2, carbsG: 18, fatG: 8 }],
+      TARGET,
+      { date: DATE, slot: 'breakfast' },
+      db,
+    )
+    const described = await createTextMeal('poulet, riz', { date: DATE, slot: 'breakfast' }, db)
+    await markFailed(described.id, 'réseau', db)
+
+    expect(await mealsForDate(DATE, db)).toHaveLength(2)
+
+    // Puis la relance aboutit : elle rejoint le repas, comme la première fois.
+    await applyAnalysis(described.id, analysis(), 'groq', TARGET, db)
+    expect(await mealsForDate(DATE, db)).toHaveLength(1)
+  })
+})
+
 describe('applyAnalysis', () => {
   it('writes the macros and marks the meal done', async () => {
     const created = await createPendingMeal(photo(), { date: '2026-08-27' }, db)
