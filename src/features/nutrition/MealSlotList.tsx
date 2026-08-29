@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { AlertTriangle, Loader2, Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { mealTargetKcal } from '@/lib/nutrition'
 import { t } from '@/i18n/fr'
 import type { SlotGroup, JournalEntry } from '@/features/nutrition/journal'
@@ -159,7 +160,17 @@ export function MealSlotList({
 
           return (
             <li key={group.slot} className="border-b border-border">
-              <div className="flex items-center gap-3 px-4 py-3.5">
+              {/* The rows below already carry 48 px of touch padding, half of
+                  which reads as space under this header. Keeping a full
+                  bottom padding on top of it pushed the first thing eaten a
+                  third of a line too far from the meal it belongs to. An empty
+                  slot has no such row, so it keeps its own. */}
+              <div
+                className={cn(
+                  'flex items-center gap-3 px-4 pt-3.5',
+                  group.entries.length > 0 ? 'pb-1' : 'pb-3.5',
+                )}
+              >
                 <div className="min-w-0 flex-1">
                   <p className="text-base font-semibold">{t.meals.slot[group.slot]}</p>
                   <p className="tnum text-[13px] text-muted-foreground">{subline(group, target)}</p>
