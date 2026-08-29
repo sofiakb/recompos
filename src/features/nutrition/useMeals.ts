@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   applyAnalysis,
+  createFoodMeal,
   createManualMeal,
-  createBarcodeMeal,
   createPendingMeal,
   createTextMeal,
   editMeal,
@@ -17,6 +17,7 @@ import {
   pruneMealPhotos,
   removeMeal,
   type DayMacros,
+  type FoodMealOptions,
   type MealEdit,
 } from '@/db/repositories/mealRepository'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
@@ -33,6 +34,9 @@ import {
 } from '@/lib/vision/providers'
 import { t } from '@/i18n/fr'
 import type { MealEntry, MealItem, MealSlot } from '@/types/models'
+
+/** Where a food came from, as the journal will record it. */
+export type FoodOrigin = Pick<FoodMealOptions, 'source' | 'table'>
 
 export interface StagedPhoto {
   encoded: EncodedImage
@@ -67,7 +71,8 @@ export interface MealsState {
   correct: (id: string, edit: MealEdit) => Promise<void>
   addManual: (label: string, items: MealItem[], slot: MealSlot) => Promise<void>
   /** Writes a scanned product as a one-line meal. */
-  addProduct: (item: MealItem, slot?: MealSlot) => Promise<void>
+  /** `from` says which route found the food, and which table stated its figures. */
+  addProduct: (item: MealItem, slot?: MealSlot, from?: FoodOrigin) => Promise<void>
   /** Queues a meal described in words, then analyses it. */
   describeMeal: (description: string, slot?: MealSlot) => Promise<void>
   remove: (id: string) => Promise<void>
@@ -268,8 +273,8 @@ export function useMeals(date: IsoDate = toLogicalDate()): MealsState {
       [targetGrams, date],
     ),
     addProduct: useCallback(
-      async (item: MealItem, slot?: MealSlot) => {
-        await createBarcodeMeal(item, targetGrams, { date, slot })
+      async (item: MealItem, slot?: MealSlot, from?: FoodOrigin) => {
+        await createFoodMeal(item, targetGrams, { date, slot, ...from })
         haptic()
       },
       [targetGrams, date],

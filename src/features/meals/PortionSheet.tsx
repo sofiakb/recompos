@@ -4,44 +4,45 @@ import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Sheet } from '@/components/ui/sheet'
-import { toMealItem, type OffProduct } from '@/lib/off/product'
+import { toMealItem, type Food } from '@/lib/foods/food'
 import { t } from '@/i18n/fr'
 import type { MealItem } from '@/types/models'
 
-interface ProductSheetProps {
+interface PortionSheetProps {
   open: boolean
-  product: OffProduct
+  food: Food
   onClose: () => void
   onAdd: (item: MealItem) => void
 }
 
 /**
- * The one question a scan cannot answer: how much of it.
+ * The one question no table can answer: how much of it.
  *
- * The barcode gives exact figures per 100 g, and the portion is the only guess
- * left in the chain — so it is the only thing this sheet asks, pre-filled with
- * the manufacturer's serving when there is one.
+ * A barcode and a name both end with exact figures per 100 g and one unknown,
+ * so both end here. It is the only thing this sheet asks, pre-filled with the
+ * manufacturer's serving when the record names one — CIQUAL never does, and
+ * 100 g is then the honest default rather than an invented portion.
  */
-export function ProductSheet({ open, product, onClose, onAdd }: Readonly<ProductSheetProps>) {
-  const [grams, setGrams] = useState(String(product.servingGrams))
+export function PortionSheet({ open, food, onClose, onAdd }: Readonly<PortionSheetProps>) {
+  const [grams, setGrams] = useState(String(food.servingGrams))
 
   useEffect(() => {
-    if (open) setGrams(String(product.servingGrams))
-  }, [open, product])
+    if (open) setGrams(String(food.servingGrams))
+  }, [open, food])
 
   const parsed = Number(grams.replace(',', '.'))
   const valid = Number.isFinite(parsed) && parsed > 0
-  const item = toMealItem(product, valid ? parsed : 0)
+  const item = toMealItem(food, valid ? parsed : 0)
 
   return (
-    <Sheet open={open} onClose={onClose} title={t.barcode.productTitle}>
+    <Sheet open={open} onClose={onClose} title={t.foods.portion.title}>
       <div className="flex flex-col gap-3">
         <div>
-          <p className="text-base font-semibold">{product.name}</p>
-          {product.brand ? <p className="text-sm text-muted-foreground">{product.brand}</p> : null}
+          <p className="text-base font-semibold">{food.name}</p>
+          {food.brand ? <p className="text-sm text-muted-foreground">{food.brand}</p> : null}
         </div>
 
-        <Field label={t.barcode.gramsLabel}>
+        <Field label={t.foods.portion.gramsLabel}>
           {(id) => (
             <Input
               id={id}
@@ -60,11 +61,11 @@ export function ProductSheet({ open, product, onClose, onAdd }: Readonly<Product
           </p>
         </div>
 
-        {product.missingMacros.length > 0 ? (
+        {food.missingMacros.length > 0 ? (
           <p className="text-xs text-muted-foreground">
-            {t.barcode.missingMacros(
-              product.missingMacros.map(
-                (key) => t.barcode.macroName[key as 'proteinG' | 'carbsG' | 'fatG'],
+            {t.foods.portion.missingMacros(
+              food.missingMacros.map(
+                (key) => t.foods.portion.macroName[key as 'proteinG' | 'carbsG' | 'fatG'],
               ),
             )}
           </p>
@@ -72,7 +73,7 @@ export function ProductSheet({ open, product, onClose, onAdd }: Readonly<Product
 
         <Button size="lg" block disabled={!valid} onClick={() => onAdd(item)}>
           <Plus size={16} aria-hidden />
-          {t.barcode.add}
+          {t.foods.portion.add}
         </Button>
       </div>
     </Sheet>

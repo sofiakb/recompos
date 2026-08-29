@@ -18,6 +18,7 @@ import { toLogicalDate, type IsoDate } from '@/lib/date'
 import { createId, nowIso } from '@/lib/utils'
 import { slotForHour } from '@/lib/nutrition'
 import { totalsFromItems, type MealAnalysis } from '@/lib/vision/schema'
+import type { FoodSource } from '@/lib/foods/food'
 import type { MealEntry, MealItem, MealPhoto, MealSlot, VisionProviderId } from '@/types/models'
 
 export async function mealsForDate(date: IsoDate, database: RecompDb = db): Promise<MealEntry[]> {
@@ -306,18 +307,27 @@ export async function createManualMeal(
   return syncProteinLog(meal, targetGrams, database)
 }
 
+export interface FoodMealOptions {
+  date?: IsoDate
+  slot?: MealSlot
+  /** How the food was found: scanned, or named in a search. */
+  source?: 'barcode' | 'food'
+  /** Which table stated the figures — `ciqual` or `off`. */
+  table?: FoodSource
+}
+
 /**
- * A meal built from a scanned product.
+ * A meal built from a food that already had a nutrition table.
  *
- * Not `createManualMeal` with another label: the figures come from the
- * manufacturer's own table, which is a stronger claim than a typed guess, and
- * `source` is what carries that difference into the journal and into any later
- * question about where a number came from.
+ * Not `createManualMeal` with another label: the figures come from a published
+ * table rather than a typed guess, which is a stronger claim, and `source` is
+ * what carries that difference into the journal and into any later question
+ * about where a number came from.
  */
-export async function createBarcodeMeal(
+export async function createFoodMeal(
   item: MealItem,
   targetGrams: number,
-  options: { date?: IsoDate; slot?: MealSlot } = {},
+  options: FoodMealOptions = {},
   database: RecompDb = db,
 ): Promise<MealEntry> {
   const now = nowIso()
@@ -331,7 +341,10 @@ export async function createBarcodeMeal(
     items: [item],
     ...totals,
     confidence: 'high',
-    source: 'barcode',
+    source: options.source ?? 'barcode',
+    // Which table stated these figures, so the journal can say so rather than
+    // claiming a barcode nobody scanned.
+    ...(options.table ? { analysedBy: options.table } : {}),
     status: 'done',
     createdAt: now,
     updatedAt: now,

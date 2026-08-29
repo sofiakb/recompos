@@ -8,6 +8,7 @@ import { QuickPanel } from '@/features/meals/add/QuickPanel'
 import { SearchPanel } from '@/features/meals/add/SearchPanel'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/fr'
+import type { Food } from '@/lib/foods/food'
 import type { RecentMeal } from '@/features/meals/useRecentMeals'
 import type { MealSlot } from '@/types/models'
 
@@ -33,6 +34,8 @@ interface AddSheetProps {
   recent: RecentMeal[]
   onClose: () => void
   onPickRecent: (meal: RecentMeal) => void
+  /** A food found by name, still owing a portion. */
+  onPickFood: (food: Food) => void
   onProtein: (grams: number) => void
   onCustomProtein: () => void
   onKcalOnly: (kcal: number) => void
@@ -61,6 +64,7 @@ export function AddSheet({
   recent,
   onClose,
   onPickRecent,
+  onPickFood,
   onProtein,
   onCustomProtein,
   onKcalOnly,
@@ -142,6 +146,7 @@ export function AddSheet({
           onQuery={setQuery}
           recent={recent}
           onPickRecent={onPickRecent}
+          onPickFood={onPickFood}
           kcal={kcal}
           onKcal={setKcal}
           onProtein={onProtein}
@@ -183,6 +188,7 @@ interface AddPanelProps {
   onQuery: (value: string) => void
   recent: RecentMeal[]
   onPickRecent: (meal: RecentMeal) => void
+  onPickFood: (food: Food) => void
   kcal: string
   onKcal: (value: string) => void
   onProtein: (grams: number) => void
@@ -203,6 +209,7 @@ function AddPanel(props: Readonly<AddPanelProps>) {
           onQuery={props.onQuery}
           recent={props.recent}
           onPick={props.onPickRecent}
+          onPickFood={props.onPickFood}
         />
       )
     case 'quick':

@@ -6,8 +6,8 @@ import { useFloor } from '@/features/floor/useFloor'
 import { AddSheet } from '@/features/meals/add/AddSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
-import { ProductSheet } from '@/features/meals/ProductSheet'
-import { useBarcode } from '@/features/meals/useBarcode'
+import { PortionSheet } from '@/features/meals/PortionSheet'
+import { useFoodPick } from '@/features/meals/useFoodPick'
 import { useRecentMeals, type RecentMeal } from '@/features/meals/useRecentMeals'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
 import { DayNav } from '@/features/nutrition/DayNav'
@@ -15,7 +15,7 @@ import { DayTotals } from '@/features/nutrition/DayTotals'
 import { buildSlotJournal } from '@/features/nutrition/journal'
 import { MealSlotList } from '@/features/nutrition/MealSlotList'
 import { useCalorieTarget, type CalorieTargetState } from '@/features/nutrition/useCalorieTarget'
-import { useMeals, type StagedPhoto } from '@/features/nutrition/useMeals'
+import { useMeals, type FoodOrigin, type StagedPhoto } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget, type ProteinTargetState } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
@@ -62,7 +62,7 @@ export function NutritionScreen() {
   const [customOpen, setCustomOpen] = useState(false)
   const [staged, setStaged] = useState<StagedPhoto | null>(null)
   const [analysingCapture, setAnalysingCapture] = useState(false)
-  const barcode = useBarcode()
+  const barcode = useFoodPick()
 
   useEffect(() => {
     if (barcode.error) showToast(barcode.error)
@@ -192,6 +192,7 @@ export function NutritionScreen() {
         recent={recent}
         onClose={() => setAddingSlot(null)}
         onPickRecent={addRecent}
+        onPickFood={barcode.pick}
         onProtein={(grams) => {
           setAddingSlot(null)
           void addWithUndo(grams, 'meal')
@@ -229,13 +230,21 @@ export function NutritionScreen() {
         }}
       />
 
-      {barcode.product ? (
-        <ProductSheet
+      {barcode.food ? (
+        <PortionSheet
           open
-          product={barcode.product}
+          food={barcode.food}
           onClose={barcode.close}
           onAdd={(item) => {
-            void meals.addProduct(item, targetSlot).then(() => showToast(t.meals.productAdded))
+            // A scan and a search both end here, and the journal tells them
+            // apart: one says « code-barres », the other names the table.
+            const from: FoodOrigin =
+              barcode.via === 'search'
+                ? { source: 'food', table: barcode.food?.source }
+                : { source: 'barcode' }
+            void meals
+              .addProduct(item, targetSlot, from)
+              .then(() => showToast(t.meals.productAdded))
             barcode.close()
             setAddingSlot(null)
           }}

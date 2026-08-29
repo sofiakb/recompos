@@ -1,6 +1,15 @@
 import { formatCount, formatDecimal } from '@/lib/format'
 
 /**
+ * A signed whole number, e.g. « +30 » or « −12 ».
+ *
+ * The typographic minus (U+2212), not the hyphen: it aligns with the digits.
+ */
+function signed(value: number): string {
+  return `${value > 0 ? '+' : '\u2212'}${Math.abs(value)}`
+}
+
+/**
  * Every user-facing string lives here (PRD §7).
  *
  * V1 ships French only, but no component holds a literal, so adding English is
@@ -282,7 +291,7 @@ export const fr = {
     vsStart: (delta: number) =>
       delta === 0
         ? 'Au niveau de ta première semaine'
-        : `${delta > 0 ? '+' : '−'}${Math.abs(delta)} % de volume vs ta première semaine`,
+        : `${signed(delta)} % de volume vs ta première semaine`,
     explainOpen: 'Comment c’est calculé',
     explainClose: 'Masquer le calcul',
     explainBody:
@@ -372,6 +381,34 @@ export const fr = {
     addSet: '+1 série',
     logWeight: 'Enregistrer une pesée',
   },
+  foods: {
+    title: 'Aliments',
+    searchTitle: 'Chercher un aliment',
+    /** Always per 100 g: the one basis both tables share. */
+    per100: (kcal: number, proteinG: number) =>
+      `${formatCount(kcal)} kcal · ${formatDecimal(Math.round(proteinG * 10) / 10)} g de protéines / 100 g`,
+    source: { ciqual: 'Ciqual', off: 'OpenFoodFacts' },
+    /** When the table that answered was not recorded — older entries. */
+    badge: 'aliment',
+    searching: 'Recherche…',
+    tooShort: 'Tape au moins deux lettres.',
+    noMatch: 'Aucun aliment trouvé.',
+    offline: 'Réseau indisponible — seule la table locale répond.',
+    add: (name: string) => `Ajouter ${name}`,
+    fromEditor: 'Chercher un aliment',
+    /**
+     * The one question neither table can answer, asked once for both routes:
+     * a barcode and a name both arrive here owing a portion.
+     */
+    portion: {
+      title: 'Ajouter cet aliment',
+      gramsLabel: 'Quantité (g)',
+      add: 'Ajouter',
+      macroName: { proteinG: 'protéines', carbsG: 'glucides', fatG: 'lipides' },
+      missingMacros: (names: string[]) =>
+        `La fiche ne donne pas : ${names.join(', ')}. Comptées à 0 — corrige-les si tu les connais.`,
+    },
+  },
   barcode: {
     scanTitle: 'Scanner un produit',
     scanHint: 'Vise le code-barres. La lecture se fait sur l’appareil.',
@@ -382,13 +419,7 @@ export const fr = {
     digitsLabel: 'Code-barres',
     search: 'Chercher',
     invalid: 'Code-barres invalide — vérifie les chiffres.',
-    productTitle: 'Ajouter ce produit',
-    gramsLabel: 'Quantité (g)',
-    add: 'Ajouter',
     addProduct: 'Ajouter un produit',
-    macroName: { proteinG: 'protéines', carbsG: 'glucides', fatG: 'lipides' },
-    missingMacros: (names: string[]) =>
-      `La fiche ne donne pas : ${names.join(', ')}. Comptées à 0 — corrige-les si tu les connais.`,
     badge: 'code-barres',
     errorKind: {
       not_found: 'Produit inconnu d’OpenFoodFacts.',

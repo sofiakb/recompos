@@ -127,3 +127,23 @@ describe('MealSlotList', () => {
     )
   })
 })
+
+describe('MealSlotList — d’où viennent les chiffres', () => {
+  it('nomme la table plutôt que d’inventer un code-barres', () => {
+    renderList([], [meal({ source: 'food', analysedBy: 'ciqual', label: 'Riz blanc, cuit' })])
+
+    expect(screen.getByText(`Riz blanc, cuit · ${t.foods.source.ciqual}`)).toBeTruthy()
+  })
+
+  it('retombe sur un mot générique quand la table n’a pas été notée', () => {
+    renderList([], [meal({ source: 'food', label: 'Riz blanc, cuit' })])
+
+    expect(screen.getByText(`Riz blanc, cuit · ${t.foods.badge}`)).toBeTruthy()
+  })
+
+  it('garde « code-barres » pour ce qui a vraiment été scanné', () => {
+    renderList([], [meal({ source: 'barcode', label: 'Nutella' })])
+
+    expect(screen.getByText(`Nutella · ${t.barcode.badge}`)).toBeTruthy()
+  })
+})
