@@ -1,5 +1,25 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Food } from '@/lib/foods/food'
+import { searchCiqual } from '@/lib/foods/ciqual'
 import { searchFoods } from '@/lib/foods/search'
+
+/**
+ * La vraie table CIQUAL est dans le build et répond à « yaourt » par huit
+ * lignes : ce fichier teste la fusion des deux sources, pas leur contenu, donc
+ * la source locale est dictée ici plutôt que lue sur le disque.
+ */
+vi.mock('@/lib/foods/ciqual', () => ({ searchCiqual: vi.fn() }))
+
+const localTable = vi.mocked(searchCiqual)
+
+const YAOURT_CIQUAL: Food = {
+  id: '19548',
+  source: 'ciqual',
+  name: 'Yaourt ou lait fermenté, nature',
+  servingGrams: 100,
+  per100g: { kcal: 61, proteinG: 4, carbsG: 5, fatG: 3 },
+  missingMacros: [],
+}
 
 const YAOURT = {
   code: '3033490004743',
@@ -24,7 +44,11 @@ function stub(products: unknown[]) {
 }
 
 describe('searchFoods', () => {
-  it('rend les produits du réseau — la table locale n’est pas encore déposée', async () => {
+  beforeEach(() => {
+    localTable.mockResolvedValue([])
+  })
+
+  it('rend les produits du réseau quand la table locale ne connaît rien', async () => {
     const result = await searchFoods('yaourt', { fetchImpl: stub([YAOURT]) })
 
     expect(result.foods.map((food) => food.name)).toEqual(['Yaourt nature'])
@@ -53,6 +77,13 @@ describe('searchFoods', () => {
 
     expect(result.foods).toEqual([])
     expect(result.networkFailed).toBe(true)
+  })
+
+  it('met la table locale devant les produits du réseau', async () => {
+    localTable.mockResolvedValue([YAOURT_CIQUAL])
+    const result = await searchFoods('yaourt', { fetchImpl: stub([YAOURT]) })
+
+    expect(result.foods.map((food) => food.source)).toEqual(['ciqual', 'off'])
   })
 
   it('plafonne la liste', async () => {

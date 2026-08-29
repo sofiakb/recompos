@@ -102,9 +102,9 @@ describe('rankCiqual', () => {
 })
 
 describe('hasCiqualTable', () => {
-  it('dit non tant que le JSON n’est pas déposé', () => {
-    // Le jour où `src/data/ciqual.json` arrive, ce test devient l'inverse — et
-    // c'est le seul endroit du code à changer.
-    expect(hasCiqualTable()).toBe(false)
+  it('dit oui : la table est dans le build', () => {
+    // Le JSON est déposé à `src/data/ciqual.json` — sa disparition casserait
+    // la recherche hors ligne en silence, ce test la rendrait bruyante.
+    expect(hasCiqualTable()).toBe(true)
   })
 })
