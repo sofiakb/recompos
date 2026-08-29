@@ -111,15 +111,23 @@ export function NutritionScreen() {
     })
   }
 
+  /**
+   * Every route out of the add sheet closes it *after* its work, never before.
+   *
+   * Closing first left the person looking at the journal while the thing they
+   * asked for was still running, with no sign it was — and it made the sheet's
+   * own pending states unreachable, since the sheet was already gone. A failure
+   * now leaves the sheet open on what they typed, rather than losing it.
+   */
   const onFile = async (file: File | undefined) => {
     if (!file) return
-    setAddingSlot(null)
-    // Encoding a 12 Mpx photo takes a beat on a phone, and the add sheet has
-    // just closed. Without this the screen sits blank and reads as « it did
-    // not take ».
+    // Encoding a 12 Mpx photo takes a beat on a phone, and nothing else on
+    // screen says so.
     showToast(t.meals.capturing)
     try {
-      setStaged(await meals.stageCapture(file))
+      const photo = await meals.stageCapture(file)
+      setAddingSlot(null)
+      setStaged(photo)
     } catch {
       showToast(t.photos.failed)
     }
@@ -136,10 +144,10 @@ export function NutritionScreen() {
   }
 
   const addRecent = (meal: RecentMeal) => {
-    setAddingSlot(null)
-    void meals
-      .addManual(meal.label, meal.items, targetSlot)
-      .then(() => showToast(t.meals.saved(meal.kcal)))
+    void meals.addManual(meal.label, meal.items, targetSlot).then(() => {
+      setAddingSlot(null)
+      showToast(t.meals.saved(meal.kcal))
+    })
   }
 
   /**
@@ -157,19 +165,22 @@ export function NutritionScreen() {
 
   const describe = (description: string) => {
     setDescribing(true)
-    setAddingSlot(null)
     void meals
       .describeMeal(description, targetSlot)
+      // Only on success: a call that failed before writing anything leaves the
+      // sheet up with the description still in it, which is the only copy of it
+      // there is.
+      .then(() => setAddingSlot(null))
       .catch(() => showToast(t.meals.unknownError))
       .finally(() => setDescribing(false))
   }
 
   const addKcalOnly = (kcal: number) => {
-    setAddingSlot(null)
     const item = { name: t.nutrition.kcalOnly, quantity: '', kcal, proteinG: 0, carbsG: 0, fatG: 0 }
-    void meals
-      .addManual(t.nutrition.kcalOnly, [item], targetSlot)
-      .then(() => showToast(t.meals.saved(kcal)))
+    void meals.addManual(t.nutrition.kcalOnly, [item], targetSlot).then(() => {
+      setAddingSlot(null)
+      showToast(t.meals.saved(kcal))
+    })
   }
 
   return (
@@ -212,8 +223,7 @@ export function NutritionScreen() {
         onToggleFavorite={toggleFavorite}
         onPickFood={barcode.pick}
         onProtein={(grams) => {
-          setAddingSlot(null)
-          void addWithUndo(grams, 'meal')
+          void addWithUndo(grams, 'meal').then(() => setAddingSlot(null))
         }}
         onCustomProtein={() => {
           setAddingSlot(null)
