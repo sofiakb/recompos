@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
+  appendToSlot,
   applyAnalysis,
   createFoodMeal,
   createManualMeal,
@@ -265,16 +266,25 @@ export function useMeals(date: IsoDate = toLogicalDate()): MealsState {
       },
       [targetGrams],
     ),
+    /**
+     * Both add routes join the slot's meal when it has one.
+     *
+     * A slot holds one meal in the journal, so adding to it lengthens that meal
+     * rather than starting a second one beside it. Creating stays the fallback,
+     * for a slot that is still empty.
+     */
     addManual: useCallback(
       async (label: string, items: MealItem[], slot: MealSlot) => {
-        await createManualMeal(label, items, targetGrams, { date, slot })
+        const joined = await appendToSlot(items, targetGrams, { date, slot })
+        if (!joined) await createManualMeal(label, items, targetGrams, { date, slot })
         haptic()
       },
       [targetGrams, date],
     ),
     addProduct: useCallback(
       async (item: MealItem, slot?: MealSlot, from?: FoodOrigin) => {
-        await createFoodMeal(item, targetGrams, { date, slot, ...from })
+        const joined = await appendToSlot([item], targetGrams, { date, slot })
+        if (!joined) await createFoodMeal(item, targetGrams, { date, slot, ...from })
         haptic()
       },
       [targetGrams, date],

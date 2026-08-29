@@ -660,6 +660,22 @@ sous-titre donne déjà « 995 / 740 kcal », le lecteur voit le dépassement, e
 le repas concerné y ramenait l'attention au lieu de l'en détourner. Retirée le 29/08/2026 — la
 meilleure façon de ne pas gronder est de ne rien dire.
 
+**Un créneau, un repas**
+
+Le `+` d'un repas rejoint le repas déjà là plutôt que d'en ouvrir un second en dessous : l'écran
+montre une section par repas avec son propre total, donc deux entrées sous « Petit-déj » se lisaient
+comme deux repas là où une personne en avait mangé un. Le nom se reconstruit depuis les lignes
+réunies — « Café au lait dosette (Senseo), Madeleines » — quitte à réécrire un nom saisi à la main,
+qui reste modifiable dans le détail.
+
+Deux repas ne sont jamais joints : celui qui est encore en analyse, et celui qui a échoué et sera
+relancé. `applyAnalysis` remplace `items` en entier quand elle aboutit, si bien qu'une ligne ajoutée
+entre-temps disparaîtrait sans laisser de trace. L'ajout part alors à part, comme avant.
+
+La fusion passe par `editMeal` plutôt que d'écrire elle-même : les totaux se recalculent depuis les
+lignes, le `ProteinLog` unique reste en phase, et une lecture du modèle qu'un humain complète devient
+`corrected` — par les règles qui existaient déjà.
+
 **La feuille d'ajout unique**
 
 Quatre feuilles séparées et une rangée de quatre boutons deviennent **le `+` d'un repas**, avec cinq
