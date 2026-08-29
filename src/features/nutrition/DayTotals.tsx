@@ -78,7 +78,7 @@ export function DayTotals({
   // page everywhere else, and the figures holding still while the journal moves
   // is the whole point of the band.
   return (
-    <div className="sticky top-0 z-10 border-b border-border bg-card px-5 pb-1 pt-[calc(0.875rem+env(safe-area-inset-top))]">
+    <div className="sticky top-0 z-10 border-b border-border bg-card px-5 pb-1 pt-[calc(0.625rem+env(safe-area-inset-top))]">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
           {dateLabel}
@@ -94,15 +94,19 @@ export function DayTotals({
         ) : null}
       </div>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pb-0.5 pt-1.5">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-0.5">
         <Figure value={formatCount(totals.kcal)} label={t.nutrition.consumed} />
+        {/* 140 rather than 150: the band is sticky, so every pixel it takes is
+            a pixel the journal never gets back on a phone screen. The centre
+            figure came down with it — four digits still have to fit, and « 1 183
+            kcal restantes » is what the first hour of a day looks like. */}
         <Ring
-          size={150}
-          stroke={11}
+          size={140}
+          stroke={10}
           ratio={ratio(totals.kcal, targets.kcal)}
           ariaLabel={t.nutrition.kcalRing(totals.kcal, targets.kcal)}
         >
-          <p className="tnum text-[34px] font-semibold leading-none tracking-[-0.02em]">
+          <p className="tnum text-[30px] font-semibold leading-none tracking-[-0.02em]">
             {formatCount(centre)}
           </p>
           <p className="mt-0.5 text-[13px] font-medium text-muted-foreground">
@@ -142,7 +146,7 @@ export function DayTotals({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-3 pt-2">
+        <div className="grid grid-cols-3 gap-3 pt-1.5">
           {MACROS.map((macro) => (
             <div key={macro} className="flex flex-col gap-1">
               <Progress
