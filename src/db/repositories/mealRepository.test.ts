@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RecompDb } from '@/db/dexie'
 import {
+  appendToSlot,
   applyAnalysis,
   createManualMeal,
   createPendingMeal,
@@ -342,5 +343,109 @@ describe('editMeal sur un repas texte', () => {
       db,
     )
     expect(edited?.source).toBe('corrected')
+  })
+})
+
+describe('appendToSlot', () => {
+  const DAY = '2026-08-29'
+  const COFFEE = {
+    name: 'Café au lait',
+    quantity: '1 tasse',
+    kcal: 171,
+    proteinG: 2,
+    carbsG: 18,
+    fatG: 8,
+  }
+  const MADELEINE = {
+    name: 'Madeleines',
+    quantity: '23 g',
+    kcal: 104,
+    proteinG: 1,
+    carbsG: 13,
+    fatG: 5,
+  }
+
+  it('rejoint le repas du créneau plutôt que d’en ouvrir un second', async () => {
+    await createManualMeal('Café', [COFFEE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    const joined = await appendToSlot([MADELEINE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    expect(joined?.items).toEqual([COFFEE, MADELEINE])
+    expect(await db.meals.count()).toBe(1)
+  })
+
+  it('rebâtit le nom depuis les lignes', async () => {
+    await createManualMeal('Café', [COFFEE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    const joined = await appendToSlot([MADELEINE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    expect(joined?.label).toBe('Café au lait, Madeleines')
+  })
+
+  it('recalcule les totaux depuis les lignes réunies', async () => {
+    await createManualMeal('Café', [COFFEE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    const joined = await appendToSlot([MADELEINE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    expect(joined?.kcal).toBe(275)
+    expect(joined?.proteinG).toBe(3)
+    // Les protéines du repas ne sont comptées qu'une fois : un seul ProteinLog.
+    expect(await totalProteinForDate(DAY, db)).toBe(3)
+    expect(await db.proteinLogs.count()).toBe(1)
+  })
+
+  it('dit non quand le créneau est vide', async () => {
+    expect(await appendToSlot([COFFEE], TARGET, { date: DAY, slot: 'dinner' }, db)).toBeUndefined()
+  })
+
+  it('ne touche pas au repas d’un autre créneau', async () => {
+    await createManualMeal('Café', [COFFEE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    expect(
+      await appendToSlot([MADELEINE], TARGET, { date: DAY, slot: 'lunch' }, db),
+    ).toBeUndefined()
+  })
+
+  it('laisse tranquille un repas encore en analyse', async () => {
+    // Son analyse remplacera `items` en entier : une ligne ajoutée avant
+    // disparaîtrait sans laisser de trace.
+    await createTextMeal('deux œufs', { date: DAY, slot: 'breakfast' }, db)
+
+    expect(
+      await appendToSlot([MADELEINE], TARGET, { date: DAY, slot: 'breakfast' }, db),
+    ).toBeUndefined()
+  })
+
+  it('fait d’une lecture du modèle complétée à la main une correction', async () => {
+    const pending = await createPendingMeal(photo(), { date: DAY, slot: 'lunch' }, db)
+    await applyAnalysis(pending.id, analysis(), 'groq', TARGET, db)
+
+    const joined = await appendToSlot([COFFEE], TARGET, { date: DAY, slot: 'lunch' }, db)
+
+    expect(joined?.source).toBe('corrected')
+    expect(joined?.items).toHaveLength(3)
+  })
+
+  it('rejoint la plus récente quand le créneau en tient déjà deux', async () => {
+    await createManualMeal('Café', [COFFEE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+    const second = await createManualMeal(
+      'Madeleines',
+      [MADELEINE],
+      TARGET,
+      { date: DAY, slot: 'breakfast' },
+      db,
+    )
+
+    const joined = await appendToSlot([COFFEE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    expect(joined?.id).toBe(second.id)
+    expect(await db.meals.count()).toBe(2)
+  })
+
+  it('n’écrit rien quand il n’y a aucune ligne à ajouter', async () => {
+    await createManualMeal('Café', [COFFEE], TARGET, { date: DAY, slot: 'breakfast' }, db)
+
+    expect(await appendToSlot([], TARGET, { date: DAY, slot: 'breakfast' }, db)).toBeUndefined()
+    expect((await mealsForDate(DAY, db))[0].items).toEqual([COFFEE])
   })
 })

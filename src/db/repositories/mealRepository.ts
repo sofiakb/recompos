@@ -278,6 +278,60 @@ export async function editMeal(
   return syncProteinLog(patched, targetGrams, database)
 }
 
+/**
+ * The meal an addition to a slot should join.
+ *
+ * The most recent finished one there. The journal shows a section per meal with
+ * its own total, so a `+` on « Petit-déj » that answered with a second
+ * « Petit-déj » underneath the first was reading as two meals where the person
+ * had eaten one.
+ *
+ * A meal still being analysed is never joined, nor one that failed and will be
+ * retried: `applyAnalysis` replaces `items` wholesale when it lands, so a line
+ * appended in the meantime would vanish without trace.
+ */
+async function slotHost(
+  date: IsoDate,
+  slot: MealSlot,
+  database: RecompDb,
+): Promise<MealEntry | undefined> {
+  const rows = await mealsForDate(date, database)
+  return rows.filter((meal) => meal.slot === slot && meal.status === 'done').at(-1)
+}
+
+/** A meal's name, rebuilt from what is in it. */
+function labelFrom(items: MealItem[]): string {
+  return items
+    .map((item) => item.name.trim())
+    .filter(Boolean)
+    .join(', ')
+}
+
+/**
+ * Appends lines to the meal already in a slot, when there is one.
+ *
+ * Returns `undefined` when the slot has nothing to join — the caller's signal
+ * to create a meal instead. Going through `editMeal` rather than writing here
+ * is deliberate: the totals are recomputed from the lines, the protein row is
+ * kept in step, and a model's reading that a human has added to becomes
+ * `corrected`, all by the rules that already existed.
+ */
+export async function appendToSlot(
+  items: MealItem[],
+  targetGrams: number,
+  options: { date?: IsoDate; slot?: MealSlot } = {},
+  database: RecompDb = db,
+): Promise<MealEntry | undefined> {
+  if (items.length === 0) return undefined
+  const date = options.date ?? toLogicalDate()
+  const slot = options.slot ?? slotForHour(new Date().getHours())
+  const host = await slotHost(date, slot, database)
+  if (!host) return undefined
+
+  const merged = [...host.items, ...items]
+  return editMeal(host.id, { label: labelFrom(merged), items: merged }, targetGrams, database)
+}
+
 /** A meal typed by hand — no photo, no provider, no network. */
 export async function createManualMeal(
   label: string,
