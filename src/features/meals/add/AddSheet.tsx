@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
-import { Camera, Plus, ScanBarcode, Search, Sparkles, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Camera, Plus, ScanBarcode, Search, Sparkles, Star, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/input'
 import { Sheet } from '@/components/ui/sheet'
 import { BarcodeScanner } from '@/features/meals/BarcodeScanner'
+import { FavoritesPanel } from '@/features/meals/add/FavoritesPanel'
 import { QuickPanel } from '@/features/meals/add/QuickPanel'
 import { SearchPanel } from '@/features/meals/add/SearchPanel'
 import { cn } from '@/lib/utils'
@@ -12,9 +13,10 @@ import type { Food } from '@/lib/foods/food'
 import type { RecentMeal } from '@/features/meals/useRecentMeals'
 import type { MealSlot } from '@/types/models'
 
-export type AddTab = 'search' | 'quick' | 'photo' | 'describe' | 'barcode'
+export type AddTab = 'favorites' | 'search' | 'quick' | 'photo' | 'describe' | 'barcode'
 
 const TABS = [
+  { id: 'favorites', label: t.nutrition.tabFavorites, Icon: Star },
   { id: 'search', label: t.nutrition.tabSearch, Icon: Search },
   { id: 'quick', label: t.nutrition.tabQuick, Icon: Plus },
   { id: 'photo', label: t.nutrition.tabPhoto, Icon: Camera },
@@ -32,8 +34,13 @@ interface AddSheetProps {
   canAnalyse: boolean
   describing: boolean
   recent: RecentMeal[]
+  /** Pinned meals. Also decides which tab the sheet opens on. */
+  favorites: RecentMeal[]
+  isFavorite: (label: string) => boolean
   onClose: () => void
+  /** Serves both lists: a favourite is a habit someone vouched for. */
   onPickRecent: (meal: RecentMeal) => void
+  onToggleFavorite: (meal: RecentMeal) => void
   /** A food found by name, still owing a portion. */
   onPickFood: (food: Food) => void
   onProtein: (grams: number) => void
@@ -62,8 +69,11 @@ export function AddSheet({
   canAnalyse,
   describing,
   recent,
+  favorites,
+  isFavorite,
   onClose,
   onPickRecent,
+  onToggleFavorite,
   onPickFood,
   onProtein,
   onCustomProtein,
@@ -79,11 +89,22 @@ export function AddSheet({
 
   const open = slot !== null
 
+  /**
+   * Which tab to open on, snapshotted rather than watched.
+   *
+   * Read from a ref so that starring something while the sheet is open cannot
+   * move the panel out from under the tap that did it — the decision belongs to
+   * the moment the sheet opens, and nothing after it.
+   */
+  const startOnFavorites = useRef(false)
+  startOnFavorites.current = favorites.length > 0
+
   useEffect(() => {
     if (!open) return
     // Back to the fastest route on every opening: whatever was typed last time
-    // was for a different meal.
-    setTab('search')
+    // was for a different meal. Once something is pinned, that route is the
+    // favourites — one tap from the `+` to the coffee you drink every morning.
+    setTab(startOnFavorites.current ? 'favorites' : 'search')
     setQuery('')
     setDescription('')
     setKcal('')
@@ -145,7 +166,10 @@ export function AddSheet({
           query={query}
           onQuery={setQuery}
           recent={recent}
+          favorites={favorites}
+          isFavorite={isFavorite}
           onPickRecent={onPickRecent}
+          onToggleFavorite={onToggleFavorite}
           onPickFood={onPickFood}
           kcal={kcal}
           onKcal={setKcal}
@@ -187,7 +211,10 @@ interface AddPanelProps {
   query: string
   onQuery: (value: string) => void
   recent: RecentMeal[]
+  favorites: RecentMeal[]
+  isFavorite: (label: string) => boolean
   onPickRecent: (meal: RecentMeal) => void
+  onToggleFavorite: (meal: RecentMeal) => void
   onPickFood: (food: Food) => void
   kcal: string
   onKcal: (value: string) => void
@@ -202,6 +229,14 @@ interface AddPanelProps {
 /** A switch rather than five `&&` lines: exhaustive, and flat to read. */
 function AddPanel(props: Readonly<AddPanelProps>) {
   switch (props.tab) {
+    case 'favorites':
+      return (
+        <FavoritesPanel
+          favorites={props.favorites}
+          onPick={props.onPickRecent}
+          onToggleFavorite={props.onToggleFavorite}
+        />
+      )
     case 'search':
       return (
         <SearchPanel
@@ -210,6 +245,8 @@ function AddPanel(props: Readonly<AddPanelProps>) {
           recent={props.recent}
           onPick={props.onPickRecent}
           onPickFood={props.onPickFood}
+          isFavorite={props.isFavorite}
+          onToggleFavorite={props.onToggleFavorite}
         />
       )
     case 'quick':

@@ -29,25 +29,31 @@ const RECENT: RecentMeal[] = [
   { label: 'Poulet, riz, brocolis', kcal: 612, proteinG: 52, items: [] },
 ]
 
+const COFFEE: RecentMeal = { label: 'Café au lait', kcal: 171, proteinG: 2, items: [] }
+
+const BASE = {
+  slot: 'lunch' as const,
+  consumedKcal: 412,
+  targetKcal: 740,
+  canAnalyse: true,
+  describing: false,
+  recent: RECENT,
+  favorites: [] as RecentMeal[],
+  isFavorite: (label: string) => label === COFFEE.label,
+  onClose: vi.fn(),
+  onPickRecent: vi.fn(),
+  onToggleFavorite: vi.fn(),
+  onPickFood: vi.fn(),
+  onProtein: vi.fn(),
+  onCustomProtein: vi.fn(),
+  onKcalOnly: vi.fn(),
+  onOpenCamera: vi.fn(),
+  onDescribe: vi.fn(),
+  onBarcode: vi.fn(),
+}
+
 function renderSheet(overrides: Partial<Parameters<typeof AddSheet>[0]> = {}) {
-  const props = {
-    slot: 'lunch' as const,
-    consumedKcal: 412,
-    targetKcal: 740,
-    canAnalyse: true,
-    describing: false,
-    recent: RECENT,
-    onClose: vi.fn(),
-    onPickRecent: vi.fn(),
-    onPickFood: vi.fn(),
-    onProtein: vi.fn(),
-    onCustomProtein: vi.fn(),
-    onKcalOnly: vi.fn(),
-    onOpenCamera: vi.fn(),
-    onDescribe: vi.fn(),
-    onBarcode: vi.fn(),
-    ...overrides,
-  }
+  const props = { ...BASE, ...overrides }
   render(<AddSheet {...props} />)
   return props
 }
@@ -184,5 +190,69 @@ describe('AddSheet — recherche d’aliment', () => {
     renderSheet()
 
     expect(screen.queryByText(t.foods.title)).toBeNull()
+  })
+})
+
+describe('AddSheet — favoris', () => {
+  it('ouvre sur les favoris dès qu’il y en a un', () => {
+    renderSheet({ favorites: [COFFEE] })
+
+    expect(tab(new RegExp(t.nutrition.tabFavorites)).getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByText(COFFEE.label)).toBeTruthy()
+  })
+
+  it('ouvre sur la recherche tant que rien n’est épinglé', () => {
+    renderSheet()
+
+    expect(tab(new RegExp(t.nutrition.tabSearch)).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('dit quoi faire quand l’onglet est vide', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+    await user.click(tab(new RegExp(t.nutrition.tabFavorites)))
+
+    expect(screen.getByText(t.favorites.empty)).toBeTruthy()
+  })
+
+  it('épingle une habitude depuis la recherche', async () => {
+    const user = userEvent.setup()
+    const props = renderSheet()
+
+    await user.click(screen.getByLabelText(t.favorites.add(SKYR_HABIT)))
+
+    expect(props.onToggleFavorite).toHaveBeenCalledWith(RECENT[0])
+  })
+
+  it('montre l’étoile pleine sur ce qui est déjà épinglé', () => {
+    renderSheet({ recent: [COFFEE, ...RECENT] })
+
+    expect(
+      screen.getByLabelText(t.favorites.remove(COFFEE.label)).getAttribute('aria-pressed'),
+    ).toBe('true')
+    expect(screen.getByLabelText(t.favorites.add(SKYR_HABIT)).getAttribute('aria-pressed')).toBe(
+      'false',
+    )
+  })
+
+  it('ajoute un favori en un geste, comme une habitude', async () => {
+    const user = userEvent.setup()
+    const props = renderSheet({ favorites: [COFFEE] })
+
+    await user.click(screen.getByRole('button', { name: t.nutrition.addAgain(COFFEE.label) }))
+
+    expect(props.onPickRecent).toHaveBeenCalledWith(COFFEE)
+  })
+
+  it('ne déplace pas le panneau sous le doigt qui vient d’épingler', () => {
+    const props = { ...BASE, favorites: [] as RecentMeal[] }
+    const { rerender } = render(<AddSheet {...props} />)
+    expect(tab(new RegExp(t.nutrition.tabSearch)).getAttribute('aria-selected')).toBe('true')
+
+    // L'écran répond au clic sur l'étoile en remontant un favori. L'onglet
+    // ouvert ne doit pas changer sous la personne qui vient de le toucher.
+    rerender(<AddSheet {...props} favorites={[COFFEE]} />)
+
+    expect(tab(new RegExp(t.nutrition.tabSearch)).getAttribute('aria-selected')).toBe('true')
   })
 })

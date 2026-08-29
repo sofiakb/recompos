@@ -275,6 +275,50 @@ describe('applyImport', () => {
   })
 })
 
+describe('favourites across a backup', () => {
+  const FAVORITE = {
+    id: 'f1',
+    label: 'Café au lait',
+    key: 'café au lait',
+    items: [
+      { name: 'Café au lait', quantity: '1 tasse', kcal: 171, proteinG: 2, carbsG: 18, fatG: 8 },
+    ],
+    createdAt: '2026-08-29T07:00:00.000Z',
+  }
+
+  it('carries them out and back in', async () => {
+    await db.favorites.add(FAVORITE)
+    const { bundle } = await buildExport(SETTINGS, HABITS, db)
+    expect(bundle.favorites).toEqual([FAVORITE])
+
+    await db.favorites.clear()
+    const summary = await applyImport(bundle, db)
+
+    expect(summary.favorites).toBe(1)
+    expect(await db.favorites.toArray()).toEqual([FAVORITE])
+  })
+
+  it('accepts a bundle written before favourites existed', async () => {
+    const { bundle } = await buildExport(SETTINGS, HABITS, db)
+    const result = validateBundle(JSON.parse(JSON.stringify(bundle)))
+
+    expect(result.ok && result.bundle.favorites).toEqual([])
+  })
+
+  it('drops a duplicate key rather than failing the whole import', async () => {
+    // `key` is unique in the database, and one bad pair of rows must not cost
+    // the user every other table in the file.
+    const { bundle } = await buildExport(SETTINGS, HABITS, db)
+    const summary = await applyImport(
+      { ...bundle, favorites: [FAVORITE, { ...FAVORITE, id: 'f2' }] },
+      db,
+    )
+
+    expect(summary.favorites).toBe(1)
+    expect((await db.favorites.toArray()).map((row) => row.id)).toEqual(['f1'])
+  })
+})
+
 describe('dataUrlToBytes', () => {
   it('restores the bytes and the mime type', () => {
     const original = new Uint8Array([1, 2, 3]).buffer

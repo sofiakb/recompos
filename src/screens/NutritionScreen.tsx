@@ -7,6 +7,7 @@ import { AddSheet } from '@/features/meals/add/AddSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
 import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
 import { PortionSheet } from '@/features/meals/PortionSheet'
+import { useFavorites } from '@/features/meals/useFavorites'
 import { useFoodPick } from '@/features/meals/useFoodPick'
 import { useRecentMeals, type RecentMeal } from '@/features/meals/useRecentMeals'
 import { CustomAmountSheet } from '@/features/nutrition/CustomAmountSheet'
@@ -82,6 +83,7 @@ export function NutritionScreen() {
    */
   const [targetSlot, setTargetSlot] = useState<MealSlot>('lunch')
   const recent = useRecentMeals()
+  const favorites = useFavorites()
 
   const journal = useMemo(
     () => buildSlotJournal(protein.logs, meals.meals),
@@ -140,6 +142,19 @@ export function NutritionScreen() {
       .then(() => showToast(t.meals.saved(meal.kcal)))
   }
 
+  /**
+   * Pins the meal, or unpins it.
+   *
+   * The sheet stays open on purpose: starring is a side note to whatever the
+   * person came here to do, and closing on it would cost them the tap they were
+   * about to make.
+   */
+  const toggleFavorite = (meal: RecentMeal) => {
+    void favorites
+      .toggle(meal.label, meal.items)
+      .then((pinned) => showToast(pinned ? t.favorites.added : t.favorites.removed))
+  }
+
   const describe = (description: string) => {
     setDescribing(true)
     setAddingSlot(null)
@@ -190,8 +205,11 @@ export function NutritionScreen() {
         canAnalyse={meals.canAnalyse}
         describing={describing}
         recent={recent}
+        favorites={favorites.list}
+        isFavorite={favorites.isFavorite}
         onClose={() => setAddingSlot(null)}
         onPickRecent={addRecent}
+        onToggleFavorite={toggleFavorite}
         onPickFood={barcode.pick}
         onProtein={(grams) => {
           setAddingSlot(null)

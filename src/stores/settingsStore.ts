@@ -331,7 +331,11 @@ export function migrateSettings(persisted: unknown, fromVersion: number): Persis
       calorieDeficitPercent: settings.calorieDeficitPercent ?? DEFAULT_DEFICIT_PERCENT,
       activityLevel: settings.activityLevel ?? DEFAULT_ACTIVITY_LEVEL,
       mealPhotoRetentionDays: settings.mealPhotoRetentionDays ?? DEFAULT_MEAL_PHOTO_RETENTION_DAYS,
-      proteinTargetMode: proteinTargetGrams ? 'manual' : 'auto',
+      // A pre-v3 install carried the target as a number, and having one meant
+      // « manual ». Later versions say so outright, and their answer is kept:
+      // falling back to 'auto' here would quietly unpick a target the user set
+      // by hand every time the schema is bumped for an unrelated reason.
+      proteinTargetMode: proteinTargetGrams ? 'manual' : (settings.proteinTargetMode ?? 'auto'),
       ...(proteinTargetGrams
         ? { manualProteinTargetGrams: clampProteinTargetGrams(proteinTargetGrams) }
         : {}),

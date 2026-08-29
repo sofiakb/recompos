@@ -237,6 +237,24 @@ export interface MealEntry {
 }
 
 /**
+ * A meal pinned by name, so the days it repeats cost one tap.
+ *
+ * Not a pointer into `meals`: the habits list only looks back thirty days, and
+ * a favourite has to survive a month of not eating it. The items are therefore
+ * copied, and the totals are derived from them on read rather than stored — a
+ * favourite is a snapshot, and two figures that could disagree are one too many.
+ */
+export interface FavoriteMeal {
+  id: string
+  /** As it was typed, and as it will be shown. */
+  label: string
+  /** Case-folded label. Unique: starring the same meal twice pins it once. */
+  key: string
+  items: MealItem[]
+  createdAt: IsoDateTime
+}
+
+/**
  * Meal photo bytes, kept apart from the entry.
  *
  * A meal row is read on every dashboard paint; its photo is read when the user
@@ -349,7 +367,8 @@ export interface ExportBundle {
   zeroCookItems: ZeroCookItem[]
   photos?: Array<Omit<ProgressPhoto, 'bytes'> & { dataUrl: string }>
   meals?: MealEntry[]
+  favorites?: FavoriteMeal[]
 }
 
 /** Bumped whenever the shape above changes. Guards Dexie and import. */
-export const SCHEMA_VERSION = 3
+export const SCHEMA_VERSION = 4

@@ -59,6 +59,7 @@ une décision d'implémentation.
 | 25 | Cibles dérivées | **Cible kcal par repas en 25 / 40 / 30 / 5 %, figée ; glucides et lipides = le reste des calories après protéines, réparti 55/45** | Aucun réglage de plus à tenir à jour. Les protéines restent la seule cible que l'app calcule vraiment ; les deux autres sont ce qu'il reste du budget, et le disent. Une cible protéines qui mange tout le budget rend zéro, jamais un gramme négatif — et un dénominateur nul disparaît de l'écran au lieu d'inventer une cible |
 | 26 | IMC | **Affiché dans la section Poids de Progression, calculé sur le poids lissé, et jamais sans la taille** | L'IMC est une lecture du poids, pas une mesure de plus : pas de section à lui. Sans `heightCm`, aucun chiffre — la carte se réduit au lien qui répare. Le graphique gagne une seconde graduation, pas une seconde courbe : à taille constante les deux tracés seraient superposés. Voir §6.5 |
 | 27 | Recherche d'aliment | **Deux tables derrière un seul champ : CIQUAL en local, OpenFoodFacts en réseau.** Décidée le 29/08/2026 | Le code-barres suppose l'emballage en main ; la moitié de ce qui se mange n'en a pas. CIQUAL connaît les aliments nus — « riz blanc, cuit » — et répond hors ligne ; OFF connaît les produits de marque. Les deux rendent une table pour 100 g, donc une seule forme interne et une seule question restante : la portion. La table CIQUAL n'est pas encore au dépôt, et son absence est un cas prévu, pas une panne. Voir §6.10 |
+| 28 | Favoris | **Un onglet « Favoris » dans la feuille d'ajout, alimenté par une étoile sur chaque ligne, et une table Dexie à lui.** Décidée le 29/08/2026 | « Vos habitudes » est dérivé des trente derniers jours : c'est un constat, pas un choix, et une semaine d'absence le vide. Un favori est l'inverse — il tient jusqu'à ce que l'étoile soit retouchée. La feuille s'ouvre dessus dès qu'il y en a un, ce qui met le café du matin à un geste du `+`. Voir §6.11 |
 ---
 
 ## 3. Principes produit
@@ -740,6 +741,49 @@ décimale, et lit « < 0,5 » comme 0,5, majorant une trace plutôt que de la pe
 le journal ne doit pas dire le contraire. La table qui a répondu est gardée dans `analysedBy`, si
 bien que la ligne affiche « Riz blanc, cuit · Ciqual » — de quoi savoir où aller contredire le chiffre.
 
+
+### 6.11 Les favoris (décision n°28)
+
+**Ce que la liste des habitudes ne pouvait pas faire**
+
+« Vos habitudes » se calcule à la lecture : les repas des trente derniers jours, dédoublonnés sur leur
+libellé, les plus récents devant. C'est le bon comportement pour la question qu'elle pose — qu'est-ce
+que tu manges en ce moment — mais c'est un constat, pas une déclaration. Le café au lait pris tous
+les matins y figure tant qu'il est pris, et disparaît après une semaine de vacances, au moment précis
+où il faudrait le retrouver le plus vite. Rien dans une liste dérivée ne permet de dire « celui-là,
+garde-le ».
+
+**Une table, pas un tri**
+
+Un favori est donc une ligne à lui dans Dexie (`favorites`, version 3 du schéma), avec le libellé et
+la copie de ses items. Copie et non renvoi vers le repas d'origine : corriger le repas de mardi ne
+doit pas réécrire en douce ce que le favori ajoutera jeudi. Les totaux, eux, ne sont pas stockés — ils
+se recalculent depuis les items, parce que deux chiffres qui peuvent diverger sont un de trop.
+
+L'identité d'un favori est son libellé replié en minuscules, et cette clé est **unique en base**. Ce
+n'est pas une précaution d'affichage : c'est ce qui fait de deux étoiles touchées coup sur coup un
+seul favori, et le décide dans la base plutôt que dans l'écran qui a envoyé la seconde.
+
+**L'étoile est là où sont déjà les repas**
+
+Elle vit sur la rangée, dans « Favoris » comme dans « Vos habitudes », qui partagent le même
+composant : ce sont les mêmes objets vus deux fois. Toute la gauche de la rangée — y compris le `+` —
+enregistre le repas ; l'étoile, au bord, est le seul endroit où un doigt fait autre chose. Elle est
+pleine plutôt que colorée, l'accent restant à l'action principale.
+
+**La feuille s'ouvre sur les favoris**
+
+Dès qu'il y en a un, `+` ouvre sur cet onglet ; sinon sur « Recherche », comme avant. La décision est
+prise à l'ouverture et pas retenue ensuite : épingler quelque chose pendant que la feuille est
+ouverte ne doit pas déplacer le panneau sous le doigt qui vient de le toucher.
+
+**Ils partent dans la sauvegarde**
+
+Contrairement aux photos de repas, rien dans le fichier ne permettrait de les reconstruire : un favori
+est une décision, pas la trace d'un événement. Ils sont donc exportés, et réimportés en écartant les
+doublons de clé — l'index unique ferait échouer l'import entier, et perdre toutes les autres tables
+pour deux favoris jumeaux serait un mauvais marché.
+
 ---
 
 ## 7. Architecture applicative
@@ -759,7 +803,7 @@ src/
 │   ├── workouts/               # module 2
 │   ├── trends/                 # module 4
 │   ├── meals/                  # module 5 — capture, correction, feuille d'ajout à onglets
-│   │   └── add/                # les cinq routes d'ajout, sous un seul point d'entrée
+│   │   └── add/                # les six routes d'ajout, sous un seul point d'entrée
 │   └── vision/                 # réglages de service et de clé
 ├── db/
 │   ├── dexie.ts                # déclaration de la base et des migrations
@@ -967,12 +1011,17 @@ export interface ExportBundle {
   takeoutOptions: TakeoutOption[];
   zeroCookItems: ZeroCookItem[];
   photos?: Array<Omit<ProgressPhoto, 'bytes'> & { dataUrl: string }>;
+  meals?: MealEntry[];
+  favorites?: FavoriteMeal[];              // une décision, que rien d'autre ne reconstruit
 }
 ```
 
 **Migrations** : `schemaVersion` est incrémenté à chaque changement de forme. La v2 déplace la cible de
 protéines d'un nombre brut vers un calcul, et convertit l'ancien plancher « 1 shaker » en portion
-réelle ; une valeur saisie en v1 survit comme override manuel, parce que c'était une décision humaine. Dexie porte les migrations
+réelle ; une valeur saisie en v1 survit comme override manuel, parce que c'était une décision humaine.
+La v4 ajoute les favoris. Ce passage a révélé un défaut de la migration : ne trouvant plus le nombre
+brut de v1, elle rebasculait en `auto` une cible que l'utilisateur avait fixée à la main — un mode
+choisi par une version postérieure est désormais conservé tel quel. Dexie porte les migrations
 de base ; l'import refuse un bundle de version supérieure à celle du code et migre celles inférieures.
 
 ---
