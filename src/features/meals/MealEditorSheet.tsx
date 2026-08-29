@@ -11,6 +11,7 @@ import { MealPhoto } from '@/features/meals/MealPhoto'
 import { PortionSheet } from '@/features/meals/PortionSheet'
 import { useFavorites } from '@/features/meals/useFavorites'
 import { useFoodPick } from '@/features/meals/useFoodPick'
+import { useUiStore } from '@/stores/uiStore'
 import { rescale, type Macros, type Portion } from '@/lib/portion'
 import { totalsFromItems } from '@/lib/vision/schema'
 import { t } from '@/i18n/fr'
@@ -80,6 +81,7 @@ export function MealEditorSheet({
   const [items, setItems] = useState<MealItem[]>([])
   const barcode = useFoodPick()
   const favorites = useFavorites()
+  const showToast = useUiStore((state) => state.showToast)
   const [searchOpen, setSearchOpen] = useState(false)
   const [favoritesOpen, setFavoritesOpen] = useState(false)
   const [hint, setHint] = useState('')
@@ -123,6 +125,21 @@ export function MealEditorSheet({
     const scaled = rescale(portion, quantity)
     basis.current = { index, portion, applied: scaled ?? macrosOf(item) }
     patch(index, scaled ? { quantity, ...scaled } : { quantity })
+  }
+
+  /**
+   * Pins one line of the breakdown, or unpins it.
+   *
+   * A favourite holds a name and the lines under it, so a single food is one
+   * with a single line — the same table, the same list, no second notion of
+   * « favourite ». Its quantity travels with it: a Senseo pod is always the
+   * same pod, and a line that needed a different amount is one field away, with
+   * the macros following it.
+   */
+  const pinItem = (item: MealItem) => {
+    void favorites
+      .toggle(item.name, [item])
+      .then((pinned) => showToast(pinned ? t.favorites.added : t.favorites.removed))
   }
 
   const totals = totalsFromItems(items.filter((item) => item.name.trim()))
@@ -205,6 +222,28 @@ export function MealEditorSheet({
                 />
                 <button
                   type="button"
+                  disabled={!item.name.trim()}
+                  aria-pressed={favorites.isFavorite(item.name)}
+                  aria-label={
+                    favorites.isFavorite(item.name)
+                      ? t.favorites.remove(item.name)
+                      : t.favorites.add(item.name || String(index + 1))
+                  }
+                  onClick={() => pinItem(item)}
+                  className="flex h-touch w-touch shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"
+                >
+                  <Star
+                    size={16}
+                    aria-hidden
+                    className={
+                      favorites.isFavorite(item.name)
+                        ? 'fill-foreground text-foreground'
+                        : undefined
+                    }
+                  />
+                </button>
+                <button
+                  type="button"
                   aria-label={t.meals.removeItem(item.name || String(index + 1))}
                   onClick={() => removeItem(index)}
                   className="flex h-touch w-touch shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -257,14 +296,15 @@ export function MealEditorSheet({
 
         {/* The three buttons under it all fill a line from somewhere, ordered
             from the most personal source to the most general. A favourite is
-            already yours, so it leads — and it is absent until there is one,
-            rather than opening on an empty list. */}
-        {favorites.list.length > 0 ? (
-          <Button variant="secondary" block onClick={() => setFavoritesOpen(true)}>
-            <Star size={16} aria-hidden />
-            {t.favorites.fromEditor}
-          </Button>
-        ) : null}
+            already yours, so it leads.
+
+            Shown even with nothing pinned: hiding it until the first favourite
+            existed made the whole feature invisible to anyone who had not
+            already found the star. The empty sheet says where the star is. */}
+        <Button variant="secondary" block onClick={() => setFavoritesOpen(true)}>
+          <Star size={16} aria-hidden />
+          {t.favorites.fromEditor}
+        </Button>
 
         {/* Named before scanned: most of what goes wrong in a breakdown is a
             loose ingredient — 30 g de crème fraîche — that never had a box. */}

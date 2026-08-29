@@ -390,7 +390,9 @@ export const fr = {
      * empties it. A favourite is a claim about what you eat, not a record of
      * what you ate, and it stays until the star is tapped again.
      */
-    empty: 'Aucun favori. Touche l’étoile à côté d’un aliment pour l’épingler ici.',
+    empty: 'Aucun favori. Touche l’étoile à côté d’un repas ou d’un aliment pour l’épingler ici.',
+    /** Said inside a meal, where the star sits on each line of the breakdown. */
+    emptyFromEditor: 'Aucun favori. Touche l’étoile à côté d’une ligne pour l’épingler.',
     add: (label: string) => `Mettre ${label} en favori`,
     remove: (label: string) => `Retirer ${label} des favoris`,
     added: 'Ajouté aux favoris',
