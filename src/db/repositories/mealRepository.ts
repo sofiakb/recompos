@@ -190,6 +190,34 @@ export async function applyAnalysis(
     updatedAt: nowIso(),
   }
   await database.meals.put(patched)
+
+  /*
+   * A reading joins the meal already in its slot, exactly like a food or a
+   * favourite does. It could not be joined any earlier: this row *is* the
+   * analysis in flight, and until it lands there is nothing to append. So the
+   * fold happens here, once, for both routes that go through a model — the
+   * photo and the description — rather than at each call site.
+   *
+   * The temporary row then goes, and its photo with it. The figures it produced
+   * stay in the meal; the picture was the means, and the app already treats
+   * pictures as the disposable half (retention deletes them, the numbers
+   * remain). Carrying it onto the host would also promise « corriger
+   * l'estimation » on a meal built from several readings, where re-running one
+   * of them would replace the lines that came from the others.
+   */
+  const host = await slotHost(patched.date, patched.slot, database, patched.id)
+  if (host) {
+    const merged = [...host.items, ...analysis.items]
+    const joined = await editMeal(
+      host.id,
+      { label: labelFrom(merged), items: merged },
+      targetGrams,
+      database,
+    )
+    await removeMeal(patched.id, targetGrams, database)
+    return joined
+  }
+
   return syncProteinLog(patched, targetGrams, database)
 }
 
@@ -294,9 +322,12 @@ async function slotHost(
   date: IsoDate,
   slot: MealSlot,
   database: RecompDb,
+  exceptId?: string,
 ): Promise<MealEntry | undefined> {
   const rows = await mealsForDate(date, database)
-  return rows.filter((meal) => meal.slot === slot && meal.status === 'done').at(-1)
+  return rows
+    .filter((meal) => meal.slot === slot && meal.status === 'done' && meal.id !== exceptId)
+    .at(-1)
 }
 
 /** A meal's name, rebuilt from what is in it. */

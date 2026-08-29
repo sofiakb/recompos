@@ -668,12 +668,23 @@ meilleure façon de ne pas gronder est de ne rien dire.
 Le `+` d'un repas rejoint le repas déjà là plutôt que d'en ouvrir un second en dessous : l'écran
 montre une section par repas avec son propre total, donc deux entrées sous « Petit-déj » se lisaient
 comme deux repas là où une personne en avait mangé un. Le nom se reconstruit depuis les lignes
-réunies — « Café au lait dosette (Senseo), Madeleines » — quitte à réécrire un nom saisi à la main,
-qui reste modifiable dans le détail.
+réunies — « Café au lait dosette (Senseo), Madeleines ».
 
-Deux repas ne sont jamais joints : celui qui est encore en analyse, et celui qui a échoué et sera
-relancé. `applyAnalysis` remplace `items` en entier quand elle aboutit, si bien qu'une ligne ajoutée
-entre-temps disparaîtrait sans laisser de trace. L'ajout part alors à part, comme avant.
+**Les six routes, pas seulement quatre.** La règle vaut pour tout ce qui entre dans un créneau, y
+compris ce qui passe par un modèle. Une photo et une description ne peuvent pas rejoindre le repas au
+moment où on les envoie — la ligne *est* l'analyse en vol, et il n'y a encore rien à ajouter. La
+fusion a donc lieu à l'atterrissage, dans `applyAnalysis`, une fois pour les deux routes : les
+aliments lus rejoignent le repas du créneau et la ligne temporaire s'en va.
+
+Sa photo s'en va avec elle. Les chiffres qu'elle a produits restent dans le repas ; l'image était le
+moyen, et l'app traite déjà les images comme la moitié jetable (la rétention les efface, les nombres
+demeurent). La reporter sur le repas d'accueil promettrait en plus « corriger l'estimation » sur un
+repas fait de plusieurs lectures, où relancer l'une remplacerait les lignes venues des autres.
+
+Un repas encore en analyse ou en échec n'est jamais rejoint : `applyAnalysis` remplace `items` en
+entier quand elle aboutit, si bien qu'une ligne ajoutée entre-temps disparaîtrait sans laisser de
+trace. Une analyse ratée garde donc sa ligne, relançable ; elle rejoint le repas le jour où elle
+aboutit.
 
 La fusion passe par `editMeal` plutôt que d'écrire elle-même : les totaux se recalculent depuis les
 lignes, le `ProteinLog` unique reste en phase, et une lecture du modèle qu'un humain complète devient
@@ -857,10 +868,10 @@ deux chemins d'ajout convergent donc sur le même composant, jamais sur un formu
 Le repas ouvert est lu **en direct**, pas photographié à l'ouverture : une ligne corrigée, un aliment
 ajouté par la feuille d'ajout, et le total bouge derrière sans qu'il faille refermer.
 
-Ce qui disparaît : le champ du libellé et le sélecteur de créneau. Le libellé est déjà recomposé
-depuis les lignes quand elles changent (décision voisine du §6.9), et déplacer un repas d'un créneau
-à l'autre entrerait en collision avec la règle « un créneau, un repas ». Si le besoin revient, il
-passera par « Corriger l'estimation », pas par un champ posé au milieu d'une lecture.
+Ce qui disparaît : le champ du libellé et le sélecteur de créneau. Le libellé est recomposé depuis
+les lignes quand elles changent (§6.9), et déplacer un repas d'un créneau à l'autre entrerait en
+collision avec la règle « un créneau, un repas ». Si le besoin revient, il passera par « Corriger
+l'estimation », pas par un champ posé au milieu d'une lecture.
 
 **Une ligne s'ouvre sur sa quantité**
 
