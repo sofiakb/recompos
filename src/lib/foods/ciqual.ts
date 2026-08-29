@@ -15,7 +15,14 @@ import { normalise, type Food } from '@/lib/foods/food'
 /** Drop the table here — nothing else needs to change. */
 const TABLE_PATH = '/src/data/ciqual.json'
 
-const tables = import.meta.glob('/src/data/ciqual.json', { import: 'default' })
+/**
+ * Typed with `undefined` in the value: the glob is empty until the file exists,
+ * so reading a key that is not there is the normal case, not an impossibility.
+ */
+const tables: Record<string, (() => Promise<unknown>) | undefined> = import.meta.glob(
+  '/src/data/ciqual.json',
+  { import: 'default' },
+)
 
 /**
  * CIQUAL column names, in the spellings the public exports use.
@@ -121,7 +128,7 @@ function haystackOf(food: Food): string {
 
 /** True once the table is in the build — the UI says so rather than staying mute. */
 export function hasCiqualTable(): boolean {
-  return tables[TABLE_PATH] !== undefined
+  return Object.hasOwn(tables, TABLE_PATH)
 }
 
 /** Only for tests: forgets the parsed table so the next call re-reads it. */
@@ -158,10 +165,10 @@ export function rankCiqual(foods: Food[], query: string, limit = 8): Food[] {
     const value = score(haystackOf(food), needles)
     if (value >= 0) scored.push({ food, score: value })
   }
-  return scored
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((entry) => entry.food)
+  // Sorted on its own line: chaining reads as though it returned a new array,
+  // and it does not.
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, limit).map((entry) => entry.food)
 }
 
 export async function searchCiqual(query: string, limit = 8): Promise<Food[]> {

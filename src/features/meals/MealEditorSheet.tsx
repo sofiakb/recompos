@@ -108,6 +108,8 @@ export function MealEditorSheet({
     setItems(next)
   }
 
+  const removeItem = (index: number) => reshape((current) => current.filter((_, i) => i !== index))
+
   const changeQuantity = (index: number, quantity: string) => {
     const item = items[index]
     if (!item) return
@@ -202,7 +204,7 @@ export function MealEditorSheet({
                 <button
                   type="button"
                   aria-label={t.meals.removeItem(item.name || String(index + 1))}
-                  onClick={() => reshape((current) => current.filter((_, i) => i !== index))}
+                  onClick={() => removeItem(index)}
                   className="flex h-touch w-touch shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Trash2 size={16} aria-hidden />
