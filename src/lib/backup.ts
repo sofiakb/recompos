@@ -13,6 +13,7 @@ import {
   SCHEMA_VERSION,
   type AppSettings,
   type ExportBundle,
+  type FavoriteMeal,
   type FloorHabitDefinition,
   type ProgressPhoto,
 } from '@/types/models'
@@ -78,6 +79,7 @@ export async function buildExport(
     zeroCookItems,
     photoRows,
     meals,
+    favorites,
   ] = await Promise.all([
     database.habitCompletions.toArray(),
     database.dailyLogs.toArray(),
@@ -89,6 +91,7 @@ export async function buildExport(
     database.zeroCookItems.toArray(),
     database.photos.toArray(),
     database.meals.toArray(),
+    database.favorites.toArray(),
   ])
 
   const photos: SerializedPhoto[] = photoRows.map(({ bytes, ...rest }) => ({
@@ -115,6 +118,9 @@ export async function buildExport(
     // retention setting already deletes, and inlining a month of plates would
     // dwarf everything else in the file. The numbers travel; the plates do not.
     ...(meals.length > 0 ? { meals } : {}),
+    // Nothing else in the file can reconstruct these: a favourite is a decision,
+    // not a record of something that happened, so losing it loses the decision.
+    ...(favorites.length > 0 ? { favorites } : {}),
     ...(inlinePhotos && photos.length > 0 ? { photos } : {}),
   }
 
@@ -184,6 +190,8 @@ export function validateBundle(raw: unknown): ValidationResult {
       zeroCookItems: candidate.zeroCookItems ?? [],
       // Absent from any bundle written before the meal module existed.
       meals: candidate.meals ?? [],
+      // Likewise for anything written before favourites existed.
+      favorites: candidate.favorites ?? [],
     },
   }
 }
@@ -205,6 +213,7 @@ export interface ImportSummary {
   measurements: number
   photos: number
   meals: number
+  favorites: number
 }
 
 /**
@@ -236,6 +245,7 @@ export async function applyImport(
     database.zeroCookItems,
     database.meals,
     database.mealPhotos,
+    database.favorites,
   ]
 
   await database.transaction('rw', tables, async () => {
@@ -253,6 +263,7 @@ export async function applyImport(
       // The photos of the meals being replaced would otherwise outlive the rows
       // that pointed at them, and nothing would ever collect them.
       database.mealPhotos.clear(),
+      database.favorites.clear(),
     ])
     await Promise.all([
       database.habitCompletions.bulkAdd(bundle.completions),
@@ -266,6 +277,7 @@ export async function applyImport(
       database.zeroCookItems.bulkAdd(bundle.zeroCookItems),
       // A restored meal has no photo to point at any more.
       database.meals.bulkAdd((bundle.meals ?? []).map(({ photoId: _gone, ...meal }) => meal)),
+      database.favorites.bulkAdd(favoritesOf(bundle)),
     ])
   })
 
@@ -278,7 +290,24 @@ export async function applyImport(
     measurements: bundle.measurements.length,
     photos: photos.length,
     meals: bundle.meals?.length ?? 0,
+    favorites: favoritesOf(bundle).length,
   }
+}
+
+/**
+ * The favourites of a bundle, re-keyed on the way in.
+ *
+ * `key` is a unique index, so a bundle carrying two rows that fold to the same
+ * label would fail the whole import — and an import failing wholesale over two
+ * near-duplicate favourites would be a poor trade. The later one is dropped.
+ */
+function favoritesOf(bundle: ExportBundle): FavoriteMeal[] {
+  const seen = new Set<string>()
+  return (bundle.favorites ?? []).filter((favorite) => {
+    if (seen.has(favorite.key)) return false
+    seen.add(favorite.key)
+    return true
+  })
 }
 
 /** A photo-only companion file, when one was produced. */

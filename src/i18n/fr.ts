@@ -96,6 +96,7 @@ export const fr = {
     },
     kcalValue: (kcal: number) => `${formatCount(kcal)} kcal`,
     addTitle: (slot: string) => `Ajouter · ${slot}`,
+    tabFavorites: 'Favoris',
     tabSearch: 'Recherche',
     tabQuick: 'Ajout rapide',
     tabPhoto: 'Photo',
@@ -381,6 +382,21 @@ export const fr = {
     addSet: '+1 série',
     logWeight: 'Enregistrer une pesée',
   },
+  favorites: {
+    /**
+     * The list that outlives the habits list.
+     *
+     * « Vos habitudes » is derived from thirty days of meals, so a week away
+     * empties it. A favourite is a claim about what you eat, not a record of
+     * what you ate, and it stays until the star is tapped again.
+     */
+    empty: 'Aucun favori. Touche l’étoile à côté d’un aliment pour l’épingler ici.',
+    add: (label: string) => `Mettre ${label} en favori`,
+    remove: (label: string) => `Retirer ${label} des favoris`,
+    added: 'Ajouté aux favoris',
+    removed: 'Retiré des favoris',
+  },
+
   foods: {
     title: 'Aliments',
     searchTitle: 'Chercher un aliment',

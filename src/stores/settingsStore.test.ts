@@ -72,6 +72,24 @@ describe('migrateSettings v1 → v2', () => {
     expect(settings.manualProteinTargetGrams).toBeUndefined()
   })
 
+  it('keeps a manual mode a later version already recorded', () => {
+    // The flat number is long gone by v3, so « no number » must not be read as
+    // « never chose » — that would unpick a hand-set target on every bump.
+    const later = {
+      settings: {
+        ...V1_STATE.settings,
+        schemaVersion: SCHEMA_VERSION - 1,
+        proteinTargetGrams: undefined,
+        proteinTargetMode: 'manual' as const,
+        manualProteinTargetGrams: 150,
+      },
+      habits: V1_STATE.habits,
+    }
+    const { settings } = migrateSettings(later, SCHEMA_VERSION - 1)
+    expect(settings.proteinTargetMode).toBe('manual')
+    expect(settings.manualProteinTargetGrams).toBe(150)
+  })
+
   it('is a no-op on state already at the current version', () => {
     const current = {
       settings: { ...V1_STATE.settings, schemaVersion: SCHEMA_VERSION, proteinTargetMode: 'auto' },

@@ -1,6 +1,7 @@
-import { Plus, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { FoodResults } from '@/features/meals/FoodResults'
+import { MealPickList } from '@/features/meals/add/MealPickList'
 import { useFoodSearch } from '@/features/meals/useFoodSearch'
 import { t } from '@/i18n/fr'
 import type { Food } from '@/lib/foods/food'
@@ -13,6 +14,8 @@ interface SearchPanelProps {
   onPick: (meal: RecentMeal) => void
   /** A food from CIQUAL or OpenFoodFacts, still owing a portion. */
   onPickFood: (food: Food) => void
+  isFavorite: (label: string) => boolean
+  onToggleFavorite: (meal: RecentMeal) => void
 }
 
 function emptyMessage(hasAny: boolean): string {
@@ -33,6 +36,8 @@ export function SearchPanel({
   recent,
   onPick,
   onPickFood,
+  isFavorite,
+  onToggleFavorite,
 }: Readonly<SearchPanelProps>) {
   const search = useFoodSearch(query)
   const needle = query.trim().toLocaleLowerCase('fr')
@@ -65,31 +70,12 @@ export function SearchPanel({
         {shown.length === 0 ? (
           <p className="py-2 text-sm text-muted-foreground">{emptyMessage(recent.length > 0)}</p>
         ) : (
-          <ul className="flex flex-col">
-            {shown.map((meal) => (
-              <li key={meal.label}>
-                <button
-                  type="button"
-                  aria-label={t.nutrition.addAgain(meal.label)}
-                  onClick={() => onPick(meal)}
-                  className="flex min-h-[56px] w-full items-center gap-3 border-b border-border py-2 text-left transition-colors hover:bg-accent"
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-medium">{meal.label}</span>
-                    <span className="tnum block truncate text-[13px] text-muted-foreground">
-                      {t.nutrition.habitLine(meal.kcal, meal.proteinG)}
-                    </span>
-                  </span>
-                  <span
-                    aria-hidden
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted"
-                  >
-                    <Plus size={16} />
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <MealPickList
+            meals={shown}
+            isFavorite={isFavorite}
+            onPick={onPick}
+            onToggleFavorite={onToggleFavorite}
+          />
         )}
       </section>
 

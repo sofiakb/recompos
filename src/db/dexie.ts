@@ -11,6 +11,7 @@ import type {
   DailyLog,
   Exercise,
   ExerciseSet,
+  FavoriteMeal,
   HabitCompletion,
   MealEntry,
   MealPhoto,
@@ -35,6 +36,7 @@ export class RecompDb extends Dexie {
   zeroCookItems!: Table<ZeroCookItem, string>
   meals!: Table<MealEntry, string>
   mealPhotos!: Table<MealPhoto, string>
+  favorites!: Table<FavoriteMeal, string>
 
   constructor(name = 'recompos') {
     super(name)
@@ -58,6 +60,14 @@ export class RecompDb extends Dexie {
       // every launch and on every return of the network.
       meals: 'id, date, status, timestamp',
       mealPhotos: 'id, mealId, date',
+    })
+    // Favourites arrive in version 3, again as a delta: nothing above changes,
+    // so an install that already holds a year of meals keeps every one of them.
+    this.version(3).stores({
+      // `key` is unique rather than merely indexed: starring the same meal
+      // twice is the same favourite, and the database is where that is settled
+      // — not in whichever screen happened to send the second star.
+      favorites: 'id, &key, createdAt',
     })
   }
 }
