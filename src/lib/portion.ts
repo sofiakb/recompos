@@ -64,3 +64,42 @@ export function rescale(basis: Portion, quantity: string): Macros | null {
     fatG: Math.round(basis.fatG * ratio),
   }
 }
+
+/** Grams and millilitres move by tens; anything counted moves by halves. */
+const MEASURED: ReadonlySet<string> = new Set(['g', 'gr', 'gramme', 'ml', 'cl'])
+
+function stepOf(quantity: string): number {
+  return MEASURED.has(unitOf(quantity)) ? 10 : 0.5
+}
+
+/** « 1,5 » rather than « 1.5 » — the field is read in French. */
+function frenchNumber(value: number): string {
+  return String(Math.round(value * 10) / 10).replace('.', ',')
+}
+
+/**
+ * One press of `−` or `+`, written back into the quantity as it was phrased.
+ *
+ * The rest of the string is left alone: « 1 cuisse (~150 g) » becomes « 2 cuisse
+ * (~150 g) », not a rewritten sentence. The number is the only thing the button
+ * claims to know about.
+ */
+export function stepQuantity(quantity: string, direction: 1 | -1): string {
+  const amount = amountOf(quantity)
+  if (amount === null) return quantity
+  const step = stepOf(quantity)
+  const next = Math.max(0, Math.round((amount + direction * step) * 10) / 10)
+  return quantity.replace(NUMBER, frenchNumber(next))
+}
+
+/**
+ * The handful of amounts worth one tap, or none at all.
+ *
+ * Only for what is weighed or poured: « 2 cuisses » would need a plural this
+ * module has no business inventing, and a stepper already covers it.
+ */
+export function quantityChips(quantity: string): string[] {
+  const unit = unitOf(quantity)
+  if (!MEASURED.has(unit)) return []
+  return [50, 100, 150, 200].map((amount) => `${amount} ${unit}`)
+}

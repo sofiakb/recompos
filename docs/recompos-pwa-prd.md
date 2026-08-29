@@ -60,6 +60,7 @@ une décision d'implémentation.
 | 26 | IMC | **Affiché dans la section Poids de Progression, calculé sur le poids lissé, et jamais sans la taille** | L'IMC est une lecture du poids, pas une mesure de plus : pas de section à lui. Sans `heightCm`, aucun chiffre — la carte se réduit au lien qui répare. Le graphique gagne une seconde graduation, pas une seconde courbe : à taille constante les deux tracés seraient superposés. Voir §6.5 |
 | 27 | Recherche d'aliment | **Deux tables derrière un seul champ : CIQUAL en local, OpenFoodFacts en réseau.** Décidée le 29/08/2026 | Le code-barres suppose l'emballage en main ; la moitié de ce qui se mange n'en a pas. CIQUAL connaît les aliments nus — « riz blanc, cuit » — et répond hors ligne ; OFF connaît les produits de marque. Les deux rendent une table pour 100 g, donc une seule forme interne et une seule question restante : la portion. La table CIQUAL n'est pas encore au dépôt, et son absence est un cas prévu, pas une panne. Voir §6.10 |
 | 28 | Favoris | **Une seule liste : un aliment épinglé est un favori à une ligne, un repas épinglé en a plusieurs. Étoile sur la ligne dans le détail d'un repas, et sur la rangée dans « Vos habitudes ».** Décidée le 29/08/2026 | « Vos habitudes » est dérivé des trente derniers jours : c'est un constat, pas un choix, et une semaine d'absence le vide. Un favori est l'inverse — il tient jusqu'à ce que l'étoile soit retouchée. La feuille s'ouvre dessus dès qu'il y en a un, ce qui met le café du matin à un geste du `+`. Voir §6.11 |
+| 29 | Détail d'un repas | **Le repas se lit, il ne s'édite plus. Une ligne s'ouvre sur sa quantité ; l'ajout repasse par la feuille d'ajout du journal.** Décidée le 29/08/2026 sur le handoff « Détail d'un repas (lecture) » | Quatre aliments faisaient seize champs, et l'éditeur portait trois boutons d'ajout qui doublaient la feuille du `+`. La seule correction que quelqu'un fait deux fois est « c'était 200 g, pas 300 » : elle devient un pas de dix, sur une ligne ouverte. La saisie des quatre macros reste, repliée. Voir §6.12 |
 ---
 
 ## 3. Principes produit
@@ -382,7 +383,7 @@ dépend.
 3. Analyse par le premier service configuré qui répond. Les octets partent en base64 dans le corps de
    la requête — la photo n'est hébergée nulle part.
 4. Résultat validé, ligne par ligne, puis écrit sur le repas.
-5. Correction humaine à un tap, ligne par ligne.
+5. Correction humaine à un tap, ligne par ligne (§6.12).
 
 **Corriger l'identification, pas seulement les chiffres**
 
@@ -391,8 +392,10 @@ couscous lu comme du riz au lait, un verre de lben lu comme un « dessert aux fr
 Dans le second cas, corriger ligne par ligne revient à ressaisir le repas à la main, ce que la feature
 existe précisément pour éviter.
 
-Le détail d'un repas porte donc un champ **« Ce n'est pas ça ? »** : une phrase — « couscous, bœuf,
-lben, carottes » — relance l'analyse **sur la même photo**. La précision fait autorité sur *ce que
+Le repas ouvert porte donc **« Corriger l'estimation »**, qui mène à sa propre feuille : une phrase —
+« couscous, bœuf, lben, carottes » — relance l'analyse **sur la même photo**. C'est le seul endroit où
+la photo est montrée, parce que c'est le seul où la regarder sert : on y écrit ce que le modèle n'y a
+pas vu. La précision fait autorité sur *ce que
 sont* les aliments, jamais sur *combien* : la personne était à table, le modèle non ; mais les
 portions se relisent sur la photo et ne sont pas reconduites de la lecture qu'on vient de remplacer.
 
@@ -798,8 +801,8 @@ Cappuccino Dolce Gusto et le petit-déjeuner entier cohabitent, et c'est l'endro
 qui décide de ce qu'ils deviennent — des lignes ajoutées au détail d'un repas, ou un repas à part
 entière depuis le `+`.
 
-L'étoile est donc sur la ligne, à côté de la corbeille, dans le détail d'un repas. Elle épingle le
-nom, la quantité et les quatre macros. La quantité voyage avec : une dosette est toujours la même
+L'étoile est donc sur la ligne — dans la feuille qui s'ouvre quand on la touche (§6.12), à côté de
+son nom. Elle épingle le nom, la quantité et les quatre macros. La quantité voyage avec : une dosette est toujours la même
 dosette, et une reprise qui demandait autre chose est à un champ de là, les macros suivant la
 correction toutes seules (§6.10, décision n°26 bis — le recalcul de portion). Une ligne encore sans
 nom n'a rien par quoi être retrouvée : son étoile est éteinte.
@@ -808,19 +811,13 @@ La clé étant le nom replié, épingler une ligne qui porte le nom d'un repas d
 favori — et le retire donc, ce que le message le dit. C'est le prix assumé d'une liste unique, et
 c'est aussi ce qui empêche deux entrées jumelles.
 
-**Reprendre un favori dans un repas ouvert**
+**Reprendre un favori**
 
-Le bouton « Depuis les favoris » précède « Chercher un aliment » et « Ajouter un produit » : les
-trois remplissent une ligne depuis une source, de la plus personnelle à la plus générale. Il est
-montré même quand rien n'est épinglé — le cacher jusqu'au premier favori rendait la fonction
-introuvable pour qui n'avait pas déjà trouvé l'étoile, ce qui est arrivé le jour de sa livraison. La
-feuille vide dit où est l'étoile, ce qu'un bouton absent ne pouvait pas faire.
-
-Aplatir un repas dans un autre perd son libellé ; quand il ne tient qu'une ligne, ce libellé est
-reporté dessus. La rangée avait promis « Café au lait dosette (Senseo) », et un détail qui répondrait
-« Calories seules » — le nom que la voie « calories seules » donne à son unique item — ne serait pas
-ce qui a été touché. Avec plusieurs lignes il n'y a rien sur quoi le reporter, et chacune se nomme
-déjà. Aucune étoile dans cette feuille : on y vient pour ajouter un favori, pas pour en retirer un.
+Un favori se reprend depuis l'onglet « Favoris » de la feuille d'ajout, et de nulle part ailleurs :
+le détail d'un repas n'a plus de bouton à lui (décision n°29). Aplatir un repas dans un autre perd
+son libellé ; quand il ne tient qu'une ligne, ce libellé est reporté dessus. La rangée avait promis
+« Café au lait dosette (Senseo) », et une ligne qui répondrait « Calories seules » — le nom que la
+voie « calories seules » donne à son unique item — ne serait pas ce qui a été touché.
 
 **La feuille s'ouvre sur les favoris**
 
@@ -834,6 +831,64 @@ Contrairement aux photos de repas, rien dans le fichier ne permettrait de les re
 est une décision, pas la trace d'un événement. Ils sont donc exportés, et réimportés en écartant les
 doublons de clé — l'index unique ferait échouer l'import entier, et perdre toutes les autres tables
 pour deux favoris jumeaux serait un mauvais marché.
+
+### 6.12 Le détail d'un repas se lit (décision n°29)
+
+**Ce qui n'allait pas**
+
+Le détail était un formulaire. Chaque aliment exposait cinq champs — nom, quantité, kcal, P, G, L —
+donc seize champs pour une assiette de quatre, à faire défiler pour trouver le seul chiffre à
+changer. Et il portait trois boutons d'ajout à lui (« Depuis les favoris », « Chercher un aliment »,
+« Ajouter un produit »), qui refaisaient en moins bien la feuille d'ajout que le `+` du journal ouvre
+déjà, avec ses six onglets.
+
+Aucun de ces champs ne répondait à la question qu'on se pose vraiment en rouvrant un repas. Cette
+question est **« combien y en avait-il ? »**, et elle porte sur une ligne à la fois.
+
+**Le repas, en lecture**
+
+Quatre aliments font quatre lignes de texte : le nom, la quantité sous lui, les calories à droite, un
+chevron. Au-dessus, le total du repas contre sa part de la journée — la même répartition par créneau
+que le journal (§6.9), pas une nouvelle cible à régler — avec une barre qui montre le dépassement
+plutôt que de l'écrire, et les macros sous elle. En bas, une seule action colorée : **« Ajouter un
+aliment »**, qui ferme la lecture et ouvre la feuille d'ajout du journal, déjà sur le bon créneau. Les
+deux chemins d'ajout convergent donc sur le même composant, jamais sur un formulaire.
+
+Le repas ouvert est lu **en direct**, pas photographié à l'ouverture : une ligne corrigée, un aliment
+ajouté par la feuille d'ajout, et le total bouge derrière sans qu'il faille refermer.
+
+Ce qui disparaît : le champ du libellé et le sélecteur de créneau. Le libellé est déjà recomposé
+depuis les lignes quand elles changent (décision voisine du §6.9), et déplacer un repas d'un créneau
+à l'autre entrerait en collision avec la règle « un créneau, un repas ». Si le besoin revient, il
+passera par « Corriger l'estimation », pas par un champ posé au milieu d'une lecture.
+
+**Une ligne s'ouvre sur sa quantité**
+
+La feuille de ligne se pose **par-dessus** la lecture, qui reste montée derrière — pas de démontage,
+pas de scroll perdu. Elle ne pose qu'une question : la quantité. Un pas de dix grammes de chaque côté
+(un demi pour ce qui se compte), quelques raccourcis pour ce qui se pèse, et le champ reste tapable
+au clavier. Les quatre macros se recalculent sous la valeur, **toujours depuis la portion d'origine**
+et jamais depuis le résultat précédent : cinq pressions pour aller de 150 g à 200 g arrondiraient
+sinon les protéines à chaque pas.
+
+La saisie à la main des quatre chiffres n'est pas supprimée, elle est **repliée** : elle reste la
+sortie de secours quand une table s'est trompée, et cesse d'être le mode par défaut. Corriger une
+macro à la main invalide la base de recalcul, comme avant.
+
+C'est la même feuille pour un aliment qu'on ajoute et pour une ligne qu'on ajuste : les deux sont une
+quantité avec des macros accrochées dessous. L'ancienne feuille de portion, qui ne demandait qu'un
+nombre de grammes, a été absorbée.
+
+Retirer la dernière ligne d'un repas supprime le repas : un repas vide n'est pas un repas, et c'est
+ainsi qu'on dit qu'il n'a pas eu lieu.
+
+**Une seule feuille répond à Échap**
+
+Deux feuilles empilées écoutaient toutes les deux la touche : corriger une portion puis annuler
+fermait aussi le repas derrière. Les feuilles s'empilent par ordre du DOM — pas de portail, un seul
+`z-index` —, donc c'est la dernière du document qui répond, celle qu'on regarde.
+
+---
 
 ---
 
