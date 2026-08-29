@@ -771,6 +771,22 @@ composant : ce sont les mêmes objets vus deux fois. Toute la gauche de la rang�
 enregistre le repas ; l'étoile, au bord, est le seul endroit où un doigt fait autre chose. Elle est
 pleine plutôt que colorée, l'accent restant à l'action principale.
 
+**Depuis un repas déjà ouvert**
+
+L'onglet « Favoris » consigne un repas entier, ce qui n'aide pas une fois le détail d'un repas ouvert
+et court d'une ligne : le café qui accompagne les madeleines de ce matin n'était atteignable qu'en
+refermant l'éditeur pour recommencer. Le bouton « Depuis les favoris » y répond — il précède
+« Chercher un aliment » et « Ajouter un produit », les trois remplissant une ligne depuis une source,
+de la plus personnelle à la plus générale, et il est absent tant qu'il n'y a rien à proposer.
+
+Là, un favori est une source de lignes plutôt qu'un repas : ses items sont ajoutés au détail, sans le
+remplacer. Aplatir un repas dans un autre perd son libellé ; quand il ne tient qu'une ligne, ce
+libellé est reporté dessus. La rangée avait promis « Café au lait dosette (Senseo) », et un détail
+qui répondrait « Calories seules » — le nom que la voie « calories seules » donne à son unique item —
+ne serait pas ce qui a été touché. Avec plusieurs lignes il n'y a rien sur quoi le reporter, et
+chacune se nomme déjà. Aucune étoile dans cette feuille : on y vient pour ajouter un favori, pas pour
+en retirer un.
+
 **La feuille s'ouvre sur les favoris**
 
 Dès qu'il y en a un, `+` ouvre sur cet onglet ; sinon sur « Recherche », comme avant. La décision est

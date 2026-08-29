@@ -72,9 +72,8 @@ export function SearchPanel({
         ) : (
           <MealPickList
             meals={shown}
-            isFavorite={isFavorite}
             onPick={onPick}
-            onToggleFavorite={onToggleFavorite}
+            star={{ isFavorite, onToggle: onToggleFavorite }}
           />
         )}
       </section>

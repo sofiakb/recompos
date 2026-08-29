@@ -5,9 +5,15 @@ import type { RecentMeal } from '@/features/meals/useRecentMeals'
 
 interface MealPickListProps {
   meals: RecentMeal[]
-  isFavorite: (label: string) => boolean
   onPick: (meal: RecentMeal) => void
-  onToggleFavorite: (meal: RecentMeal) => void
+  /**
+   * Omitted where the list only picks.
+   *
+   * The meal editor pulls a favourite into a line it is correcting; offering to
+   * unpin it there would put « retirer des favoris » under the thumb of someone
+   * who came to add one.
+   */
+  star?: { isFavorite: (label: string) => boolean; onToggle: (meal: RecentMeal) => void }
 }
 
 /**
@@ -22,16 +28,11 @@ interface MealPickListProps {
  * row logs the meal, including the `+`, and the star at the very edge is the
  * one place a tap does something else.
  */
-export function MealPickList({
-  meals,
-  isFavorite,
-  onPick,
-  onToggleFavorite,
-}: Readonly<MealPickListProps>) {
+export function MealPickList({ meals, onPick, star }: Readonly<MealPickListProps>) {
   return (
     <ul className="flex flex-col">
       {meals.map((meal) => {
-        const pinned = isFavorite(meal.label)
+        const pinned = star?.isFavorite(meal.label) ?? false
         return (
           <li key={meal.label} className="flex items-center border-b border-border">
             <button
@@ -53,22 +54,26 @@ export function MealPickList({
                 <Plus size={16} />
               </span>
             </button>
-            <button
-              type="button"
-              aria-pressed={pinned}
-              aria-label={pinned ? t.favorites.remove(meal.label) : t.favorites.add(meal.label)}
-              onClick={() => onToggleFavorite(meal)}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-accent"
-            >
-              <Star
-                size={18}
-                aria-hidden
-                // Filled rather than coloured: the accent belongs to the `+`,
-                // which is what the row is for. A star that shouted louder than
-                // the action would invert the two.
-                className={cn(pinned ? 'fill-foreground text-foreground' : 'text-muted-foreground')}
-              />
-            </button>
+            {star ? (
+              <button
+                type="button"
+                aria-pressed={pinned}
+                aria-label={pinned ? t.favorites.remove(meal.label) : t.favorites.add(meal.label)}
+                onClick={() => star.onToggle(meal)}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-accent"
+              >
+                <Star
+                  size={18}
+                  aria-hidden
+                  // Filled rather than coloured: the accent belongs to the `+`,
+                  // which is what the row is for. A star that shouted louder
+                  // than the action would invert the two.
+                  className={cn(
+                    pinned ? 'fill-foreground text-foreground' : 'text-muted-foreground',
+                  )}
+                />
+              </button>
+            ) : null}
           </li>
         )
       })}

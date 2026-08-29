@@ -26,11 +26,10 @@ export function FavoritesPanel({
   return (
     <MealPickList
       meals={favorites}
+      onPick={onPick}
       // Everything in this list is pinned by definition, so the star is always
       // filled here and always means « unpin ».
-      isFavorite={() => true}
-      onPick={onPick}
-      onToggleFavorite={onToggleFavorite}
+      star={{ isFavorite: () => true, onToggle: onToggleFavorite }}
     />
   )
 }
