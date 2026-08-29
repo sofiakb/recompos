@@ -5,8 +5,8 @@ import { Sheet } from '@/components/ui/sheet'
 import { useFloor } from '@/features/floor/useFloor'
 import { AddSheet } from '@/features/meals/add/AddSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
-import { MealEditorSheet } from '@/features/meals/MealEditorSheet'
-import { PortionSheet } from '@/features/meals/PortionSheet'
+import { MealSheet } from '@/features/meals/MealSheet'
+import { QuantitySheet } from '@/features/meals/QuantitySheet'
 import { useFavorites } from '@/features/meals/useFavorites'
 import { useFoodPick } from '@/features/meals/useFoodPick'
 import { useRecentMeals, type RecentMeal } from '@/features/meals/useRecentMeals'
@@ -21,9 +21,10 @@ import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget, type ProteinTargetState } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
+import { toMealItem } from '@/lib/foods/food'
 import { macroTargetsG, mealTargetKcal } from '@/lib/nutrition'
 import { t } from '@/i18n/fr'
-import type { MealEntry, MealSlot, ProteinLog, ProteinSource } from '@/types/models'
+import type { MealSlot, ProteinLog, ProteinSource } from '@/types/models'
 
 const SOURCES: ProteinSource[] = ['meal', 'zero_cook', 'takeout', 'shake']
 
@@ -69,8 +70,8 @@ export function NutritionScreen() {
     if (barcode.error) showToast(barcode.error)
   }, [barcode.error, showToast])
   const [describing, setDescribing] = useState(false)
-  const [editingMeal, setEditingMeal] = useState<MealEntry | null>(null)
-  const [mealSheetOpen, setMealSheetOpen] = useState(false)
+  /** Which meal is open. The entry itself is read live, so an edit shows at once. */
+  const [openMealId, setOpenMealId] = useState<string | null>(null)
   const [editingLog, setEditingLog] = useState<ProteinLog | null>(null)
   /** Which meal the add sheet is on; `null` closes it. */
   const [addingSlot, setAddingSlot] = useState<MealSlot | null>(null)
@@ -89,6 +90,33 @@ export function NutritionScreen() {
     () => buildSlotJournal(protein.logs, meals.meals),
     [protein.logs, meals.meals],
   )
+
+  /** Read from the live list rather than snapshotted: an edit shows in place. */
+  const openMealEntry = meals.meals.find((entry) => entry.id === openMealId) ?? null
+
+  /**
+   * The food waiting for a portion, as the line it is about to become.
+   *
+   * Built once per food rather than on every render: the quantity sheet opens on
+   * the item it is handed, and a new object each render would reset the field
+   * under the person typing in it.
+   */
+  const pendingFood = useMemo(() => {
+    const food = barcode.food
+    if (!food) return null
+    return {
+      item: toMealItem(food, food.servingGrams),
+      subtitle: food.brand,
+      note:
+        food.missingMacros.length > 0
+          ? t.foods.portion.missingMacros(
+              food.missingMacros.map(
+                (key) => t.foods.portion.macroName[key as 'proteinG' | 'carbsG' | 'fatG'],
+              ),
+            )
+          : undefined,
+    }
+  }, [barcode.food])
 
   const macroTargets = macroTargetsG(calories.targetKcal, target.targetGrams)
   const slotKcal = journal.find((group) => group.slot === targetSlot)?.kcal ?? 0
@@ -131,11 +159,6 @@ export function NutritionScreen() {
     } catch {
       showToast(t.photos.failed)
     }
-  }
-
-  const openMeal = (meal: MealEntry | null) => {
-    setEditingMeal(meal)
-    setMealSheetOpen(true)
   }
 
   const openAdd = (slot: MealSlot) => {
@@ -205,8 +228,55 @@ export function NutritionScreen() {
         targetKcal={calories.targetKcal}
         analysing={meals.analysing}
         onAdd={openAdd}
-        onOpenMeal={openMeal}
+        onOpenMeal={(meal) => setOpenMealId(meal.id)}
         onOpenProtein={setEditingLog}
+      />
+
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/*"
+        // `capture` opens the camera straight away on a phone, while still
+        // allowing the library on a desktop that has no camera.
+        capture="environment"
+        className="sr-only"
+        onChange={(event) => {
+          void onFile(event.target.files?.[0])
+          event.target.value = ''
+        }}
+      />
+
+      <CustomAmountSheet
+        open={customOpen}
+        onClose={() => setCustomOpen(false)}
+        onSubmit={(grams) => {
+          setCustomOpen(false)
+          void addWithUndo(grams, 'meal')
+        }}
+      />
+
+      <MealSheet
+        meal={openMealEntry}
+        targetKcal={mealTargetKcal(calories.targetKcal, openMealEntry?.slot ?? targetSlot)}
+        photoUrlFor={meals.photoUrlFor}
+        onClose={() => setOpenMealId(null)}
+        onEdit={(edit) => {
+          if (openMealEntry) void meals.correct(openMealEntry.id, edit)
+        }}
+        onAdd={() => {
+          if (openMealEntry) openAdd(openMealEntry.slot)
+        }}
+        onDelete={() => {
+          if (openMealEntry)
+            void meals.remove(openMealEntry.id).then(() => showToast(t.meals.deleted))
+          setOpenMealId(null)
+        }}
+        onRetry={(hint) => {
+          // The sheet closes: the row shows « Analyse en cours… » and the result
+          // arrives in place, rather than under a sheet frozen on stale numbers.
+          if (openMealEntry) void meals.retry(openMealEntry.id, hint)
+          setOpenMealId(null)
+        }}
       />
 
       <AddSheet
@@ -235,35 +305,15 @@ export function NutritionScreen() {
         onBarcode={(code) => void barcode.submit(code)}
       />
 
-      <input
-        ref={fileInput}
-        type="file"
-        accept="image/*"
-        // `capture` opens the camera straight away on a phone, while still
-        // allowing the library on a desktop that has no camera.
-        capture="environment"
-        className="sr-only"
-        onChange={(event) => {
-          void onFile(event.target.files?.[0])
-          event.target.value = ''
-        }}
-      />
-
-      <CustomAmountSheet
-        open={customOpen}
-        onClose={() => setCustomOpen(false)}
-        onSubmit={(grams) => {
-          setCustomOpen(false)
-          void addWithUndo(grams, 'meal')
-        }}
-      />
-
-      {barcode.food ? (
-        <PortionSheet
+      {pendingFood ? (
+        <QuantitySheet
           open
-          food={barcode.food}
+          item={pendingFood.item}
+          subtitle={pendingFood.subtitle}
+          note={pendingFood.note}
+          saveLabel={t.foods.portion.add}
           onClose={barcode.close}
-          onAdd={(item) => {
+          onSave={(item) => {
             // A scan and a search both end here, and the journal tells them
             // apart: one says « code-barres », the other names the table.
             const from: FoodOrigin =
@@ -300,32 +350,6 @@ export function NutritionScreen() {
           }}
         />
       ) : null}
-
-      <MealEditorSheet
-        open={mealSheetOpen}
-        meal={editingMeal}
-        defaultSlot={targetSlot}
-        photoUrlFor={meals.photoUrlFor}
-        onClose={() => setMealSheetOpen(false)}
-        onSave={async (label, slot, items) => {
-          const kcal = items.reduce((total, item) => total + item.kcal, 0)
-          if (editingMeal) await meals.correct(editingMeal.id, { label, slot, items })
-          else await meals.addManual(label, items, slot)
-          setMealSheetOpen(false)
-          showToast(t.meals.saved(kcal))
-        }}
-        onDelete={async (id) => {
-          if (editingMeal) await meals.remove(id)
-          setMealSheetOpen(false)
-          if (editingMeal) showToast(t.meals.deleted)
-        }}
-        onRetry={(id, hint) => {
-          // The sheet closes: the row shows « Analyse en cours… » and the result
-          // arrives in place, rather than under a sheet frozen on stale numbers.
-          setMealSheetOpen(false)
-          void meals.retry(id, hint)
-        }}
-      />
 
       <Sheet
         open={editingLog !== null}

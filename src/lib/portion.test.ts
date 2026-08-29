@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { amountOf, rescale, type Portion } from '@/lib/portion'
+import { amountOf, quantityChips, rescale, stepQuantity, type Portion } from '@/lib/portion'
 
 const PENNE: Portion = { quantity: '150 g', kcal: 195, proteinG: 8, carbsG: 38, fatG: 1 }
 
@@ -61,5 +61,41 @@ describe('rescale', () => {
     const once = rescale(PENNE, '15 g')
     expect(once).not.toBeNull()
     expect(rescale(PENNE, '150 g')).toEqual({ kcal: 195, proteinG: 8, carbsG: 38, fatG: 1 })
+  })
+})
+
+describe('stepQuantity', () => {
+  it('avance de dix en dix sur ce qui se pèse', () => {
+    expect(stepQuantity('150 g', 1)).toBe('160 g')
+    expect(stepQuantity('150 g', -1)).toBe('140 g')
+    expect(stepQuantity('20 cl', 1)).toBe('30 cl')
+  })
+
+  it('avance d’un demi sur ce qui se compte', () => {
+    expect(stepQuantity('1 cuisse', 1)).toBe('1,5 cuisse')
+    expect(stepQuantity('1,5 cuisse', 1)).toBe('2 cuisse')
+  })
+
+  it('ne descend jamais sous zéro', () => {
+    expect(stepQuantity('5 g', -1)).toBe('0 g')
+  })
+
+  it('ne réécrit que le nombre, pas la phrase autour', () => {
+    expect(stepQuantity('1 cuisse (~150 g)', 1)).toBe('1,5 cuisse (~150 g)')
+  })
+
+  it('rend la quantité telle quelle quand aucun nombre ne s’y lit', () => {
+    expect(stepQuantity('une poignée', 1)).toBe('une poignée')
+  })
+})
+
+describe('quantityChips', () => {
+  it('propose des raccourcis pour ce qui se pèse', () => {
+    expect(quantityChips('150 g')).toEqual(['50 g', '100 g', '150 g', '200 g'])
+  })
+
+  it('n’en propose aucun pour une unité qu’il faudrait accorder', () => {
+    expect(quantityChips('1 cuisse')).toEqual([])
+    expect(quantityChips('')).toEqual([])
   })
 })

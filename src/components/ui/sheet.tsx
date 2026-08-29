@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
 interface SheetProps {
@@ -31,10 +31,18 @@ export function Sheet({
   children,
   className,
 }: Readonly<SheetProps>) {
+  const panel = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key !== 'Escape') return
+      // Only the sheet on top answers. Sheets stack by DOM order — no portal,
+      // one z-index — so the last dialog in the document is the one being
+      // looked at, and Escape closing everything underneath it as well would
+      // lose the meal a line was being corrected in.
+      const dialogs = [...document.querySelectorAll('[role="dialog"]')]
+      if (panel.current && dialogs.indexOf(panel.current) === dialogs.length - 1) onClose()
     }
     document.addEventListener('keydown', onKey)
     const previousOverflow = document.body.style.overflow
@@ -49,6 +57,7 @@ export function Sheet({
 
   return (
     <div
+      ref={panel}
       className="fixed inset-0 z-50 flex items-end"
       role="dialog"
       aria-modal="true"

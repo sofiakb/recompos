@@ -387,20 +387,15 @@ export const fr = {
      * what you ate, and it stays until the star is tapped again.
      */
     empty: 'Aucun favori. Touche l’étoile à côté d’un repas ou d’un aliment pour l’épingler ici.',
-    /** Said inside a meal, where the star sits on each line of the breakdown. */
-    emptyFromEditor: 'Aucun favori. Touche l’étoile à côté d’une ligne pour l’épingler.',
     add: (label: string) => `Mettre ${label} en favori`,
     remove: (label: string) => `Retirer ${label} des favoris`,
     added: 'Ajouté aux favoris',
     removed: 'Retiré des favoris',
     /** From inside a meal: the favourite is a source of lines, not a whole meal. */
-    fromEditor: 'Depuis les favoris',
-    pickTitle: 'Ajouter un favori',
   },
 
   foods: {
     title: 'Aliments',
-    searchTitle: 'Chercher un aliment',
     /** Always per 100 g: the one basis both tables share. */
     per100: (kcal: number, proteinG: number) =>
       `${formatCount(kcal)} kcal · ${formatDecimal(Math.round(proteinG * 10) / 10)} g de protéines / 100 g`,
@@ -412,14 +407,11 @@ export const fr = {
     noMatch: 'Aucun aliment trouvé.',
     offline: 'Réseau indisponible — seule la table locale répond.',
     add: (name: string) => `Ajouter ${name}`,
-    fromEditor: 'Chercher un aliment',
     /**
      * The one question neither table can answer, asked once for both routes:
      * a barcode and a name both arrive here owing a portion.
      */
     portion: {
-      title: 'Ajouter cet aliment',
-      gramsLabel: 'Quantité (g)',
       add: 'Ajouter',
       macroName: { proteinG: 'protéines', carbsG: 'glucides', fatG: 'lipides' },
       missingMacros: (names: string[]) =>
@@ -427,7 +419,6 @@ export const fr = {
     },
   },
   barcode: {
-    scanTitle: 'Scanner un produit',
     scanHint: 'Vise le code-barres. La lecture se fait sur l’appareil.',
     typeHint: 'La caméra n’est pas disponible ici. Tape les chiffres sous le code-barres.',
     cameraLabel: 'Aperçu de la caméra',
@@ -436,7 +427,6 @@ export const fr = {
     digitsLabel: 'Code-barres',
     search: 'Chercher',
     invalid: 'Code-barres invalide — vérifie les chiffres.',
-    addProduct: 'Ajouter un produit',
     badge: 'code-barres',
     errorKind: {
       not_found: 'Produit inconnu d’OpenFoodFacts.',
@@ -474,7 +464,6 @@ export const fr = {
     unknownError: 'erreur inattendue',
     productAdded: 'Produit ajouté',
     slot: { breakfast: 'Petit-déj', lunch: 'Déjeuner', dinner: 'Dîner', snack: 'En-cas' },
-    slotLabel: 'Moment',
     confidence: {
       low: 'estimation large',
       medium: 'estimation correcte',
@@ -482,13 +471,37 @@ export const fr = {
     },
     correctedBadge: 'corrigé',
     manualBadge: 'manuel',
-    kcal: (value: number) => `${value} kcal`,
-    macros: (proteinG: number, carbsG: number, fatG: number) =>
-      `P ${proteinG} · G ${carbsG} · L ${fatG}`,
     editTitle: 'Détail du repas',
-    editLabel: 'Nom du repas',
-    itemName: 'Aliment',
-    itemQuantity: 'Portion',
+    /** The meal's total against its share of the day: « 995 / 740 kcal ». */
+    outOfTarget: (target: number) => `/ ${formatCount(target)} kcal`,
+    overBudget: (kcal: number) => `+ ${formatCount(kcal)}`,
+    leftBudget: (kcal: number) => `${formatCount(kcal)} restantes`,
+    macrosCounted: (proteinG: number, carbsG: number, fatG: number) =>
+      `P ${proteinG} g · G ${carbsG} g · L ${fatG} g — comptés dans le total du jour`,
+    emptyBreakdown: 'Aucun aliment dans ce repas pour l’instant.',
+    correctEstimate: 'Corriger l’estimation',
+    /** « Ligne du déjeuner » — lower case, because it is said mid-sentence. */
+    slotOf: {
+      breakfast: 'du petit-déj',
+      lunch: 'du déjeuner',
+      dinner: 'du dîner',
+      snack: 'de l’en-cas',
+    },
+    lineOrigin: {
+      photo: 'estimée depuis la photo',
+      described: 'estimée depuis ta description',
+      scanned: 'produit scanné',
+      table: 'reprise d’une table',
+      corrected: 'corrigée à la main',
+      manual: 'saisie à la main',
+    },
+    lineFrom: (slot: string, origin: string) => `Ligne ${slot} · ${origin}`,
+    quantityLabel: 'Quantité',
+    quantityPlaceholder: 'ex. 150 g',
+    quantityUp: 'Augmenter la quantité',
+    quantityDown: 'Diminuer la quantité',
+    recomputedFor: (quantity: string) => `Recalculé pour ${quantity}`,
+    manualMacros: 'Corriger les valeurs à la main',
     itemKcal: 'kcal',
     itemProtein: 'Protéines (g)',
     itemCarbs: 'Glucides (g)',
@@ -498,8 +511,6 @@ export const fr = {
     delete: 'Supprimer ce repas',
     deleted: 'Repas supprimé',
     saved: (kcal: number) => `${formatCount(kcal)} kcal enregistrées`,
-    total: 'Total du repas',
-    proteinSynced: 'Les protéines de ce repas sont comptées dans le total du jour.',
     targetFromWeight: (maintenance: number, deficit: number) =>
       deficit === 0
         ? `Maintien estimé : ${formatCount(maintenance)} kcal`
