@@ -698,6 +698,26 @@ Une entrée sans énergie exploitable est écartée plutôt que proposée à zé
 raison d'être de la liste, ce sont les macros, et une proposition qui n'en a pas est un piège avec
 un bouton dessus.
 
+**`/api/v2/search` n'est pas une recherche**
+
+Elle filtre sur des tags — catégories, marques, labels — et ignore en silence un
+paramètre qu'elle ne connaît pas. Interrogée sur « café au lait senseo », elle a répondu
+Prince, du pain de mie et du Skyr : pas un mauvais classement, une liste non filtrée.
+Le plein texte passe donc par le moteur fait pour ça (search-a-licious), avec repli sur
+le CGI que le site OpenFoodFacts a utilisé pendant dix ans si ce moteur est injoignable.
+La recherche par code-barres reste sur `/api/v2/product`, qui est une consultation et
+fonctionne.
+
+**Et un garde-fou côté app**
+
+Les résultats sont recoupés avec la question avant d'être affichés : un mot de la requête
+compte s'il commence un mot du nom ou de la marque. Sur début de mot et non sur
+sous-chaîne, sinon « Yoplait » répondrait pour « lait » ; le pluriel de la requête est rogné pour
+que « tomates » trouve encore « tomate ». Les mots de moins de trois lettres ne cautionnent
+rien — « au », « de » sont dans la moitié des noms de la base. Un service qui ignorerait la
+question rendrait alors une liste vide, ce qui se voit, au lieu de neuf produits faux
+avec un bouton `+` chacun.
+
 **Ce que la recherche fait du réseau**
 
 CIQUAL est locale et répond dans le métro. OFF demande le réseau. Quand le réseau manque, la liste
@@ -764,7 +784,7 @@ src/
 │   ├── off/
 │   │   ├── product.ts          # parseur OpenFoodFacts, pur : kJ, portions, macros absentes
 │   │   ├── client.ts           # requête v2 par code-barres, erreurs typées
-│   │   ├── search.ts           # recherche par nom sur l'instance française
+│   │   ├── search.ts           # plein texte : search-a-licious, repli CGI, tri par pertinence
 │   │   └── barcode.ts          # somme de contrôle EAN, détecteur natif ou WASM à la demande
 │   └── vision/
 │       ├── prompt.ts           # consignes partagées par les deux modalités
