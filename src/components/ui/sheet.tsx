@@ -19,6 +19,19 @@ interface SheetProps {
 }
 
 /**
+ * How many sheets are up, and what the page could do before the first one.
+ *
+ * Counted rather than snapshotted per sheet: two sheets open together — a line
+ * over a meal, a portion over the add sheet — and the second one's snapshot is
+ * already « hidden ». Closing both in the same commit then ran the cleanups in
+ * tree order, so the *outer* one gave the page back its scroll and the inner one
+ * took it away again. The page stayed frozen with nothing on screen to explain
+ * it, until a navigation remounted everything.
+ */
+let openSheets = 0
+let pageOverflow = ''
+
+/**
  * Bottom sheet, hand-rolled rather than pulled from Radix: it is the only
  * overlay V1 needs, and the shell budget (PRD §4) does not have room to spare.
  */
@@ -45,13 +58,22 @@ export function Sheet({
       if (panel.current && dialogs.indexOf(panel.current) === dialogs.length - 1) onClose()
     }
     document.addEventListener('keydown', onKey)
-    const previousOverflow = document.body.style.overflow
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  // Its own effect, on `open` alone: `onClose` is an arrow rebuilt at every
+  // render, and locking the page is not something to redo forty times a second.
+  useEffect(() => {
+    if (!open) return
+    if (openSheets === 0) pageOverflow = document.body.style.overflow
+    openSheets += 1
     document.body.style.overflow = 'hidden'
     return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = previousOverflow
+      openSheets -= 1
+      // The last one out gives the page back, whichever order they left in.
+      if (openSheets === 0) document.body.style.overflow = pageOverflow
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 
