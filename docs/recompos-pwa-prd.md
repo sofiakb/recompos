@@ -893,11 +893,22 @@ nombre de grammes, a été absorbée.
 Retirer la dernière ligne d'un repas supprime le repas : un repas vide n'est pas un repas, et c'est
 ainsi qu'on dit qu'il n'a pas eu lieu.
 
-**Une seule feuille répond à Échap**
+**Deux feuilles empilées, deux réglages à tenir**
 
-Deux feuilles empilées écoutaient toutes les deux la touche : corriger une portion puis annuler
-fermait aussi le repas derrière. Les feuilles s'empilent par ordre du DOM — pas de portail, un seul
-`z-index` —, donc c'est la dernière du document qui répond, celle qu'on regarde.
+Une feuille écoute Échap et gèle la page derrière elle. Les deux se comportaient comme s'il n'y en
+avait jamais qu'une, et se sont cassées de la même façon.
+
+*Échap.* Les deux feuilles répondaient : corriger une portion puis annuler fermait aussi le repas
+derrière. Elles s'empilent par ordre du DOM — pas de portail, un seul `z-index` — donc c'est la
+dernière du document qui répond, celle qu'on regarde.
+
+*Le défilement.* Chaque feuille photographiait l'état de la page avant de la geler, et le rendait en
+partant. Ouverte en second, elle photographiait « figée ». Les deux fermées dans le même commit — ce
+que fait l'ajout d'un produit, qui referme la quantité et la feuille d'ajout d'un coup — les
+nettoyages passaient dans l'ordre de l'arbre : celle du dessous rendait le défilement, celle du
+dessus le reprenait. La page restait bloquée sans rien à l'écran pour l'expliquer, jusqu'à ce qu'une
+navigation remonte tout. Le compte est donc tenu à part : la première feuille retient ce que la page
+savait faire, la dernière à partir le lui rend, quel que soit l'ordre.
 
 ---
 
