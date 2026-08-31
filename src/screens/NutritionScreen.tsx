@@ -105,7 +105,9 @@ export function NutritionScreen() {
     const food = barcode.food
     if (!food) return null
     return {
-      item: toMealItem(food, food.servingGrams),
+      // 100 g when nothing named a portion — the honest question, not an
+      // invented serving. `servingGrams` says which of the two it was.
+      item: { ...toMealItem(food, food.servingGrams ?? 100), servingGrams: food.servingGrams },
       subtitle: food.brand,
       note:
         food.missingMacros.length > 0

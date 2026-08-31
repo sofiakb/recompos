@@ -93,7 +93,6 @@ function parseRow(raw: unknown, index: number): Food | null {
     source: 'ciqual',
     name,
     // CIQUAL is a per-100 g table and names no portion: the sheet asks.
-    servingGrams: 100,
     per100g: {
       kcal: Math.round(kcal),
       proteinG: macros.proteinG ?? 0,

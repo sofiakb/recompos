@@ -14,6 +14,16 @@ const PENNE: MealItem = {
   fatG: 1,
 }
 
+const SENSEO: MealItem = {
+  name: 'Café au lait dosette (Senseo)',
+  quantity: '168 g',
+  servingGrams: 168,
+  kcal: 67,
+  proteinG: 2,
+  carbsG: 7,
+  fatG: 3,
+}
+
 function setup(item: MealItem = PENNE, extra: { onRemove?: () => void } = {}) {
   const onSave = vi.fn()
   render(
@@ -75,6 +85,49 @@ describe('QuantitySheet', () => {
     await user.type(kcal, '300')
 
     expect(kcal).toHaveValue('300')
+  })
+
+  it('compte en portions quand le produit en a déclaré une', async () => {
+    const { user } = setup(SENSEO)
+    await user.click(screen.getByRole('button', { name: t.meals.inPortions }))
+
+    expect(screen.getByLabelText(t.meals.quantityLabel)).toHaveValue('1 portion')
+    // Changer d’unité ne fait rien manger : les macros ne bougent pas.
+    expect(readout()).toEqual(['67', '2', '7', '3'])
+
+    await user.click(screen.getByLabelText(t.meals.quantityUp))
+    expect(screen.getByLabelText(t.meals.quantityLabel)).toHaveValue('1,5 portion')
+    expect(readout()).toEqual(['101', '3', '11', '5'])
+  })
+
+  it('revient au poids sans dérive — 1,5 portion de 168 g fait 252 g', async () => {
+    const { onSave, user } = setup(SENSEO)
+    await user.click(screen.getByRole('button', { name: t.meals.inPortions }))
+    await user.click(screen.getByLabelText(t.meals.quantityUp))
+    await user.click(screen.getByRole('button', { name: t.meals.inGrams }))
+
+    expect(screen.getByLabelText(t.meals.quantityLabel)).toHaveValue('252 g')
+    await user.click(screen.getByRole('button', { name: t.common.save }))
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ quantity: '252 g', servingGrams: 168, kcal: 101 }),
+    )
+  })
+
+  it('prend la quantité affichée pour portion quand personne n’en a nommé', async () => {
+    // Une ligne CIQUAL n’a pas de portion : c’est le premier passage en
+    // portions qui la définit, avec ce qui est sur la ligne à cet instant.
+    const { onSave, user } = setup(PENNE)
+    await user.click(screen.getByRole('button', { name: t.meals.inPortions }))
+
+    expect(screen.getByLabelText(t.meals.quantityLabel)).toHaveValue('1 portion')
+    await user.click(screen.getByRole('button', { name: t.common.save }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ servingGrams: 150 }))
+  })
+
+  it('n’offre pas l’unité sur ce qui se compte déjà autrement', () => {
+    setup({ ...PENNE, quantity: '1 cuisse' })
+
+    expect(screen.queryByRole('button', { name: t.meals.inPortions })).not.toBeInTheDocument()
   })
 
   it('n’offre de retirer la ligne que quand il y a une ligne à retirer', () => {

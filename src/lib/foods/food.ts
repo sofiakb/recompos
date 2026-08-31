@@ -24,8 +24,14 @@ export interface Food {
   name: string
   /** Brand for a packaged product; plain food has none. */
   brand?: string
-  /** Grams for one serving; 100 when the record does not say. */
-  servingGrams: number
+  /**
+   * Grams for one serving, when the record names one.
+   *
+   * Absent is a real answer: CIQUAL is a per-100 g table and names no portion,
+   * and half of OpenFoodFacts says nothing either. The sheet then asks in grams
+   * rather than pretending « une portion » means something here.
+   */
+  servingGrams?: number
   per100g: FoodMacros
   /**
    * Macros the record was missing, counted as zero.

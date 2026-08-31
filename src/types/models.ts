@@ -169,6 +169,15 @@ export interface MealItem {
   name: string
   /** Free text as the model saw it: « 150 g », « 1 bol », « 2 tranches ». */
   quantity: string
+  /**
+   * What one portion of this weighs, once anything has said so.
+   *
+   * Set by the product that declared it, or by the person the first time they
+   * ask to count in portions rather than in grams. It is what lets the two
+   * units convert — 252 g is 1,5 portion of 168 — and it is optional because
+   * most food never names a portion at all.
+   */
+  servingGrams?: number
   kcal: number
   proteinG: number
   carbsG: number

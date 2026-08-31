@@ -68,6 +68,24 @@ export function rescale(basis: Portion, quantity: string): Macros | null {
 /** Grams and millilitres move by tens; anything counted moves by halves. */
 const MEASURED: ReadonlySet<string> = new Set(['g', 'gr', 'gramme', 'ml', 'cl'])
 
+/** The word a counted portion is written with, and read back by. */
+export const PORTION_UNIT = 'portion'
+
+/** « 0,5 portion », « 1 portion », « 2 portions » — French takes the plural at two. */
+export function formatPortions(count: number): string {
+  return `${frenchNumber(count)} ${PORTION_UNIT}${count >= 2 ? 's' : ''}`
+}
+
+/** True when the quantity is a weight rather than a count of something. */
+export function isWeighed(quantity: string): boolean {
+  return MEASURED.has(unitOf(quantity))
+}
+
+/** True when the quantity counts portions — « 1,5 portion ». */
+export function isPortions(quantity: string): boolean {
+  return unitOf(quantity) === PORTION_UNIT
+}
+
 function stepOf(quantity: string): number {
   return MEASURED.has(unitOf(quantity)) ? 10 : 0.5
 }
@@ -89,7 +107,9 @@ export function stepQuantity(quantity: string, direction: 1 | -1): string {
   if (amount === null) return quantity
   const step = stepOf(quantity)
   const next = Math.max(0, Math.round((amount + direction * step) * 10) / 10)
-  return quantity.replace(NUMBER, frenchNumber(next))
+  // Portions are the one unit the app writes itself, so it also owns their
+  // plural. Everything else keeps the wording it arrived with.
+  return isPortions(quantity) ? formatPortions(next) : quantity.replace(NUMBER, frenchNumber(next))
 }
 
 /**
@@ -102,4 +122,34 @@ export function quantityChips(quantity: string): string[] {
   const unit = unitOf(quantity)
   if (!MEASURED.has(unit)) return []
   return [50, 100, 150, 200].map((amount) => `${amount} ${unit}`)
+}
+
+/**
+ * The same amount, said in the other unit.
+ *
+ * A portion is only ever a weight in disguise: 252 g of something whose portion
+ * weighs 168 is 1,5 portion, and back again. Converting rather than rescaling
+ * on purpose — nothing is eaten or un-eaten by switching how it is counted, so
+ * the macros do not move.
+ *
+ * Null when the switch cannot be made honestly: no number to read, or no
+ * portion weight to divide by.
+ */
+export function convertUnit(
+  quantity: string,
+  servingGrams: number,
+  to: 'grams' | 'portions',
+): string | null {
+  const amount = amountOf(quantity)
+  if (amount === null || servingGrams <= 0) return null
+  if (to === 'grams') {
+    return isPortions(quantity) ? `${Math.round(amount * servingGrams)} g` : quantity
+  }
+  if (isPortions(quantity)) return quantity
+  return formatPortions(Math.round((amount / servingGrams) * 10) / 10)
+}
+
+/** The portions worth one tap. Halves included: half a pod is a real answer. */
+export function portionChips(): string[] {
+  return [0.5, 1, 2, 3].map(formatPortions)
 }

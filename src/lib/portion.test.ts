@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { amountOf, quantityChips, rescale, stepQuantity, type Portion } from '@/lib/portion'
+import {
+  amountOf,
+  convertUnit,
+  formatPortions,
+  isPortions,
+  isWeighed,
+  quantityChips,
+  rescale,
+  stepQuantity,
+  type Portion,
+} from '@/lib/portion'
 
 const PENNE: Portion = { quantity: '150 g', kcal: 195, proteinG: 8, carbsG: 38, fatG: 1 }
 
@@ -97,5 +107,60 @@ describe('quantityChips', () => {
   it('n’en propose aucun pour une unité qu’il faudrait accorder', () => {
     expect(quantityChips('1 cuisse')).toEqual([])
     expect(quantityChips('')).toEqual([])
+  })
+})
+
+describe('convertUnit', () => {
+  it('lit un poids en portions', () => {
+    expect(convertUnit('168 g', 168, 'portions')).toBe('1 portion')
+    expect(convertUnit('252 g', 168, 'portions')).toBe('1,5 portion')
+    expect(convertUnit('336 g', 168, 'portions')).toBe('2 portions')
+  })
+
+  it('et des portions en poids', () => {
+    expect(convertUnit('1,5 portion', 168, 'grams')).toBe('252 g')
+    expect(convertUnit('2 portions', 168, 'grams')).toBe('336 g')
+  })
+
+  it('ne bouge pas quand la quantité est déjà dans l’unité demandée', () => {
+    expect(convertUnit('168 g', 168, 'grams')).toBe('168 g')
+    expect(convertUnit('1 portion', 168, 'portions')).toBe('1 portion')
+  })
+
+  it('refuse ce qu’il ne peut pas convertir honnêtement', () => {
+    expect(convertUnit('une poignée', 168, 'portions')).toBeNull()
+    expect(convertUnit('168 g', 0, 'portions')).toBeNull()
+  })
+
+  it('fait l’aller-retour sans dérive', () => {
+    const portions = convertUnit('252 g', 168, 'portions')
+    expect(portions).not.toBeNull()
+    expect(convertUnit(portions ?? '', 168, 'grams')).toBe('252 g')
+  })
+})
+
+describe('les portions comptées', () => {
+  it('prend le pluriel à partir de deux, comme le français', () => {
+    expect(formatPortions(0.5)).toBe('0,5 portion')
+    expect(formatPortions(1)).toBe('1 portion')
+    expect(formatPortions(2)).toBe('2 portions')
+  })
+
+  it('avance d’une demie et garde son accord', () => {
+    expect(stepQuantity('1,5 portion', 1)).toBe('2 portions')
+    expect(stepQuantity('2 portions', -1)).toBe('1,5 portion')
+  })
+
+  it('se reconnaît au singulier comme au pluriel', () => {
+    expect(isPortions('1 portion')).toBe(true)
+    expect(isPortions('2 portions')).toBe(true)
+    expect(isPortions('150 g')).toBe(false)
+    expect(isWeighed('150 g')).toBe(true)
+    expect(isWeighed('1 cuisse')).toBe(false)
+  })
+
+  it('met les macros à l’échelle des portions comme du poids', () => {
+    const pod: Portion = { quantity: '1 portion', kcal: 67, proteinG: 2, carbsG: 7, fatG: 3 }
+    expect(rescale(pod, '2 portions')).toEqual({ kcal: 134, proteinG: 4, carbsG: 14, fatG: 6 })
   })
 })

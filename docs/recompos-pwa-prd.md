@@ -61,6 +61,7 @@ une décision d'implémentation.
 | 27 | Recherche d'aliment | **Deux tables derrière un seul champ : CIQUAL en local, OpenFoodFacts en réseau.** Décidée le 29/08/2026 | Le code-barres suppose l'emballage en main ; la moitié de ce qui se mange n'en a pas. CIQUAL connaît les aliments nus — « riz blanc, cuit » — et répond hors ligne ; OFF connaît les produits de marque. Les deux rendent une table pour 100 g, donc une seule forme interne et une seule question restante : la portion. La table CIQUAL n'est pas encore au dépôt, et son absence est un cas prévu, pas une panne. Voir §6.10 |
 | 28 | Favoris | **Une seule liste : un aliment épinglé est un favori à une ligne, un repas épinglé en a plusieurs. Étoile sur la ligne dans le détail d'un repas, et sur la rangée dans « Vos habitudes ».** Décidée le 29/08/2026 | « Vos habitudes » est dérivé des trente derniers jours : c'est un constat, pas un choix, et une semaine d'absence le vide. Un favori est l'inverse — il tient jusqu'à ce que l'étoile soit retouchée. La feuille s'ouvre dessus dès qu'il y en a un, ce qui met le café du matin à un geste du `+`. Voir §6.11 |
 | 29 | Détail d'un repas | **Le repas se lit, il ne s'édite plus. Une ligne s'ouvre sur sa quantité ; l'ajout repasse par la feuille d'ajout du journal.** Décidée le 29/08/2026 sur le handoff « Détail d'un repas (lecture) » | Quatre aliments faisaient seize champs, et l'éditeur portait trois boutons d'ajout qui doublaient la feuille du `+`. La seule correction que quelqu'un fait deux fois est « c'était 200 g, pas 300 » : elle devient un pas de dix, sur une ligne ouverte. La saisie des quatre macros reste, repliée. Voir §6.12 |
+| 30 | Compter en portions | **Une ligne se compte en grammes ou en portions, au choix, et retient ce que pèse une portion.** Décidée le 31/08/2026 | « 168 g » ne veut rien dire pour une dosette de café ; « 2 dosettes » si. La portion vient du produit quand il la déclare, et sinon de la personne, une fois : ce qui est sur la ligne au moment où elle bascule *devient* la portion. Rien n'est inventé, et les deux unités se convertissent — 252 g font 1,5 portion de 168. Voir §6.12 |
 ---
 
 ## 3. Principes produit
@@ -892,6 +893,31 @@ nombre de grammes, a été absorbée.
 
 Retirer la dernière ligne d'un repas supprime le repas : un repas vide n'est pas un repas, et c'est
 ainsi qu'on dit qu'il n'a pas eu lieu.
+
+**Compter, plutôt que peser**
+
+« 168 g » ne veut rien dire pour une dosette de café. Ce qu'on a bu, c'est deux cafés. La feuille de
+quantité porte donc un interrupteur **Grammes / Portions**, et la ligne retient ce que pèse une
+portion — c'est ce qui permet de passer de l'une à l'autre sans rien recalculer : 252 g font 1,5
+portion de 168, et retour.
+
+Basculer d'unité ne fait rien manger. Les macros ne bougent pas : seule la façon de dire la même
+quantité change. C'est ensuite le `−` / `+` qui compte, par demi-portion au lieu de dix grammes, et
+les raccourcis suivent — 0,5 / 1 / 2 / 3 portions.
+
+**D'où vient la portion, et d'où elle ne vient pas.** OpenFoodFacts la déclare parfois, et le parseur
+la lit désormais correctement : `serving_size` est du texte libre qui nomme la chose avant de la
+peser — « 1 dosette (168 ml) » — et prendre le premier nombre répondait 1, donc une feuille ouverte
+sur « 1 g ». Le poids est celui qui porte une unité. Surtout, une portion absente est maintenant
+*absente* : elle retombait sur 100 g, ce qui rendait « portion inconnue » et « portion de 100 g »
+indiscernables, et donc « compter en portions » vide de sens sans qu'on puisse le savoir. CIQUAL est
+une table pour 100 g et n'en nomme aucune : ses aliments restent en grammes.
+
+Et quand personne n'a rien déclaré, c'est la personne qui tranche, une fois : **ce qui est sur la
+ligne au moment où elle bascule en portions devient la portion.** Elle avait 150 g de riz, elle dit
+« ça, c'est une portion », et le `+` en ajoute une. L'app ne devine jamais une portion ; elle retient
+celle qu'on lui a donnée. Une ligne déjà comptée dans sa propre unité — « 1 cuisse », que le modèle
+écrit tout seul — n'a rien à y gagner et ne montre pas l'interrupteur.
 
 **Deux feuilles empilées, deux réglages à tenir**
 

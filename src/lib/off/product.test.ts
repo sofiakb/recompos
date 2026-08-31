@@ -79,9 +79,21 @@ describe('parseProduct', () => {
     expect(parseProduct(raw({ serving_size: '30 g' })).servingGrams).toBe(30)
   })
 
-  it('retombe sur 100 g quand la portion est vide ou illisible', () => {
-    expect(parseProduct(raw({ serving_size: '' })).servingGrams).toBe(100)
-    expect(parseProduct(raw({ serving_size: 'une poignée' })).servingGrams).toBe(100)
+  it('lit le poids même quand la portion se nomme avant de se peser', () => {
+    // « 1 dosette (168 ml) » : le premier nombre est 1, et une feuille qui
+    // s'ouvrirait sur « 1 g » serait pire qu'une qui avoue ne pas savoir.
+    expect(parseProduct(raw({ serving_size: '1 dosette (168 ml)' })).servingGrams).toBe(168)
+    expect(parseProduct(raw({ serving_size: '2 biscuits (25,5 g)' })).servingGrams).toBe(26)
+    expect(parseProduct(raw({ serving_size: '168ml' })).servingGrams).toBe(168)
+  })
+
+  it('ne prend pas des milligrammes pour des grammes', () => {
+    expect(parseProduct(raw({ serving_size: '500 mg' })).servingGrams).toBeUndefined()
+  })
+
+  it('ne nomme aucune portion quand le produit n’en nomme pas', () => {
+    expect(parseProduct(raw({ serving_size: '' })).servingGrams).toBeUndefined()
+    expect(parseProduct(raw({ serving_size: 'une poignée' })).servingGrams).toBeUndefined()
   })
 
   it('refuse une charge utile qui n’est pas un produit', () => {
