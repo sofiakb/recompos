@@ -498,6 +498,8 @@ export const fr = {
     lineFrom: (slot: string, origin: string) => `Ligne ${slot} · ${origin}`,
     quantityLabel: 'Quantité',
     quantityPlaceholder: 'ex. 150 g',
+    inGrams: 'Grammes',
+    inPortions: 'Portions',
     quantityUp: 'Augmenter la quantité',
     quantityDown: 'Diminuer la quantité',
     recomputedFor: (quantity: string) => `Recalculé pour ${quantity}`,

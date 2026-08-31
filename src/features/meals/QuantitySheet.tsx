@@ -4,7 +4,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
-import { quantityChips, rescale, stepQuantity, type Macros } from '@/lib/portion'
+import {
+  amountOf,
+  convertUnit,
+  isPortions,
+  isWeighed,
+  portionChips,
+  quantityChips,
+  rescale,
+  stepQuantity,
+  type Macros,
+} from '@/lib/portion'
 import { t } from '@/i18n/fr'
 import type { MealItem } from '@/types/models'
 
@@ -73,6 +83,14 @@ export function QuantitySheet({
   const [macros, setMacros] = useState<Macros>(macrosOf(item))
   const [manualOpen, setManualOpen] = useState(false)
   /**
+   * What one portion weighs, once anything has said so.
+   *
+   * The product may have declared it; otherwise the first switch to portions
+   * settles it — whatever is on the line at that moment *is* one portion. The
+   * app never guesses a serving, it only remembers the one it was given.
+   */
+  const [serving, setServing] = useState(item.servingGrams)
+  /**
    * The quantity these macros were stated for, kept aside so every press
    * rescales from it rather than from the last result: stepping 150 g up to
    * 200 g in five presses would otherwise round the figures away one press at a
@@ -86,6 +104,7 @@ export function QuantitySheet({
     setQuantity(item.quantity)
     setMacros(macrosOf(item))
     setManualOpen(false)
+    setServing(item.servingGrams)
     basis.current = null
   }, [open, item])
 
@@ -101,7 +120,25 @@ export function QuantitySheet({
     if (scaled) setMacros(scaled)
   }
 
-  const chips = quantityChips(quantity)
+  const counting = isPortions(quantity)
+  const chips = counting ? portionChips() : quantityChips(quantity)
+  // Offered on anything weighed, and on anything already counted in portions.
+  // « 1 cuisse » is already a count of its own and has nothing to gain.
+  const canSwitch = counting || isWeighed(quantity)
+
+  /**
+   * Reads the same amount in the other unit. Nothing is eaten or un-eaten by
+   * changing how it is counted, so the macros stay exactly where they are.
+   */
+  const switchUnit = (to: 'grams' | 'portions') => {
+    const grams = to === 'portions' && serving === undefined ? amountOfGrams(quantity) : serving
+    if (grams === undefined) return
+    const next = convertUnit(quantity, grams, to)
+    if (!next) return
+    setServing(grams)
+    setQuantity(next)
+    basis.current = null
+  }
 
   const header = (
     <>
@@ -134,9 +171,25 @@ export function QuantitySheet({
     <Sheet open={open} onClose={onClose} title={item.name} header={header}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2.5">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">
-            {t.meals.quantityLabel}
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">
+              {t.meals.quantityLabel}
+            </p>
+            {canSwitch ? (
+              <div className="flex shrink-0 gap-1 rounded-full bg-muted p-1">
+                <UnitTab
+                  label={t.meals.inGrams}
+                  active={!counting}
+                  onPick={() => switchUnit('grams')}
+                />
+                <UnitTab
+                  label={t.meals.inPortions}
+                  active={counting}
+                  onPick={() => switchUnit('portions')}
+                />
+              </div>
+            ) : null}
+          </div>
           <div className="flex items-stretch gap-2">
             <StepButton
               label={t.meals.quantityDown}
@@ -258,7 +311,7 @@ export function QuantitySheet({
           <Button
             size="lg"
             className="flex-1"
-            onClick={() => onSave(applied(item, quantity, macros))}
+            onClick={() => onSave(applied(item, quantity, macros, serving))}
           >
             {saveLabel}
           </Button>
@@ -269,8 +322,40 @@ export function QuantitySheet({
 }
 
 /** The line as the sheet leaves it: same food, the quantity and macros asked for. */
-function applied(item: MealItem, quantity: string, macros: Macros): MealItem {
-  return { ...item, quantity: quantity.trim(), ...macros }
+function applied(
+  item: MealItem,
+  quantity: string,
+  macros: Macros,
+  servingGrams: number | undefined,
+): MealItem {
+  return { ...item, quantity: quantity.trim(), ...macros, servingGrams }
+}
+
+/** The number of grams a weighed quantity states, or nothing. */
+function amountOfGrams(quantity: string): number | undefined {
+  if (!isWeighed(quantity)) return undefined
+  const amount = amountOf(quantity)
+  return amount !== null && amount > 0 ? amount : undefined
+}
+
+function UnitTab({
+  label,
+  active,
+  onPick,
+}: Readonly<{ label: string; active: boolean; onPick: () => void }>) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onPick}
+      className={cn(
+        'rounded-full px-3 py-1.5 text-[13px] transition-colors',
+        active ? 'bg-card font-semibold text-foreground' : 'text-muted-foreground',
+      )}
+    >
+      {label}
+    </button>
+  )
 }
 
 function StepButton({

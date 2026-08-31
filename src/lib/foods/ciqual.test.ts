@@ -44,9 +44,10 @@ describe('parseCiqual', () => {
       id: '13039',
       source: 'ciqual',
       name: 'Nectarine, pulpe, crue',
-      servingGrams: 100,
       per100g: { kcal: 44, proteinG: 1.1, carbsG: 8.9, fatG: 0.3 },
     })
+    // Une table pour 100 g ne nomme aucune portion, et n'en invente pas.
+    expect(nectarine.servingGrams).toBeUndefined()
   })
 
   it('lit « < 0,5 » comme 0,5 : surestimer une trace est le sens inoffensif', () => {
