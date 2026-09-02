@@ -1251,7 +1251,16 @@ L'onglet Aujourd'hui est la racine. Un retour à froid sur l'app y atterrit touj
   `TapTarget` — `Button` compris, qui n'est que `TapTarget` plus les variantes.
   Un `<button>` nu dans l'arbre signifie que le haptique a été oublié, et un
   test le vérifie ; la seule exception est la poignée de réorganisation de
-  `HabitRow`, dont l'overlay avalerait les événements pointeur. Les deux voies ne se doublent jamais : `haptic()` sort tout de suite
+  `HabitRow`, dont l'overlay avalerait les événements pointeur.
+- **L'overlay est désactivé sur les tap targets, et le restera tant qu'il bloque
+  le défilement.** Il a été livré une fois sur tous les boutons : un switch
+  Safari revendique le glissement dont il a besoin pour être basculé, et comme
+  la quasi-totalité des listes de l'app sont des boutons pleine largeur, la page
+  a cessé de scroller. Une vibration ne vaut pas une app qu'on ne peut plus
+  parcourir. `TapTarget` reste la couture — `useHaptic` fonctionne toujours, et
+  c'est le seul fichier à rouvrir si l'overlay peut un jour laisser passer un
+  pan vertical. Sur Android rien ne change : `haptic()` n'a jamais eu ce
+  problème. Les deux voies ne se doublent jamais : `haptic()` sort tout de suite
   là où `navigator.vibrate` manque, c'est-à-dire exactement là où le switch fonctionne. Réserve
   connue : Apple a fermé l'astuce du switch à partir d'iOS 26.5 — au-delà, aucune API web ne rend
   le haptique à Safari.
