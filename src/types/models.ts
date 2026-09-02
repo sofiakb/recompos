@@ -307,7 +307,7 @@ export interface AppSettings {
   /** Anchors both the consistency denominator and the « Jour N » milestone. */
   installedAt: IsoDateTime
   /**
-   * `auto` derives the daily protein target from smoothed body weight; `manual`
+   * `auto` derives the daily protein target from the last weigh-in; `manual`
    * freezes whatever the user typed, and a later weigh-in never overwrites it.
    */
   proteinTargetMode: ProteinTargetMode
@@ -334,7 +334,7 @@ export interface AppSettings {
    * be readable by anyone who opens the page.
    */
   visionProviders?: Partial<Record<VisionProviderId, VisionProviderSettings>>
-  /** `auto` derives the daily calorie target from smoothed body weight. */
+  /** `auto` derives the daily calorie target from the last weigh-in. */
   calorieTargetMode: CalorieTargetMode
   /**
    * How far under estimated maintenance the automatic target sits, in percent.

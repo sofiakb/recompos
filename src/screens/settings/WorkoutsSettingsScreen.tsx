@@ -6,6 +6,7 @@ import { RestTimerSetting } from '@/features/workouts/RestTimerSetting'
 import { useWorkouts } from '@/features/workouts/useWorkouts'
 import { SubPage } from '@/components/shared/SubPage'
 import { t } from '@/i18n/fr'
+import { TapTarget } from '@/components/ui/tap-target'
 
 export function WorkoutsSettingsScreen() {
   const workouts = useWorkouts()
@@ -24,7 +25,7 @@ export function WorkoutsSettingsScreen() {
 
       <Card>
         <CardContent className="pt-4">
-          <button
+          <TapTarget
             type="button"
             onClick={() => setCatalogueOpen(true)}
             className="flex min-h-touch w-full items-center gap-3 rounded-lg text-left transition-colors hover:bg-accent"
@@ -36,7 +37,7 @@ export function WorkoutsSettingsScreen() {
               </span>
             </span>
             <ChevronRight size={18} className="shrink-0 text-muted-foreground" aria-hidden />
-          </button>
+          </TapTarget>
         </CardContent>
       </Card>
 

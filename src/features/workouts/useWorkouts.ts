@@ -16,7 +16,7 @@ import {
 } from '@/db/repositories/workoutRepository'
 import { suggestNextSet, type OverloadSuggestion } from '@/lib/overload'
 import { toLogicalDate } from '@/lib/date'
-import { haptic } from '@/lib/utils'
+import { haptic } from '@/lib/haptics'
 import type { Exercise, ExerciseSet, SessionType, WorkoutSession } from '@/types/models'
 
 export interface SessionOutcome {

@@ -7,6 +7,7 @@ import { STRENGTH_WINDOWS, useStrength, type StrengthWindow } from '@/features/t
 import { parseIsoDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
 import type { Exercise } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface StrengthCardProps {
   exerciseById: (id: string) => Exercise | undefined
@@ -78,7 +79,7 @@ export function StrengthCard({ exerciseById }: StrengthCardProps) {
         )}
 
         <div>
-          <button
+          <TapTarget
             type="button"
             aria-expanded={explained}
             onClick={() => setExplained((open) => !open)}
@@ -90,7 +91,7 @@ export function StrengthCard({ exerciseById }: StrengthCardProps) {
             ) : (
               <ChevronDown size={16} aria-hidden />
             )}
-          </button>
+          </TapTarget>
           {explained ? (
             <p className="text-sm leading-relaxed text-muted-foreground">
               {t.strength.explainBody}

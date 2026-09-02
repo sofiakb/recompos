@@ -2,6 +2,7 @@ import { Plus, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/fr'
 import type { RecentMeal } from '@/features/meals/useRecentMeals'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface MealPickListProps {
   meals: RecentMeal[]
@@ -35,7 +36,7 @@ export function MealPickList({ meals, onPick, star }: Readonly<MealPickListProps
         const pinned = star?.isFavorite(meal.label) ?? false
         return (
           <li key={meal.label} className="flex items-center border-b border-border">
-            <button
+            <TapTarget
               type="button"
               aria-label={t.nutrition.addAgain(meal.label)}
               onClick={() => onPick(meal)}
@@ -53,9 +54,9 @@ export function MealPickList({ meals, onPick, star }: Readonly<MealPickListProps
               >
                 <Plus size={16} />
               </span>
-            </button>
+            </TapTarget>
             {star ? (
-              <button
+              <TapTarget
                 type="button"
                 aria-pressed={pinned}
                 aria-label={pinned ? t.favorites.remove(meal.label) : t.favorites.add(meal.label)}
@@ -72,7 +73,7 @@ export function MealPickList({ meals, onPick, star }: Readonly<MealPickListProps
                     pinned ? 'fill-foreground text-foreground' : 'text-muted-foreground',
                   )}
                 />
-              </button>
+              </TapTarget>
             ) : null}
           </li>
         )

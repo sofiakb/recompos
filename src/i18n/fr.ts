@@ -163,7 +163,7 @@ export const fr = {
   },
   weight: {
     title: 'Poids',
-    smoothedHint: 'Moyenne des dernières pesées, pas le chiffre du jour.',
+    latestHint: 'Ta dernière pesée — c’est elle qui calcule tes cibles.',
     emptyHint: 'Une pesée suffit pour calculer ta cible de protéines.',
     logCta: 'Enregistrer une pesée',
     logTitle: 'Ton poids',
@@ -356,7 +356,7 @@ export const fr = {
     },
     bmiScaleLabel: (value: string, band: string) => `IMC ${value}, ${band}`,
     bmiNoHeight: 'Renseigner ma taille',
-    weightBmiChart: 'Poids lissé et IMC',
+    weightBmiChart: 'Poids et IMC',
     weightBmiHint: 'Une seule courbe, deux lectures : l’IMC suit le poids à taille constante.',
   },
   consistency: {

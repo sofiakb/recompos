@@ -8,6 +8,7 @@ import { selectArchivedHabits, selectHabits, useSettingsStore } from '@/stores/s
 import { useUiStore } from '@/stores/uiStore'
 import { t } from '@/i18n/fr'
 import type { FloorHabitDefinition, HabitKind } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 /** Create, rename, reorder and archive the floor and stacked habits (PRD §6.1). */
 export function HabitManagerCard() {
@@ -125,14 +126,14 @@ export function HabitManagerCard() {
                     </span>
                     {/* One target here too: the sheet holds both its history and
                         the way back out of the archive. */}
-                    <button
+                    <TapTarget
                       type="button"
                       aria-label={t.habits.edit(habit.title)}
                       onClick={() => openEdit(habit)}
                       className="flex h-touch w-touch shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Pencil size={18} aria-hidden />
-                    </button>
+                    </TapTarget>
                   </li>
                 ))}
               </ul>

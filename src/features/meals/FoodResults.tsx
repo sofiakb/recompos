@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react'
 import { t } from '@/i18n/fr'
 import type { Food } from '@/lib/foods/food'
 import type { FoodSearchState } from '@/features/meals/useFoodSearch'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface FoodResultsProps extends FoodSearchState {
   onPick: (food: Food) => void
@@ -38,7 +39,7 @@ export function FoodResults({
         <ul className="flex flex-col">
           {foods.map((food) => (
             <li key={`${food.source}-${food.id}`}>
-              <button
+              <TapTarget
                 type="button"
                 aria-label={t.foods.add(food.name)}
                 onClick={() => onPick(food)}
@@ -56,7 +57,7 @@ export function FoodResults({
                 >
                   <Plus size={16} />
                 </span>
-              </button>
+              </TapTarget>
             </li>
           ))}
         </ul>

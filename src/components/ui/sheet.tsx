@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface SheetProps {
   open: boolean
@@ -85,7 +86,7 @@ export function Sheet({
       aria-modal="true"
       aria-label={title}
     >
-      <button
+      <TapTarget
         type="button"
         aria-label="Fermer"
         className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"

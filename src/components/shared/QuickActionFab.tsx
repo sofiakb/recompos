@@ -11,6 +11,7 @@ import { useProtein } from '@/features/nutrition/useProtein'
 import { WeightSheet } from '@/features/weight/WeightSheet'
 import { useWeight } from '@/features/weight/useWeight'
 import { t } from '@/i18n/fr'
+import { TapTarget } from '@/components/ui/tap-target'
 
 /**
  * The three-taps-max guarantee (PRD §3.1): a core action is reachable from any
@@ -80,14 +81,14 @@ export function QuickActionFab() {
 
   return (
     <>
-      <button
+      <TapTarget
         type="button"
         aria-label={t.quickAction.open}
         onClick={() => setOpen(true)}
         className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
       >
         <Plus size={26} aria-hidden />
-      </button>
+      </TapTarget>
 
       <Sheet open={open} onClose={() => setOpen(false)} title={t.quickAction.title}>
         <div className="flex flex-col gap-2">

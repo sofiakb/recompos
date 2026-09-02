@@ -11,7 +11,7 @@ export interface ProteinTargetState {
   mode: ProteinTargetMode
   /** What the weight-derived calculation says right now, if a weigh-in exists. */
   computedGrams: number | null
-  smoothedWeightKg: number | null
+  weightKg: number | null
   gramsPerKg: number
   /** True while the target is a fallback because no weight has been logged. */
   isFallback: boolean
@@ -22,7 +22,7 @@ export interface ProteinTargetState {
 /**
  * Resolves the daily protein target (PRD §6.3).
  *
- * Auto mode follows smoothed body weight. A manual value is frozen: a later
+ * Auto mode follows the last weigh-in. A manual value is frozen: a later
  * weigh-in never silently overwrites a number the user chose.
  */
 export function useProteinTarget(): ProteinTargetState {
@@ -30,9 +30,9 @@ export function useProteinTarget(): ProteinTargetState {
   const manualGrams = useSettingsStore((state) => state.settings.manualProteinTargetGrams)
   const setManualProteinTarget = useSettingsStore((state) => state.setManualProteinTarget)
   const resetProteinTargetToAuto = useSettingsStore((state) => state.resetProteinTargetToAuto)
-  const { smoothedKg } = useWeight()
+  const { currentKg } = useWeight()
 
-  const computedGrams = smoothedKg === null ? null : computeProteinTargetGrams(smoothedKg)
+  const computedGrams = currentKg === null ? null : computeProteinTargetGrams(currentKg)
 
   const targetGrams =
     mode === 'manual' && typeof manualGrams === 'number'
@@ -49,7 +49,7 @@ export function useProteinTarget(): ProteinTargetState {
     targetGrams,
     mode,
     computedGrams,
-    smoothedWeightKg: smoothedKg,
+    weightKg: currentKg,
     gramsPerKg: PROTEIN_GRAMS_PER_KG,
     isFallback: mode === 'auto' && computedGrams === null,
     setManual,

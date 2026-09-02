@@ -3,6 +3,7 @@ import { db } from '@/db/dexie'
 import { Sheet } from '@/components/ui/sheet'
 import { t } from '@/i18n/fr'
 import type { ZeroCookItem } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface ProteinPortionSheetProps {
   open: boolean
@@ -26,7 +27,7 @@ export function ProteinPortionSheet({ open, onClose, onPick }: ProteinPortionShe
       <ul className="flex max-h-[50vh] flex-col overflow-y-auto">
         {sorted.map((item) => (
           <li key={item.id}>
-            <button
+            <TapTarget
               type="button"
               onClick={() => onPick(item)}
               className="flex min-h-touch w-full items-center justify-between gap-3 rounded-md px-1 py-2 text-left transition-colors active:bg-accent"
@@ -38,7 +39,7 @@ export function ProteinPortionSheet({ open, onClose, onPick }: ProteinPortionShe
               <span className="tnum shrink-0 rounded-full bg-secondary px-2.5 py-1 text-sm font-semibold text-primary">
                 {item.proteinPerServingGrams} g
               </span>
-            </button>
+            </TapTarget>
           </li>
         ))}
       </ul>

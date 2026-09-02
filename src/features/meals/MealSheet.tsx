@@ -10,6 +10,7 @@ import { totalsFromItems } from '@/lib/vision/schema'
 import { t } from '@/i18n/fr'
 import type { MealEdit } from '@/db/repositories/mealRepository'
 import type { MealEntry, MealItem } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface MealSheetProps {
   /** The meal being read; `null` closes the sheet. Live, so an edit shows here. */
@@ -130,7 +131,7 @@ export function MealSheet({
             </p>
           ) : null}
         </div>
-        <button
+        <TapTarget
           type="button"
           aria-pressed={favorites.isFavorite(meal.label)}
           aria-label={
@@ -149,15 +150,15 @@ export function MealSheet({
               favorites.isFavorite(meal.label) ? 'fill-foreground text-foreground' : undefined
             }
           />
-        </button>
-        <button
+        </TapTarget>
+        <TapTarget
           type="button"
           aria-label={t.common.close}
           onClick={onClose}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-muted transition-colors hover:bg-accent"
         >
           <X size={18} aria-hidden />
-        </button>
+        </TapTarget>
       </div>
     </div>
   )
@@ -199,7 +200,7 @@ export function MealSheet({
           <ul className="flex flex-col border-t border-border">
             {items.map((item, index) => (
               <li key={`${item.name}-${index}`}>
-                <button
+                <TapTarget
                   type="button"
                   aria-label={t.nutrition.editItem(item.name)}
                   onClick={() => setOpenLine({ index, item })}
@@ -215,7 +216,7 @@ export function MealSheet({
                   </span>
                   <span className="tnum shrink-0 text-[15px] font-semibold">{item.kcal}</span>
                   <ChevronRight size={18} className="shrink-0 text-muted-foreground" aria-hidden />
-                </button>
+                </TapTarget>
               </li>
             ))}
           </ul>

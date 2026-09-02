@@ -19,8 +19,8 @@ export function ProteinTargetEditor({ target }: ProteinTargetEditorProps) {
       <ProteinTargetStepper value={target.targetGrams} onChange={target.setManual} />
 
       <p className="text-center text-xs text-muted-foreground">
-        {target.mode === 'auto' && target.smoothedWeightKg !== null
-          ? t.nutrition.targetFromWeight(target.smoothedWeightKg, target.gramsPerKg)
+        {target.mode === 'auto' && target.weightKg !== null
+          ? t.nutrition.targetFromWeight(target.weightKg, target.gramsPerKg)
           : null}
         {target.isFallback ? t.nutrition.targetNoWeight : null}
         {target.mode === 'manual' ? t.settings.proteinManual : null}

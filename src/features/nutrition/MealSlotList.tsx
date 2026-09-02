@@ -5,6 +5,7 @@ import { mealTargetKcal } from '@/lib/nutrition'
 import { t } from '@/i18n/fr'
 import type { SlotGroup, JournalEntry } from '@/features/nutrition/journal'
 import type { MealEntry, MealSlot, MealSource, ProteinLog } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface MealSlotListProps {
   groups: SlotGroup[]
@@ -74,7 +75,7 @@ function EntryRow({
 }>) {
   return (
     <li>
-      <button
+      <TapTarget
         type="button"
         onClick={onClick}
         disabled={disabled}
@@ -84,7 +85,7 @@ function EntryRow({
         {value ? (
           <span className="tnum shrink-0 self-center text-xs text-muted-foreground">{value}</span>
         ) : null}
-      </button>
+      </TapTarget>
     </li>
   )
 }
@@ -176,7 +177,7 @@ export function MealSlotList({
                 </div>
                 {/* 32 px of lime inside a 48 px target: the disc is what the
                     handoff drew, the hit area is what the thumb needs. */}
-                <button
+                <TapTarget
                   type="button"
                   aria-label={t.nutrition.addToSlot[group.slot]}
                   onClick={() => onAdd(group.slot)}
@@ -185,7 +186,7 @@ export function MealSlotList({
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95">
                     <Plus size={18} aria-hidden />
                   </span>
-                </button>
+                </TapTarget>
               </div>
 
               {group.entries.length > 0 ? (

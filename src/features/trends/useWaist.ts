@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { logWaist, recentWaists } from '@/db/repositories/measurementRepository'
 import { movingAverage } from '@/lib/strength'
 import { toLogicalDate } from '@/lib/date'
-import { haptic } from '@/lib/utils'
+import { haptic } from '@/lib/haptics'
 import type { Measurement } from '@/types/models'
 
 export interface WaistState {

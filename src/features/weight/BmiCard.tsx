@@ -4,8 +4,8 @@ import { formatDecimal } from '@/lib/format'
 import { t } from '@/i18n/fr'
 
 interface BmiCardProps {
-  /** The smoothed weight — the same figure shown above, not the last weigh-in. */
-  smoothedKg: number
+  /** The last weigh-in — the same figure shown above. */
+  weightKg: number
   heightCm: number | null
 }
 
@@ -30,14 +30,14 @@ const GRADUATIONS = [
 ]
 
 /**
- * The BMI, read off the smoothed weight.
+ * The BMI, read off the last weigh-in.
  *
  * Height is recalled on the card because it is typed somewhere else entirely
  * (Réglages › Objectifs) and a BMI without its height cannot be checked. Without
  * a height there is no number at all: an index computed on a guessed height is
  * worse than none, so the card shrinks to the link that fixes it.
  */
-export function BmiCard({ smoothedKg, heightCm }: Readonly<BmiCardProps>) {
+export function BmiCard({ weightKg, heightCm }: Readonly<BmiCardProps>) {
   if (heightCm === null) {
     return (
       <div className="flex min-h-touch items-center justify-between gap-3 rounded-lg bg-muted/50 px-3.5 py-3">
@@ -49,7 +49,7 @@ export function BmiCard({ smoothedKg, heightCm }: Readonly<BmiCardProps>) {
     )
   }
 
-  const value = bmi(smoothedKg, heightCm)
+  const value = bmi(weightKg, heightCm)
   const band = t.trends.bmiBand[bmiBand(value)]
   const shown = formatDecimal(value)
 

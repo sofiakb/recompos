@@ -15,6 +15,7 @@ import { useUiStore } from '@/stores/uiStore'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/fr'
 import type { TakeoutOption } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface TakeoutCheatSheetProps {
   onLog: (option: TakeoutOption) => void
@@ -57,7 +58,7 @@ export function TakeoutCheatSheet({ onLog }: TakeoutCheatSheetProps) {
           {/* A lone « Tout » chip over an empty sheet filters nothing. */}
           {options.length > 0 ? (
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-              <button
+              <TapTarget
                 type="button"
                 onClick={() => setCuisine(null)}
                 className={cn(
@@ -68,9 +69,9 @@ export function TakeoutCheatSheet({ onLog }: TakeoutCheatSheetProps) {
                 )}
               >
                 {t.nutrition.allCuisines}
-              </button>
+              </TapTarget>
               {cuisines.map((name) => (
-                <button
+                <TapTarget
                   key={name}
                   type="button"
                   onClick={() => setCuisine(name)}
@@ -82,7 +83,7 @@ export function TakeoutCheatSheet({ onLog }: TakeoutCheatSheetProps) {
                   )}
                 >
                   {name}
-                </button>
+                </TapTarget>
               ))}
             </div>
           ) : null}
@@ -93,14 +94,14 @@ export function TakeoutCheatSheet({ onLog }: TakeoutCheatSheetProps) {
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-semibold">{option.cuisine}</p>
                   {option.estimatedProteinGrams ? (
-                    <button
+                    <TapTarget
                       type="button"
                       onClick={() => onLog(option)}
                       aria-label={t.nutrition.logItem(option.cuisine, option.estimatedProteinGrams)}
                       className="tnum flex min-h-touch shrink-0 items-center gap-1 rounded-full bg-secondary px-3 text-sm font-semibold text-primary transition-colors active:bg-accent"
                     >
                       <Plus size={14} aria-hidden />~{option.estimatedProteinGrams} g
-                    </button>
+                    </TapTarget>
                   ) : null}
                 </div>
                 <p className="mt-2 flex gap-2 text-sm">
@@ -112,7 +113,7 @@ export function TakeoutCheatSheet({ onLog }: TakeoutCheatSheetProps) {
                   {option.avoid}
                 </p>
                 <div className="mt-2 flex justify-end gap-1">
-                  <button
+                  <TapTarget
                     type="button"
                     aria-label={t.nutrition.editItem(option.cuisine)}
                     onClick={() => {
@@ -122,8 +123,8 @@ export function TakeoutCheatSheet({ onLog }: TakeoutCheatSheetProps) {
                     className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Pencil size={15} aria-hidden />
-                  </button>
-                  <button
+                  </TapTarget>
+                  <TapTarget
                     type="button"
                     aria-label={t.nutrition.deleteItem(option.cuisine)}
                     onClick={async () => {
@@ -133,7 +134,7 @@ export function TakeoutCheatSheet({ onLog }: TakeoutCheatSheetProps) {
                     className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Trash2 size={15} aria-hidden />
-                  </button>
+                  </TapTarget>
                 </div>
               </li>
             ))}

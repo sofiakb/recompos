@@ -16,17 +16,17 @@ import { t } from '@/i18n/fr'
 /**
  * One sentence under the section, never two.
  *
- * The BMI legend explains the same chart the smoothing note explains, so when
+ * The BMI legend explains the same chart the weigh-in note explains, so when
  * the second axis is drawn it takes the slot rather than stacking below it.
  */
 function hintFor(hasWeight: boolean, showsBmi: boolean): string {
   if (!hasWeight) return t.weight.emptyHint
   if (showsBmi) return t.trends.weightBmiHint
-  return t.weight.smoothedHint
+  return t.weight.latestHint
 }
 
 /**
- * The weight section of Progression: the smoothed figure, its BMI, the curve.
+ * The weight section of Progression: the last weigh-in, its BMI, the curve.
  *
  * Lifted out of the screen when the BMI arrived. Progression is a list of
  * sections, and the one that carries a chart, a card, a sheet and its own
@@ -59,13 +59,13 @@ export function WeightSection() {
         hint={hintFor(weight.hasWeight, showsBmiChart)}
         aside={delta}
       >
-        {weight.hasWeight && weight.smoothedKg !== null ? (
+        {weight.hasWeight && weight.currentKg !== null ? (
           <>
             <p className="tnum text-3xl font-semibold">
-              {formatDecimal(weight.smoothedKg)}
+              {formatDecimal(weight.currentKg)}
               <span className="ml-1 text-sm font-normal text-muted-foreground">kg</span>
             </p>
-            <BmiCard smoothedKg={weight.smoothedKg} heightCm={heightCm} />
+            <BmiCard weightKg={weight.currentKg} heightCm={heightCm} />
           </>
         ) : null}
         {series.length > 1 ? (

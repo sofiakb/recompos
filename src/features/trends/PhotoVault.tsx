@@ -9,6 +9,7 @@ import { formatBytes } from '@/lib/format'
 import { formatLongDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
 import type { PhotoAngle } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 const ANGLE_OPTIONS = [
   { value: 'front' as const, label: t.photos.angle.front },
@@ -89,7 +90,7 @@ export function PhotoVault() {
                   alt={t.photos.of(formatLongDate(photo.date), t.photos.angle[photo.angle])}
                   className="aspect-[3/4] w-full rounded-md object-cover"
                 />
-                <button
+                <TapTarget
                   type="button"
                   aria-label={t.photos.delete}
                   onClick={async () => {
@@ -99,7 +100,7 @@ export function PhotoVault() {
                   className="absolute right-1 top-1 flex h-8 w-8 items-center justify-center rounded-md bg-background/80 text-muted-foreground backdrop-blur transition-colors hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Trash2 size={14} aria-hidden />
-                </button>
+                </TapTarget>
               </li>
             ))}
           </ul>

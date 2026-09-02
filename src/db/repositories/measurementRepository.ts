@@ -52,7 +52,7 @@ export async function recentWaists(limit = 24, database: RecompDb = db): Promise
   return rows.filter((row) => typeof row.waistCm === 'number').slice(0, limit)
 }
 
-/** Weigh-ins newest first — the order `smoothedWeightKg` expects. */
+/** Weigh-ins newest first — the order `currentWeightKg` expects. */
 export async function recentWeights(limit = 12, database: RecompDb = db): Promise<Measurement[]> {
   const rows = await database.measurements.orderBy('date').reverse().toArray()
   return rows.filter((row) => typeof row.weightKg === 'number').slice(0, limit)

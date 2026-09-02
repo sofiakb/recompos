@@ -18,7 +18,7 @@ export interface CalorieTargetState {
   targetKcal: number
   mode: CalorieTargetMode
   computedKcal: number | null
-  smoothedWeightKg: number | null
+  weightKg: number | null
   /** Estimated maintenance before the deficit, so the screen can show both. */
   maintenanceKcal: number | null
   /** False while height or age are missing and the crude estimate is in use. */
@@ -54,15 +54,15 @@ export function useCalorieTarget(): CalorieTargetState {
   const resetCalorieTargetToAuto = useSettingsStore((state) => state.resetCalorieTargetToAuto)
   const setCalorieDeficitPercent = useSettingsStore((state) => state.setCalorieDeficitPercent)
   const setBodyProfile = useSettingsStore((state) => state.setBodyProfile)
-  const { smoothedKg } = useWeight()
+  const { currentKg } = useWeight()
 
   const ageYears = settings.birthYear ? new Date().getFullYear() - settings.birthYear : null
 
   const input =
-    smoothedKg === null
+    currentKg === null
       ? null
       : {
-          weightKg: smoothedKg,
+          weightKg: currentKg,
           activityLevel: settings.activityLevel,
           heightCm: settings.heightCm,
           ageYears: ageYears ?? undefined,
@@ -83,7 +83,7 @@ export function useCalorieTarget(): CalorieTargetState {
     targetKcal,
     mode: settings.calorieTargetMode,
     computedKcal,
-    smoothedWeightKg: smoothedKg,
+    weightKg: currentKg,
     maintenanceKcal: maintenance?.kcal ?? null,
     maintenanceFromProfile: maintenance?.fromProfile ?? false,
     deficitPercent: settings.calorieDeficitPercent,

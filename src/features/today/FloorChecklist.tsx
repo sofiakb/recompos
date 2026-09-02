@@ -2,6 +2,7 @@ import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/fr'
 import type { FloorHabitDefinition } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface FloorChecklistProps {
   habits: FloorHabitDefinition[]
@@ -26,7 +27,7 @@ export function FloorChecklist({ habits, completedIds, onToggle }: FloorChecklis
           const done = completedIds.has(habit.id)
           return (
             <li key={habit.id}>
-              <button
+              <TapTarget
                 type="button"
                 onClick={() => onToggle(habit)}
                 aria-pressed={done}
@@ -53,7 +54,7 @@ export function FloorChecklist({ habits, completedIds, onToggle }: FloorChecklis
                 <span className="shrink-0 text-xs text-muted-foreground">
                   {done ? t.today.stateDone : t.today.stateTodo}
                 </span>
-              </button>
+              </TapTarget>
             </li>
           )
         })}

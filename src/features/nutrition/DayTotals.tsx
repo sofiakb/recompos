@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 import { formatCount } from '@/lib/format'
 import { t } from '@/i18n/fr'
+import { TapTarget } from '@/components/ui/tap-target'
 
 export interface DayFigures {
   kcal: number
@@ -164,7 +165,7 @@ export function DayTotals({
         </div>
       )}
 
-      <button
+      <TapTarget
         type="button"
         onClick={() => setExpanded((open) => !open)}
         aria-expanded={expanded}
@@ -176,7 +177,7 @@ export function DayTotals({
           aria-hidden
           className={cn('transition-transform duration-200', expanded && 'rotate-180')}
         />
-      </button>
+      </TapTarget>
     </div>
   )
 }
