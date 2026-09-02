@@ -9,8 +9,12 @@ import { useSettingsStore } from '@/stores/settingsStore'
  * iOS Safari exposes nothing of the sort. The only vibration a web page can
  * reach there is the one Safari plays when a `<input type="checkbox" switch>`
  * is toggled, which happens on the user's tap and cannot be triggered from
- * code: a synthetic `.click()` on the switch toggles it in silence. Measured on
- * an iPhone, not assumed.
+ * code: a synthetic `.click()` on the switch toggles it in silence.
+ *
+ * All of that was measured on an iPhone, not assumed — including the switch
+ * still working on iOS 26.6, which the library's own README declares patched
+ * since 26.5. Safari's `userAgent` freezes its version string and reports 18.7
+ * on that same phone, so it settles nothing either. Test on the device.
  *
  * So a button gets its feedback from `useHaptic` on iOS and from `haptic()` on
  * Android, and the two never both fire: `haptic()` returns early wherever
