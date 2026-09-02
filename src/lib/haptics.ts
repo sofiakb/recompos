@@ -115,9 +115,9 @@ interface HapticOptions {
  *
  * @example <button ref={useHaptic()}>…</button>
  */
-export function useHaptic<T extends HTMLElement>({
-  disabled = false,
-}: HapticOptions = {}): (element: T | null) => void {
+export function useHaptic<T extends HTMLElement>({ disabled = false }: HapticOptions = {}): (
+  element: T | null,
+) => void {
   const on = useSettingsStore((state) => state.settings.hapticsEnabled)
 
   return useCallback(
