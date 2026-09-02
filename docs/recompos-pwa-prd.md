@@ -1262,10 +1262,18 @@ L'onglet Aujourd'hui est la racine. Un retour à froid sur l'app y atterrit touj
   transparent posé sur le bouton. `touch-action` n'y change rien, et un
   `.click()` en JavaScript bascule le switch en silence — il faut une
   activation native. Le clic du switch est arrêté net au passage, sans quoi il
-  remonterait dans le bouton et déclencherait chaque action deux fois. Les deux voies ne se doublent jamais : `haptic()` sort tout de suite
-  là où `navigator.vibrate` manque, c'est-à-dire exactement là où le switch fonctionne. Réserve
-  connue : Apple a fermé l'astuce du switch à partir d'iOS 26.5 — au-delà, aucune API web ne rend
-  le haptique à Safari.
+  remonterait dans le bouton et déclencherait chaque action deux fois. Les deux
+  voies ne se doublent jamais : `haptic()` sort tout de suite là où
+  `navigator.vibrate` manque, c'est-à-dire exactement là où le switch
+  fonctionne.
+- **La version d'iOS ne se lit pas dans le `userAgent`.** Le README d'ios-haptics
+  annonce l'astuce fermée par Apple à partir d'iOS 26.5 ; elle a été mesurée
+  vivante sur un iPhone en **26.6**, avec le montage décrit ci-dessus. Cette
+  réserve a été écrite ici sur la foi du README, puis maintenue contre ce que
+  disait l'appareil parce que le `userAgent` de Safari annonçait « 18.7 » : la
+  chaîne est gelée et ne dit rien de la version réelle. Le jour où le doute
+  revient, la réponse est un test sur l'appareil, jamais un `navigator.userAgent`
+  ni une note de version.
 - **États vides utiles** : jamais un écran vide seul ; toujours une phrase et l'action qui le remplit.
 - **Aucun élément de honte** : pas de rouge sur un objectif manqué, pas de « série perdue »,
   pas de pourcentage négatif mis en avant.
