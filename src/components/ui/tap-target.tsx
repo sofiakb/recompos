@@ -1,23 +1,37 @@
-import { forwardRef } from 'react'
+import { forwardRef, useCallback } from 'react'
+import { useHaptic } from '@/lib/haptics'
 
 export type TapTargetProps = React.ButtonHTMLAttributes<HTMLButtonElement>
 
 /**
- * The app's tap target. A plain `<button>` today.
+ * A bare `<button>` that carries the haptic. No styling, no variants.
  *
- * It was introduced to carry the iOS haptic, which can only be had by laying a
- * `<input type="checkbox" switch>` over the element and letting Safari play its
- * own feedback when the finger toggles it. That overlay covers the whole
- * button, and a Safari switch claims the drag gesture it needs to be flicked —
- * so on every full-width button in a scrollable list, which is most of this
- * app, the page stopped scrolling. A vibration is not worth an app you cannot
- * scroll.
+ * `Button` covers the app's styled buttons, but most taps are not those: a
+ * checklist row, a chip, a close cross, a delete icon. They stay plain elements
+ * with their own classes — and on iOS the vibration has to be laid on the
+ * element *before* the tap (see `@/lib/haptics`), which a call in the handler
+ * cannot do. So the element itself becomes the thing that carries it.
  *
- * The seam stays: `useHaptic` in `@/lib/haptics` still works, and if the
- * overlay is ever made to let a vertical pan through, this is the one file that
- * has to change. `haptic()` is untouched and still fires on Android.
+ * Every tap target in the app is one of these, `Button` included. A plain
+ * `<button>` in the tree means the haptic was forgotten — with one deliberate
+ * exception, the drag handle in `HabitRow`, whose pointer events are its whole
+ * purpose and which nothing should sit on top of.
  */
 export const TapTarget = forwardRef<HTMLButtonElement, TapTargetProps>(
-  ({ type = 'button', ...props }, ref) => <button ref={ref} type={type} {...props} />,
+  ({ type = 'button', disabled, ...props }, ref) => {
+    const hapticRef = useHaptic<HTMLButtonElement>({ disabled })
+
+    // Both refs want the same node, and only one `ref` attribute exists.
+    const setRef = useCallback(
+      (node: HTMLButtonElement | null) => {
+        hapticRef(node)
+        if (typeof ref === 'function') ref(node)
+        else if (ref) ref.current = node
+      },
+      [hapticRef, ref],
+    )
+
+    return <button ref={setRef} type={type} disabled={disabled} {...props} />
+  },
 )
 TapTarget.displayName = 'TapTarget'
