@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useUiStore } from '@/stores/uiStore'
+import { TapTarget } from '@/components/ui/tap-target'
 
 export function Toast() {
   const toast = useUiStore((state) => state.toast)
@@ -22,7 +23,7 @@ export function Toast() {
       <div className="flex animate-slide-up items-center gap-3 rounded-full border border-border bg-card py-2 pl-4 pr-2 shadow-lg">
         <p className="text-sm">{toast.message}</p>
         {toast.action ? (
-          <button
+          <TapTarget
             type="button"
             onClick={async () => {
               await toast.action?.run()
@@ -31,7 +32,7 @@ export function Toast() {
             className="min-h-[36px] rounded-full px-3 text-sm font-semibold text-primary transition-colors active:bg-accent"
           >
             {toast.action.label}
-          </button>
+          </TapTarget>
         ) : null}
       </div>
     </div>

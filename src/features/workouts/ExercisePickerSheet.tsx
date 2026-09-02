@@ -7,6 +7,7 @@ import { ExerciseEditorSheet, type ExerciseDraft } from '@/features/workouts/Exe
 import { useUiStore } from '@/stores/uiStore'
 import { t } from '@/i18n/fr'
 import type { Exercise, MovementPattern } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface ExercisePickerSheetProps {
   open: boolean
@@ -89,28 +90,28 @@ export function ExercisePickerSheet({
           {list.map((exercise) => (
             <li key={exercise.id} className="flex items-center gap-1 border-b border-border/60">
               {onPick ? (
-                <button
+                <TapTarget
                   type="button"
                   onClick={() => onPick(exercise)}
                   aria-current={exercise.id === selectedId ? 'true' : undefined}
                   className={`${ROW_LAYOUT} text-left transition-colors hover:bg-accent aria-[current]:text-primary`}
                 >
                   <ExerciseSummary exercise={exercise} />
-                </button>
+                </TapTarget>
               ) : (
                 <div className={ROW_LAYOUT}>
                   <ExerciseSummary exercise={exercise} />
                 </div>
               )}
               {exercise.isCustom ? (
-                <button
+                <TapTarget
                   type="button"
                   aria-label={t.workouts.deleteExercise(exercise.name)}
                   onClick={() => void onDelete(exercise)}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Trash2 size={16} aria-hidden />
-                </button>
+                </TapTarget>
               ) : null}
             </li>
           ))}

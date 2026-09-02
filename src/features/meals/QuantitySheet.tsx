@@ -17,6 +17,7 @@ import {
 } from '@/lib/portion'
 import { t } from '@/i18n/fr'
 import type { MealItem } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface QuantitySheetProps {
   open: boolean
@@ -149,7 +150,7 @@ export function QuantitySheet({
           {subtitle ? <p className="text-[13px] text-muted-foreground">{subtitle}</p> : null}
         </div>
         {star ? (
-          <button
+          <TapTarget
             type="button"
             aria-pressed={star.pinned}
             aria-label={star.pinned ? t.favorites.remove(item.name) : t.favorites.add(item.name)}
@@ -161,7 +162,7 @@ export function QuantitySheet({
               aria-hidden
               className={star.pinned ? 'fill-foreground text-foreground' : undefined}
             />
-          </button>
+          </TapTarget>
         ) : null}
       </div>
     </>
@@ -216,7 +217,7 @@ export function QuantitySheet({
           {chips.length > 0 ? (
             <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
               {chips.map((chip) => (
-                <button
+                <TapTarget
                   key={chip}
                   type="button"
                   onClick={() => changeQuantity(chip)}
@@ -228,7 +229,7 @@ export function QuantitySheet({
                   )}
                 >
                   {chip}
-                </button>
+                </TapTarget>
               ))}
             </div>
           ) : null}
@@ -259,7 +260,7 @@ export function QuantitySheet({
         {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
 
         <div className="border-t border-border">
-          <button
+          <TapTarget
             type="button"
             aria-expanded={manualOpen}
             onClick={() => setManualOpen((current) => !current)}
@@ -275,7 +276,7 @@ export function QuantitySheet({
                 manualOpen && 'rotate-180',
               )}
             />
-          </button>
+          </TapTarget>
 
           {manualOpen ? (
             <div className="grid grid-cols-4 gap-2 pb-1">
@@ -299,14 +300,14 @@ export function QuantitySheet({
 
         <div className="flex gap-2.5">
           {onRemove ? (
-            <button
+            <TapTarget
               type="button"
               aria-label={t.meals.removeItem(item.name)}
               onClick={onRemove}
               className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-lg border border-border text-destructive transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Trash2 size={19} aria-hidden />
-            </button>
+            </TapTarget>
           ) : null}
           <Button
             size="lg"
@@ -344,7 +345,7 @@ function UnitTab({
   onPick,
 }: Readonly<{ label: string; active: boolean; onPick: () => void }>) {
   return (
-    <button
+    <TapTarget
       type="button"
       aria-pressed={active}
       onClick={onPick}
@@ -354,7 +355,7 @@ function UnitTab({
       )}
     >
       {label}
-    </button>
+    </TapTarget>
   )
 }
 
@@ -364,13 +365,13 @@ function StepButton({
   children,
 }: Readonly<{ label: string; onPress: () => void; children: React.ReactNode }>) {
   return (
-    <button
+    <TapTarget
       type="button"
       aria-label={label}
       onClick={onPress}
       className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl border border-border bg-muted transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       {children}
-    </button>
+    </TapTarget>
   )
 }

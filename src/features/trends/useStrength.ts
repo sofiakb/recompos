@@ -36,8 +36,8 @@ export function useStrength(weeks: StrengthWindow): StrengthState {
   const sets = useMemo(() => setsQuery ?? [], [setsQuery])
   // Bodyweight scales the added-load factor; without a weigh-in it falls back to
   // a reference figure rather than refusing to draw anything.
-  const { smoothedKg } = useWeight()
-  const bodyweight = smoothedKg ?? FALLBACK_BODYWEIGHT_KG
+  const { currentKg } = useWeight()
+  const bodyweight = currentKg ?? FALLBACK_BODYWEIGHT_KG
 
   const points = useMemo(
     () => strengthIndex(weeklyVolume(sets, bodyweight, weeks, today)),

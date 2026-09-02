@@ -44,7 +44,7 @@ une décision d'implémentation.
 | 10 | Livraison | GitHub Pages + Actions, Vitest + Testing Library, lint et typecheck en CI | Déploiement auto sur push `main`, base path Vite à configurer |
 | 11 | Cible de protéines | Dérivée du poids : 1,8 g/kg, arrondi à 5 g | La cible n'est plus un nombre à inventer ; elle suit le corps |
 | 12 | Override manuel | Toute modification à la main fige la cible | Une nouvelle pesée ne réécrit jamais un chiffre choisi par l'utilisateur ; retour à l'auto en un tap |
-| 13 | Suivi du poids | Pesée hebdomadaire suggérée, moyenne glissante sur 4 points | L'app n'affiche jamais la pesée brute comme un résultat |
+| 13 | Suivi du poids | Pesée hebdomadaire suggérée, dernière pesée affichée | Un chiffre introuvable sur la balance se lit comme un chiffre faux : la moyenne sur 4 points retardait chaque évolution réelle de plusieurs jours |
 | 14 | Plancher nutrition | « 1 portion de protéines zéro-cuisson », choisie dans le catalogue | Le plancher apporte de vrais grammes au total du jour, au prix d'un tap de plus |
 | 15 | Suivi calorique | **Autorisé, par photo analysée par un modèle de vision.** Renverse l'exclusion §14, décidé le 27/08/2026 | Voir §6.6. La saisie manuelle d'un tracker payant était le point de friction réel ; une photo la remplace |
 | 16 | Clé API | Saisie par l'utilisateur dans les Réglages, jamais compilée dans le bundle | L'hébergement est statique : une clé embarquée serait lisible par quiconque ouvre la page. Décision n°5 (zéro backend) tient |
@@ -57,7 +57,7 @@ une décision d'implémentation.
 | 23 | Décodeur de code-barres | **Une dépendance est admise : `barcode-detector`, chargée à la demande.** Décidé le 28/08/2026, renverse la contrainte « aucune dépendance » du plan | `BarcodeDetector` est une API Chromium. Safari ne l'implémente pas, et tout navigateur sur iOS est Safari en dessous — c'est-à-dire l'appareil avec lequel on scanne. Sans décodeur embarqué, le bouton n'ouvre jamais la caméra sur iPhone. Voir §6.8 |
 | 24 | Écran Nutrition | **Calories d'abord, journal rangé par repas, une seule feuille d'ajout.** Décidée le 28/08/2026 sur le handoff « Refonte de l'écran Nutrition » | Les protéines quittent le grand anneau mais gardent l'accent : c'est toujours le nombre dont l'app parle. Le journal chronologique devient un budget par repas. Les quatre points d'entrée de saisie deviennent le `+` d'un repas, ce qui répond « quel repas ? » avant d'ouvrir plutôt qu'après. Voir §6.9 |
 | 25 | Cibles dérivées | **Cible kcal par repas en 25 / 40 / 30 / 5 %, figée ; glucides et lipides = le reste des calories après protéines, réparti 55/45** | Aucun réglage de plus à tenir à jour. Les protéines restent la seule cible que l'app calcule vraiment ; les deux autres sont ce qu'il reste du budget, et le disent. Une cible protéines qui mange tout le budget rend zéro, jamais un gramme négatif — et un dénominateur nul disparaît de l'écran au lieu d'inventer une cible |
-| 26 | IMC | **Affiché dans la section Poids de Progression, calculé sur le poids lissé, et jamais sans la taille** | L'IMC est une lecture du poids, pas une mesure de plus : pas de section à lui. Sans `heightCm`, aucun chiffre — la carte se réduit au lien qui répare. Le graphique gagne une seconde graduation, pas une seconde courbe : à taille constante les deux tracés seraient superposés. Voir §6.5 |
+| 26 | IMC | **Affiché dans la section Poids de Progression, calculé sur la dernière pesée, et jamais sans la taille** | L'IMC est une lecture du poids, pas une mesure de plus : pas de section à lui. Sans `heightCm`, aucun chiffre — la carte se réduit au lien qui répare. Le graphique gagne une seconde graduation, pas une seconde courbe : à taille constante les deux tracés seraient superposés. Voir §6.5 |
 | 27 | Recherche d'aliment | **Deux tables derrière un seul champ : CIQUAL en local, OpenFoodFacts en réseau.** Décidée le 29/08/2026 | Le code-barres suppose l'emballage en main ; la moitié de ce qui se mange n'en a pas. CIQUAL connaît les aliments nus — « riz blanc, cuit » — et répond hors ligne ; OFF connaît les produits de marque. Les deux rendent une table pour 100 g, donc une seule forme interne et une seule question restante : la portion. La table CIQUAL n'est pas encore au dépôt, et son absence est un cas prévu, pas une panne. Voir §6.10 |
 | 28 | Favoris | **Une seule liste : un aliment épinglé est un favori à une ligne, un repas épinglé en a plusieurs. Étoile sur la ligne dans le détail d'un repas, et sur la rangée dans « Vos habitudes ».** Décidée le 29/08/2026 | « Vos habitudes » est dérivé des trente derniers jours : c'est un constat, pas un choix, et une semaine d'absence le vide. Un favori est l'inverse — il tient jusqu'à ce que l'étoile soit retouchée. La feuille s'ouvre dessus dès qu'il y en a un, ce qui met le café du matin à un geste du `+`. Voir §6.11 |
 | 29 | Détail d'un repas | **Le repas se lit, il ne s'édite plus. Une ligne s'ouvre sur sa quantité ; l'ajout repasse par la feuille d'ajout du journal.** Décidée le 29/08/2026 sur le handoff « Détail d'un repas (lecture) » | Quatre aliments faisaient seize champs, et l'éditeur portait trois boutons d'ajout qui doublaient la feuille du `+`. La seule correction que quelqu'un fait deux fois est « c'était 200 g, pas 300 » : elle devient un pas de dix, sur une ligne ouverte. La saisie des quatre macros reste, repliée. Voir §6.12 |
@@ -123,7 +123,7 @@ Plancher du jour et habitudes empilées validables en 1 tap, `floorCompleted` d�
 score de consistance élastique 7 et 30 jours, jalon cumulatif « Jour N ».
 
 **Jalon 3 — Poids & nutrition**
-Suivi du poids (pesée hebdomadaire suggérée, moyenne glissante, historique), cible de protéines dérivée
+Suivi du poids (pesée hebdomadaire suggérée, dernière pesée, historique), cible de protéines dérivée
 du poids avec override figé, plancher nutrition en portion réelle, compteur de protéines complet
 (anneau, ajout rapide, montant libre, annulation), catalogue zéro-cuisson avec inventaire, cheat sheet
 livraison filtrable.
@@ -198,7 +198,7 @@ coche sans rien apporter nutritionnellement serait un mensonge poli.
 - Affiché en haut du Dashboard, toujours au-dessus de la ligne de flottaison.
 - Validation en 1 tap par item, plus un bouton « Tout valider ».
 - Une fois le plancher complet : micro-animation de confirmation, retour haptique
-  (`navigator.vibrate(30)` quand disponible), la carte se replie pour libérer l'écran.
+  (`navigator.vibrate(30)` quand disponible, voir §9 pour iOS), la carte se replie pour libérer l'écran.
 - Aucun message négatif si le plancher n'est pas fait. La carte reste simplement ouverte.
 
 **Ancres de habit stacking**
@@ -237,12 +237,14 @@ score30 = jours avec plancher validé sur les 30 derniers jours / min(30, jours 
 La cible n'est pas un nombre que l'utilisateur doit inventer : elle se calcule.
 
 ```
-cible = arrondi_5(poids_lissé × 1,8 g/kg), borné à [80, 250] g
+cible = arrondi_5(dernière_pesée × 1,8 g/kg), borné à [80, 250] g
 ```
 
-- Le poids lissé est la moyenne des 4 dernières pesées, pas la dernière. Une pesée isolée varie d'un
-  kilo sur l'eau seule, ce qui ferait bouger la cible sans raison physiologique.
-- L'arrondi à 5 g évite une fausse précision sur une entrée déjà lissée.
+- Le poids retenu est la **dernière pesée**, pas une moyenne. La première version lissait sur 4 points
+  pour amortir le bruit hydrique ; le prix était un chiffre que l'utilisateur ne retrouvait sur aucune
+  balance et qui traînait plusieurs jours derrière la réalité. Un nombre qu'on ne peut pas vérifier se
+  lit comme un nombre faux, et le bruit hydrique se voit très bien sur la courbe juste en dessous.
+- L'arrondi à 5 g évite une fausse précision sur une estimation.
 - 1,8 g/kg est le milieu de la fourchette de recomposition : assez haut pour protéger le muscle en
   déficit, assez bas pour rester atteignable un mauvais jour.
 - **Sans aucune pesée**, une cible provisoire de 150 g s'affiche, explicitement signalée comme telle.
@@ -315,8 +317,8 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
   pesée date de 7 jours ou plus, et disparaît sinon. Aucune notification, aucun rappel insistant.
 - **Une entrée par jour logique** : une seconde pesée le même jour corrige la première au lieu de
   s'ajouter.
-- **Moyenne glissante sur 4 points** affichée à la place du chiffre brut, avec la tendance en kg
-  entre la fenêtre courante et la précédente.
+- **La dernière pesée** affichée telle quelle, avec la tendance en kg par rapport à la pesée
+  précédente.
 - **Le poids ne pilote rien d'autre que la cible de protéines.** Il n'apparaît pas comme un objectif,
   il n'y a pas de poids cible, et aucun écran ne le présente comme une mesure de réussite — le PRD
   reste centré sur la recomposition (§3.3).
@@ -333,10 +335,10 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
   la valeur absolue mélange des mouvements et ne veut rien dire seule. Une semaine sans série est un
   **trou dans la courbe**, pas un zéro.
 - **IMC** (décision n°26) : affiché dans la section **Poids** et nulle part ailleurs, sous le chiffre
-  du poids lissé. C'est une lecture du poids, pas une mesure de plus.
+  du poids. C'est une lecture du poids, pas une mesure de plus.
 
-  Calculé sur le **poids lissé**, le même chiffre affiché juste au-dessus : sur la pesée brute du
-  matin, l'IMC bougerait d'un dixième par jour pour des raisons d'eau. Arrondi à une décimale à la
+  Calculé sur la **dernière pesée**, le même chiffre affiché juste au-dessus : l'index et le poids
+  qu'il traduit doivent pouvoir se recalculer l'un depuis l'autre. Arrondi à une décimale à la
   source plutôt qu'à l'affichage, faute de quoi un 24,96 rendu « 25,0 » se contredirait avec la
   catégorie « corpulence normale » posée à côté.
 
@@ -493,7 +495,7 @@ portion ne corrige pas un biais — ça double le coût pour une impression de r
 
 **Deux erreurs, et pourquoi elles étaient invisibles**
 
-La première version calculait `poids_lissé × 30 kcal/kg`. Deux choses clochaient, et un coefficient
+La première version calculait `poids × 30 kcal/kg`. Deux choses clochaient, et un coefficient
 unique les cachait toutes les deux :
 
 1. **30 kcal/kg pour quelqu'un de sédentaire, c'est le maintien**, pas un déficit — alors que la
@@ -1141,7 +1143,7 @@ export interface ZeroCookItem {
 export interface AppSettings {
   schemaVersion: number;
   installedAt: IsoDateTime;                 // base du dénominateur de consistance et du « Jour N »
-  proteinTargetMode: 'auto' | 'manual';     // auto = dérivé du poids lissé
+  proteinTargetMode: 'auto' | 'manual';     // auto = dérivé de la dernière pesée
   manualProteinTargetGrams?: number;        // seulement en mode manual, figé
   locale: 'fr';
   onboardingCompletedAt?: IsoDateTime;
@@ -1239,6 +1241,20 @@ L'onglet Aujourd'hui est la racine. Un retour à froid sur l'app y atterrit touj
   depuis shadcn/ui.
 - **Retour immédiat** : chaque validation déclenche une micro-animation courte (150–200 ms), une
   vibration légère si supportée, et un toast annulable pour les actions destructrices.
+- **Le haptique se pose avant le tap, il ne se déclenche pas après.** Android expose
+  `navigator.vibrate`, appelable de n'importe où — y compris après une écriture asynchrone, une fois
+  l'enregistrement réellement fait. Safari iOS n'expose rien de tel : la seule vibration atteignable
+  depuis une page est celle que Safari joue quand un `<input type="checkbox" switch>` bascule, donc
+  au tap de l'utilisateur et jamais depuis du code. `ios-haptics` pose ce switch, invisible, sur
+  l'élément qui va être tapé ; `useHaptic` est ce ref, câblé une fois dans `Button` plutôt que
+  répété sur chaque appelant. Concrètement, tout ce qui se tape est un
+  `TapTarget` — `Button` compris, qui n'est que `TapTarget` plus les variantes.
+  Un `<button>` nu dans l'arbre signifie que le haptique a été oublié, et un
+  test le vérifie ; la seule exception est la poignée de réorganisation de
+  `HabitRow`, dont l'overlay avalerait les événements pointeur. Les deux voies ne se doublent jamais : `haptic()` sort tout de suite
+  là où `navigator.vibrate` manque, c'est-à-dire exactement là où le switch fonctionne. Réserve
+  connue : Apple a fermé l'astuce du switch à partir d'iOS 26.5 — au-delà, aucune API web ne rend
+  le haptique à Safari.
 - **États vides utiles** : jamais un écran vide seul ; toujours une phrase et l'action qui le remplit.
 - **Aucun élément de honte** : pas de rouge sur un objectif manqué, pas de « série perdue »,
   pas de pourcentage négatif mis en avant.
@@ -1273,7 +1289,7 @@ Priorité à la logique pure, qui concentre les vrais risques de bug :
 - `lib/date.ts` — journée logique à 03h59 et 04h01, changements d'heure, passage de mois.
 - `lib/overload.ts` — les trois règles de difficulté, le franchissement du haut de fourchette, la
   bascule sur la progression suivante.
-- `lib/nutrition.ts` — formule de cible, bornes, lissage du poids, amortissement d'un pic hydrique.
+- `lib/nutrition.ts` — formule de cible, bornes, poids courant retenu pour les cibles.
 - Migration v1 → v2 — override conservé, plancher converti, habitudes existantes préservées.
 - Agrégation des protéines — somme, annulation, réécriture de `DailyLog.totalProteinGrams`.
 - Export/import — aller-retour sans perte, refus d'un `schemaVersion` supérieur.

@@ -4,10 +4,10 @@ import { MemoryRouter } from 'react-router-dom'
 import { BmiCard } from '@/features/weight/BmiCard'
 import { t } from '@/i18n/fr'
 
-function renderCard(smoothedKg: number, heightCm: number | null) {
+function renderCard(weightKg: number, heightCm: number | null) {
   return render(
     <MemoryRouter>
-      <BmiCard smoothedKg={smoothedKg} heightCm={heightCm} />
+      <BmiCard weightKg={weightKg} heightCm={heightCm} />
     </MemoryRouter>,
   )
 }

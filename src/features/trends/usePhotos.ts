@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { addPhoto, allPhotos, deletePhoto } from '@/db/repositories/photoRepository'
 import { photoObjectUrl } from '@/lib/image'
 import { toLogicalDate } from '@/lib/date'
-import { haptic } from '@/lib/utils'
+import { haptic } from '@/lib/haptics'
 import type { PhotoAngle, ProgressPhoto } from '@/types/models'
 
 export interface PhotosState {

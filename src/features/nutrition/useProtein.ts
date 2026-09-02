@@ -8,7 +8,7 @@ import {
 } from '@/db/repositories/proteinRepository'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { toLogicalDate, type IsoDate } from '@/lib/date'
-import { haptic } from '@/lib/utils'
+import { haptic } from '@/lib/haptics'
 import type { ProteinLog, ProteinSource } from '@/types/models'
 
 export interface ProteinState {

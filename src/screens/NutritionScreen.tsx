@@ -42,7 +42,7 @@ function kcalExplain(target: CalorieTargetState): string {
 function proteinExplain(target: ProteinTargetState): string {
   if (target.mode === 'manual') return t.nutrition.proteinTargetManual
   if (target.isFallback) return t.nutrition.proteinTargetNoWeight
-  return t.nutrition.proteinFromWeight(target.smoothedWeightKg ?? 0, target.gramsPerKg)
+  return t.nutrition.proteinFromWeight(target.weightKg ?? 0, target.gramsPerKg)
 }
 
 /**

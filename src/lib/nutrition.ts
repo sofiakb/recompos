@@ -158,7 +158,7 @@ export const DEFAULT_MEAL_PHOTO_RETENTION_DAYS = 30
  * Maintenance minus the deficit, rounded to the nearest 50 kcal.
  *
  * Rounded for the same reason the protein target rounds to 5 g: the input is a
- * smoothed weight and the coefficient is an estimate, so a figure ending in 7
+ * weight is one reading and the coefficient is an estimate, so a figure ending in 7
  * would be false precision.
  */
 export function computeCalorieTargetKcal(
@@ -266,14 +266,11 @@ export const MAX_WEIGHT_KG = 250
 export const MIN_WAIST_CM = 40
 export const MAX_WAIST_CM = 200
 
-/** Number of weigh-ins averaged to smooth out day-to-day water noise. */
-export const WEIGHT_SMOOTHING_POINTS = 4
-
 /** Days after the last weigh-in before the dashboard suggests a new one. */
 export const WEIGH_IN_INTERVAL_DAYS = 7
 
 /**
- * Rounds to the nearest 5 g: the input is a smoothed weight, so pretending to
+ * Rounds to the nearest 5 g: the coefficient is an estimate, so pretending to
  * single-gram precision would be false accuracy.
  */
 export function computeProteinTargetGrams(weightKg: number): number {
@@ -283,19 +280,17 @@ export function computeProteinTargetGrams(weightKg: number): number {
 }
 
 /**
- * Mean of the most recent weigh-ins, newest first.
+ * The last weigh-in, newest first.
  *
- * A single weigh-in swings by a kilo on water alone, which would drag the
- * protein target around for no physiological reason.
+ * The app used to average the last four weigh-ins to damp water noise, but a
+ * mean the user cannot find on any scale reads as a wrong number: it lags every
+ * real change by days and never matches what they just saw. The figure shown,
+ * and the one the targets derive from, is the one they typed.
  */
-export function smoothedWeightKg(
-  weightsNewestFirst: number[],
-  points = WEIGHT_SMOOTHING_POINTS,
-): number | null {
-  const sample = weightsNewestFirst.slice(0, points)
-  if (sample.length === 0) return null
-  const sum = sample.reduce((total, kg) => total + kg, 0)
-  return Math.round((sum / sample.length) * 10) / 10
+export function currentWeightKg(weightsNewestFirst: number[]): number | null {
+  const latest = weightsNewestFirst[0]
+  if (latest === undefined) return null
+  return Math.round(latest * 10) / 10
 }
 
 export function clampWeightKg(kg: number): number {

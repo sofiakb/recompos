@@ -3,6 +3,7 @@ import { ChevronsUpDown, Pencil } from 'lucide-react'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { t } from '@/i18n/fr'
 import type { FloorHabitDefinition } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface HabitRowProps {
   habit: FloorHabitDefinition
@@ -38,6 +39,9 @@ export function HabitRow({ habit, index, count, onEdit }: HabitRowProps) {
       ref={rowRef}
       className="flex items-center gap-1 border-b border-border/60 py-2 last:border-0"
     >
+      {/* The only plain button left in the app: `TapTarget` lays an invisible
+          switch over its element for the iOS haptic, and that overlay would
+          swallow the pointer events this handle is made of. */}
       <button
         type="button"
         aria-label={t.habits.reorder}
@@ -88,14 +92,14 @@ export function HabitRow({ habit, index, count, onEdit }: HabitRowProps) {
         </p>
       </div>
 
-      <button
+      <TapTarget
         type="button"
         aria-label={t.habits.edit(habit.title)}
         onClick={onEdit}
         className="flex h-touch w-touch shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Pencil size={18} aria-hidden />
-      </button>
+      </TapTarget>
     </li>
   )
 }

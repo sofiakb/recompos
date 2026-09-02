@@ -2,6 +2,7 @@ import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/fr'
 import type { FloorHabitDefinition } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface StackChipsProps {
   habits: FloorHabitDefinition[]
@@ -28,7 +29,7 @@ export function StackChips({ habits, completedIds, onToggle }: StackChipsProps) 
           const done = completedIds.has(habit.id)
           return (
             <li key={habit.id}>
-              <button
+              <TapTarget
                 type="button"
                 onClick={() => onToggle(habit)}
                 aria-pressed={done}
@@ -41,7 +42,7 @@ export function StackChips({ habits, completedIds, onToggle }: StackChipsProps) 
               >
                 {done ? <Check size={14} className="text-primary" aria-hidden /> : null}
                 {habit.title}
-              </button>
+              </TapTarget>
             </li>
           )
         })}

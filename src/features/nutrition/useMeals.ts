@@ -26,7 +26,7 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import { bytesToDataUrl } from '@/lib/backup'
 import { toLogicalDate, type IsoDate } from '@/lib/date'
 import { encodePhoto, MEAL_MAX_EDGE_PX, MEAL_WEBP_QUALITY, type EncodedImage } from '@/lib/image'
-import { haptic } from '@/lib/utils'
+import { haptic } from '@/lib/haptics'
 import {
   analyseMeal,
   analyseMealText,

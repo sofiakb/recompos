@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { TapTarget } from '@/components/ui/tap-target'
 
 export interface SegmentedOption<T extends string> {
   value: T
@@ -35,7 +36,7 @@ export function Segmented<T extends string>({
       {options.map((option) => {
         const selected = option.value === value
         return (
-          <button
+          <TapTarget
             key={option.value}
             type="button"
             role="radio"
@@ -49,7 +50,7 @@ export function Segmented<T extends string>({
             )}
           >
             {option.label}
-          </button>
+          </TapTarget>
         )
       })}
     </div>

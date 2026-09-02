@@ -29,10 +29,3 @@ export function nowIso(): string {
   lastIssuedMs = now > lastIssuedMs ? now : lastIssuedMs + 1
   return new Date(lastIssuedMs).toISOString()
 }
-
-/** Short, non-blocking confirmation on a completed action. No-op where unsupported. */
-export function haptic(durationMs = 30): void {
-  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-    navigator.vibrate?.(durationMs)
-  }
-}

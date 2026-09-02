@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react'
 import { t } from '@/i18n/fr'
 import type { Exercise, ExerciseSet } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface SetListProps {
   sets: ExerciseSet[]
@@ -29,14 +30,14 @@ export function SetList({ sets, exerciseById, onRemove }: SetListProps) {
               {t.workouts.difficultyLabel[set.difficulty]}
             </p>
           </div>
-          <button
+          <TapTarget
             type="button"
             aria-label={t.workouts.deleteSet}
             onClick={() => onRemove(set.id)}
             className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Trash2 size={16} aria-hidden />
-          </button>
+          </TapTarget>
         </li>
       ))}
     </ul>

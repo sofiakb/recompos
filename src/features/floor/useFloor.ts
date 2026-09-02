@@ -13,7 +13,7 @@ import { consistencyScore, dayNumber, type ConsistencyScore } from '@/lib/consis
 import { lastDays, toLogicalDate } from '@/lib/date'
 import { DAYS_PER_WEEK, HEATMAP_WEEKS } from '@/lib/heatmap'
 import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
-import { haptic } from '@/lib/utils'
+import { haptic } from '@/lib/haptics'
 import type { FloorHabitDefinition, ZeroCookItem } from '@/types/models'
 
 /** What the caller must do next after asking to complete a habit. */

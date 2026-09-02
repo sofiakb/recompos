@@ -15,6 +15,7 @@ import { useUiStore } from '@/stores/uiStore'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/fr'
 import type { ZeroCookItem } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface ZeroCookCatalogProps {
   onLog: (item: ZeroCookItem) => void
@@ -62,13 +63,13 @@ export function ZeroCookCatalog({ onLog }: ZeroCookCatalogProps) {
               <CardTitle>{t.nutrition.zeroCookTitle}</CardTitle>
               <CardDescription>{t.nutrition.zeroCookHint}</CardDescription>
             </div>
-            <button
+            <TapTarget
               type="button"
               onClick={() => setManaging((current) => !current)}
               className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {managing ? t.nutrition.manageDone : t.nutrition.manage}
-            </button>
+            </TapTarget>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
@@ -84,7 +85,7 @@ export function ZeroCookCatalog({ onLog }: ZeroCookCatalogProps) {
                     !item.inStock && !managing && 'opacity-45',
                   )}
                 >
-                  <button
+                  <TapTarget
                     type="button"
                     role="checkbox"
                     aria-checked={item.inStock}
@@ -102,7 +103,7 @@ export function ZeroCookCatalog({ onLog }: ZeroCookCatalogProps) {
                     >
                       {item.inStock ? <Check size={14} strokeWidth={3} aria-hidden /> : null}
                     </span>
-                  </button>
+                  </TapTarget>
 
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-sm font-medium">{item.name}</span>
@@ -113,7 +114,7 @@ export function ZeroCookCatalog({ onLog }: ZeroCookCatalogProps) {
 
                   {managing ? (
                     <>
-                      <button
+                      <TapTarget
                         type="button"
                         aria-label={t.nutrition.editItem(item.name)}
                         onClick={() => {
@@ -123,8 +124,8 @@ export function ZeroCookCatalog({ onLog }: ZeroCookCatalogProps) {
                         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Pencil size={16} aria-hidden />
-                      </button>
-                      <button
+                      </TapTarget>
+                      <TapTarget
                         type="button"
                         aria-label={t.nutrition.deleteItem(item.name)}
                         onClick={async () => {
@@ -134,10 +135,10 @@ export function ZeroCookCatalog({ onLog }: ZeroCookCatalogProps) {
                         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Trash2 size={16} aria-hidden />
-                      </button>
+                      </TapTarget>
                     </>
                   ) : (
-                    <button
+                    <TapTarget
                       type="button"
                       onClick={() => onLog(item)}
                       aria-label={t.nutrition.logItem(item.name, item.proteinPerServingGrams)}
@@ -145,7 +146,7 @@ export function ZeroCookCatalog({ onLog }: ZeroCookCatalogProps) {
                     >
                       <Plus size={14} aria-hidden />
                       {item.proteinPerServingGrams} g
-                    </button>
+                    </TapTarget>
                   )}
                 </li>
               ))}

@@ -12,6 +12,7 @@ import { t } from '@/i18n/fr'
 import type { Food } from '@/lib/foods/food'
 import type { RecentMeal } from '@/features/meals/useRecentMeals'
 import type { MealSlot } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 export type AddTab = 'favorites' | 'search' | 'quick' | 'photo' | 'describe' | 'barcode'
 
@@ -121,14 +122,14 @@ export function AddSheet({
             {t.nutrition.slotTotals(consumedKcal, targetKcal)}
           </p>
         </div>
-        <button
+        <TapTarget
           type="button"
           aria-label={t.common.close}
           onClick={onClose}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-muted transition-colors hover:bg-accent"
         >
           <X size={18} aria-hidden />
-        </button>
+        </TapTarget>
       </div>
 
       <div
@@ -137,7 +138,7 @@ export function AddSheet({
         className="no-scrollbar flex shrink-0 gap-2 overflow-x-auto px-4 pb-1"
       >
         {TABS.map(({ id, label, Icon }) => (
-          <button
+          <TapTarget
             key={id}
             type="button"
             role="tab"
@@ -152,7 +153,7 @@ export function AddSheet({
           >
             <Icon size={18} aria-hidden />
             {label}
-          </button>
+          </TapTarget>
         ))}
       </div>
     </>

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { CIRCUIT_BLOCKS } from '@/db/seed'
 import { t } from '@/i18n/fr'
 import type { Exercise, MovementPattern } from '@/types/models'
+import { TapTarget } from '@/components/ui/tap-target'
 
 interface CircuitPlanProps {
   blockExerciseIds: Record<MovementPattern, string>
@@ -54,7 +55,7 @@ export function CircuitPlan({
                   </span>
                 ) : null}
               </span>
-              <button
+              <TapTarget
                 type="button"
                 aria-label={t.workouts.changeExercise}
                 title={t.workouts.changeExercise}
@@ -62,7 +63,7 @@ export function CircuitPlan({
                 className="flex h-touch w-touch shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Repeat size={18} aria-hidden />
-              </button>
+              </TapTarget>
             </li>
           )
         })}
