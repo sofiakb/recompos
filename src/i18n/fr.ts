@@ -356,6 +356,17 @@ export const fr = {
     },
     bmiScaleLabel: (value: string, band: string) => `IMC ${value}, ${band}`,
     bmiNoHeight: 'Renseigner ma taille',
+    healthyRange: (minKg: number, maxKg: number) =>
+      `Corpulence normale de ${formatDecimal(minKg)} à ${formatDecimal(maxKg)} kg`,
+    // Une distance, jamais une consigne : « il te reste » ou « à perdre » font du
+    // poids un objectif, ce que le PRD refuse (§3.3). Le chiffre suffit.
+    healthyRangeAway: (minKg: number, maxKg: number, toGoKg: number) =>
+      `Corpulence normale de ${formatDecimal(minKg)} à ${formatDecimal(maxKg)} kg, soit ${formatDecimal(
+        Math.abs(toGoKg),
+      )} kg plus ${toGoKg < 0 ? 'bas' : 'haut'}`,
+    bmiLine: (index: number) => `IMC ${formatDecimal(index)}`,
+    weightBoundHint: (index: number) =>
+      `Les pointillés marquent l’IMC ${formatDecimal(index)}, la limite de la corpulence normale.`,
     weightBmiChart: 'Poids et IMC',
     weightBmiHint: 'Une seule courbe, deux lectures : l’IMC suit le poids à taille constante.',
   },

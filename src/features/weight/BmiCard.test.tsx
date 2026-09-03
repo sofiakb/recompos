@@ -31,6 +31,18 @@ describe('BmiCard', () => {
     ).toBeTruthy()
   })
 
+  it('reads the normal band back in kilos, and how far off it is', () => {
+    renderCard(77, 174)
+
+    expect(screen.getByText(t.trends.healthyRangeAway(56, 75.7, -1.3))).toBeTruthy()
+  })
+
+  it('drops the distance once the weight is inside the band', () => {
+    renderCard(70, 174)
+
+    expect(screen.getByText(t.trends.healthyRange(56, 75.7))).toBeTruthy()
+  })
+
   it('offers to fill the height in rather than inventing one', () => {
     renderCard(78.4, null)
 

@@ -320,8 +320,15 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
 - **La dernière pesée** affichée telle quelle, avec la tendance en kg par rapport à la pesée
   précédente.
 - **Le poids ne pilote rien d'autre que la cible de protéines.** Il n'apparaît pas comme un objectif,
-  il n'y a pas de poids cible, et aucun écran ne le présente comme une mesure de réussite — le PRD
-  reste centré sur la recomposition (§3.3).
+  et aucun écran ne le présente comme une mesure de réussite — le PRD reste centré sur la
+  recomposition (§3.3).
+- **Les bornes de la corpulence normale sont lues en kilos, et ce n'est pas un poids cible.** « Entre
+  18,5 et 25 » est un intervalle sur un index dans lequel personne ne se pèse ; « de 56,0 à 75,7 kg »
+  est le même intervalle sur l'échelle de la balance. La carte IMC l'écrit, et le graphique le trace
+  en pointillés à la borne concernée — le plafond, sauf pour un corps sous le plancher. La distance
+  est donnée sans verbe et sans couleur : « soit 1,3 kg plus bas », jamais « à perdre ». Rien n'est
+  ajouté à l'app par cette lecture : ni objectif enregistré, ni progression vers un chiffre, ni
+  félicitation quand il est atteint.
 
 ### 6.5 Module Tendances (jalon 6)
 
@@ -338,7 +345,8 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
   du poids. C'est une lecture du poids, pas une mesure de plus.
 
   Calculé sur la **dernière pesée**, le même chiffre affiché juste au-dessus : l'index et le poids
-  qu'il traduit doivent pouvoir se recalculer l'un depuis l'autre. Arrondi à une décimale à la
+  qu'il traduit doivent pouvoir se recalculer l'un depuis l'autre. La borne de la corpulence normale
+  est donnée en kilos sous la règle, et tracée en pointillés sur la courbe. Arrondi à une décimale à la
   source plutôt qu'à l'affichage, faute de quoi un 24,96 rendu « 25,0 » se contredirait avec la
   catégorie « corpulence normale » posée à côté.
 
@@ -354,7 +362,18 @@ tourner si l'écran est verrouillé (recalcul sur `timestamp` de départ, pas su
   constante l'IMC est le poids divisé par une constante : les deux tracés seraient rigoureusement
   superposés. `LineChart` accepte donc un axe secondaire — un libellé et une conversion — avec sa
   propre précision décimale, des bornes converties pouvant se retrouver bien plus serrées que celles
-  dont elles viennent.
+  dont elles viennent. Il accepte aussi une **référence** : une horizontale en pointillés qui entre
+  dans le domaine vertical sans entrer dans les graduations. Le domaine, sans quoi la référence
+  serait rognée hors du dessin ; pas les graduations, qui doivent continuer à ne lire que des pesées
+  réelles.
+- **La courbe est une spline monotone, pas une ligne brisée.** Une polyligne transforme une série de
+  pesées en tôle pliée, et les plis se lisent comme des événements que le corps n'a pas eus. Mais
+  toutes les splines ne conviennent pas : Catmull-Rom déborde autour d'un sommet, et une pesée à
+  78,3 kg entre deux plus basses serait *dessinée* à 78,6 — un poids jamais enregistré, sur un
+  graphique dont le seul travail est de dire ce que la balance a dit. Les tangentes de
+  Fritsch-Carlson s'annulent à chaque extremum local, ce qui garde la courbe dans l'intervalle de
+  ses propres points. L'aire sous la courbe suit la même spline, sinon l'écart entre les deux se
+  lirait comme une seconde série.
 - **Mesures** : tour de taille en cm, saisie hebdomadaire suggérée mais jamais imposée. Courbe avec
   moyenne glissante sur 4 points pour lisser le bruit quotidien.
 - **Coffre photos** : photos mensuelles stockées en octets dans IndexedDB, redimensionnées côté client
