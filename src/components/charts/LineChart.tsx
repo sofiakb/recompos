@@ -19,6 +19,18 @@ export interface SecondaryAxis {
   convert: (value: number) => number
 }
 
+/**
+ * A horizontal line the series is read against — a threshold, not a series.
+ *
+ * It joins the vertical domain, so the line is always inside the drawing: a
+ * reference the chart crops away is worse than no reference at all.
+ */
+export interface ChartReference {
+  value: number
+  /** Sits above the line, at the left. Names what the line is, e.g. `IMC 25`. */
+  label: string
+}
+
 interface LineChartProps {
   points: ChartPoint[]
   ariaLabel: string
@@ -28,6 +40,7 @@ interface LineChartProps {
   /** Unit title above the left axis, e.g. `kg`. Only drawn when given. */
   unit?: string
   secondaryAxis?: SecondaryAxis
+  reference?: ChartReference
   className?: string
 }
 
@@ -53,6 +66,65 @@ function pickDecimals(ticks: number[]): number {
   return 2
 }
 
+interface Pt {
+  x: number
+  y: number
+}
+
+const f = (value: number) => value.toFixed(1)
+
+/**
+ * The bezier controls of a monotone cubic spline, first segment first.
+ *
+ * A plain polyline turns a weight series into a folded sheet, and the folds
+ * read as events the body never had. A spline is the fix, but not any spline:
+ * Catmull-Rom overshoots around a peak, so a weigh-in of 78,3 kg sitting between
+ * two lower ones would be *drawn* at 78,6 — a weight that was never recorded.
+ * Fritsch-Carlson tangents flatten to zero at every local extreme, which keeps
+ * the curve monotone wherever the data is: it never leaves the interval its own
+ * points define.
+ *
+ * Returns the commands after the opening `M`, so the line and the area beneath
+ * it share one curve rather than compute it twice.
+ */
+function curveCommands(pts: Pt[]): string {
+  const n = pts.length
+  const dx: number[] = []
+  const slope: number[] = []
+  for (let i = 0; i < n - 1; i += 1) {
+    dx[i] = pts[i + 1].x - pts[i].x
+    slope[i] = (pts[i + 1].y - pts[i].y) / dx[i]
+  }
+
+  const tangent: number[] = [slope[0]]
+  for (let i = 1; i < n - 1; i += 1) {
+    if (slope[i - 1] * slope[i] <= 0) {
+      // A peak or a trough: a flat tangent is what keeps the curve inside its
+      // points instead of bulging past them.
+      tangent[i] = 0
+    } else {
+      const before = 2 * dx[i] + dx[i - 1]
+      const after = dx[i] + 2 * dx[i - 1]
+      tangent[i] = (before + after) / (before / slope[i - 1] + after / slope[i])
+    }
+  }
+  tangent[n - 1] = slope[n - 2]
+
+  let commands = ''
+  for (let i = 0; i < n - 1; i += 1) {
+    const third = dx[i] / 3
+    const c1 = { x: pts[i].x + third, y: pts[i].y + tangent[i] * third }
+    const c2 = { x: pts[i + 1].x - third, y: pts[i + 1].y - tangent[i + 1] * third }
+    commands += ` C ${f(c1.x)},${f(c1.y)} ${f(c2.x)},${f(c2.y)} ${f(pts[i + 1].x)},${f(pts[i + 1].y)}`
+  }
+  return commands
+}
+
+/** The drawn line through a run of points. */
+function curvePath(pts: Pt[]): string {
+  return `M ${f(pts[0].x)},${f(pts[0].y)}${curveCommands(pts)}`
+}
+
 /**
  * A small SVG line chart, hand-drawn.
  *
@@ -67,6 +139,7 @@ export function LineChart({
   formatValue,
   unit,
   secondaryAxis,
+  reference,
   className,
 }: Readonly<LineChartProps>) {
   const gradientId = useId()
@@ -75,8 +148,11 @@ export function LineChart({
   )
   if (values.length < 2) return null
 
-  const min = Math.min(...values)
-  const max = Math.max(...values)
+  // The reference stretches the domain but never the ticks: the axis keeps
+  // reading the weights actually recorded, and the line labels itself.
+  const domain = reference ? [...values, reference.value] : values
+  const min = Math.min(...domain)
+  const max = Math.max(...domain)
   // A flat series would divide by zero; give it a nominal span instead.
   const span = max - min || Math.max(1, Math.abs(max) * 0.1)
   const top = max + span * 0.1
@@ -84,7 +160,9 @@ export function LineChart({
 
   // Ticks sit on the data itself, not on the padded extremes: the top gridline
   // marks the highest point recorded rather than an invented ceiling.
-  const ticks = min === max ? [min] : [max, (min + max) / 2, min]
+  const dataMin = Math.min(...values)
+  const dataMax = Math.max(...values)
+  const ticks = dataMin === dataMax ? [dataMin] : [dataMax, (dataMin + dataMax) / 2, dataMin]
   const decimals = pickDecimals(ticks)
   const label = formatValue ?? ((value: number) => value.toFixed(decimals).replace('.', ','))
 
@@ -106,8 +184,8 @@ export function LineChart({
 
   // Gaps split the line into segments so a break in the data reads as a break,
   // not as a straight line drawn through days that were never recorded.
-  const segments: Array<Array<{ x: number; y: number }>> = []
-  let current: Array<{ x: number; y: number }> = []
+  const segments: Pt[][] = []
+  let current: Pt[] = []
   points.forEach((point, index) => {
     if (point.value === null) {
       if (current.length > 1) segments.push(current)
@@ -118,19 +196,17 @@ export function LineChart({
   })
   if (current.length > 1) segments.push(current)
 
-  const toPolyline = (segment: Array<{ x: number; y: number }>) =>
-    segment.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-
   const overlayPoints = (overlay ?? [])
     .map((value, index) => (value === null ? null : { x: x(index), y: y(value) }))
-    .filter((point): point is { x: number; y: number } => point !== null)
+    .filter((point): point is Pt => point !== null)
 
   const lastSegment = segments[segments.length - 1]
   const baseline = PAD.top + plotHeight
+  // The fill follows the same curve as the line, never a straight chord: a gap
+  // between the two would read as a second, lower series.
   const area = lastSegment
-    ? `M ${lastSegment[0].x.toFixed(1)},${baseline.toFixed(1)} L ${toPolyline(lastSegment)} L ${lastSegment[
-        lastSegment.length - 1
-      ].x.toFixed(1)},${baseline.toFixed(1)} Z`
+    ? `M ${f(lastSegment[0].x)},${f(baseline)} L ${f(lastSegment[0].x)},${f(lastSegment[0].y)}` +
+      `${curveCommands(lastSegment)} L ${f(lastSegment[lastSegment.length - 1].x)},${f(baseline)} Z`
     : null
   const lastDot = lastSegment?.[lastSegment.length - 1] ?? null
 
@@ -199,10 +275,33 @@ export function LineChart({
 
       {area ? <path d={area} fill={`url(#${gradientId})`} /> : null}
 
+      {reference ? (
+        <g>
+          <line
+            x1={PAD.left}
+            x2={WIDTH - padRight}
+            y1={y(reference.value)}
+            y2={y(reference.value)}
+            stroke="hsl(var(--muted-foreground))"
+            strokeWidth={1.5}
+            strokeDasharray="4 3"
+            vectorEffect="non-scaling-stroke"
+          />
+          <text
+            x={PAD.left + 2}
+            y={y(reference.value) - 4}
+            fontSize="8"
+            fill="hsl(var(--muted-foreground))"
+          >
+            {reference.label}
+          </text>
+        </g>
+      ) : null}
+
       {segments.map((segment, index) => (
-        <polyline
+        <path
           key={index}
-          points={toPolyline(segment)}
+          d={curvePath(segment)}
           fill="none"
           stroke="hsl(var(--primary))"
           strokeWidth={2.5}
@@ -213,8 +312,8 @@ export function LineChart({
       ))}
 
       {overlayPoints.length > 1 ? (
-        <polyline
-          points={toPolyline(overlayPoints)}
+        <path
+          d={curvePath(overlayPoints)}
           fill="none"
           stroke="hsl(var(--muted-foreground))"
           strokeWidth={1.5}

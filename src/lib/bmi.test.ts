@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { bmi, bmiBand, bmiPercent, BMI_SCALE_MAX, BMI_SCALE_MIN } from '@/lib/bmi'
+import {
+  bmi,
+  bmiBand,
+  bmiPercent,
+  healthyWeight,
+  BMI_NORMAL_MAX,
+  BMI_NORMAL_MIN,
+  BMI_SCALE_MAX,
+  BMI_SCALE_MIN,
+} from '@/lib/bmi'
 
 describe('bmi', () => {
   it('divides the weight by the square of the height in metres', () => {
@@ -37,5 +46,50 @@ describe('bmiPercent', () => {
   it('pins rather than running off either end', () => {
     expect(bmiPercent(BMI_SCALE_MIN - 5)).toBe(0)
     expect(bmiPercent(BMI_SCALE_MAX + 5)).toBe(100)
+  })
+})
+
+describe('healthyWeight', () => {
+  // 1,74 m : la corpulence normale court de 56,0 à 75,7 kg.
+  const HEIGHT = 174
+
+  it('reads the band on the scale rather than on the index', () => {
+    const healthy = healthyWeight(77, HEIGHT)
+
+    expect(healthy.minKg).toBe(56)
+    expect(healthy.maxKg).toBe(75.7)
+  })
+
+  it('points at the ceiling, and says how far below it sits', () => {
+    const healthy = healthyWeight(77, HEIGHT)
+
+    expect(healthy.boundKg).toBe(75.7)
+    expect(healthy.boundIndex).toBe(BMI_NORMAL_MAX)
+    expect(healthy.toGoKg).toBe(-1.3)
+  })
+
+  it('points at the floor for a body under it', () => {
+    const healthy = healthyWeight(52, HEIGHT)
+
+    expect(healthy.boundKg).toBe(56)
+    expect(healthy.boundIndex).toBe(BMI_NORMAL_MIN)
+    expect(healthy.toGoKg).toBe(4)
+  })
+
+  it('has no distance to report from inside the band', () => {
+    expect(healthyWeight(70, HEIGHT).toGoKg).toBeNull()
+  })
+
+  /**
+   * Someone inside the band keeps reading the ceiling. The alternative — the
+   * nearer of the two bounds — makes the dashed line jump from one side of the
+   * chart to the other as the weight drifts across the middle.
+   */
+  it('keeps naming the ceiling from just above the floor', () => {
+    expect(healthyWeight(57, HEIGHT).boundKg).toBe(75.7)
+  })
+
+  it('scales with the height it is read on', () => {
+    expect(healthyWeight(77, 190).maxKg).toBeGreaterThan(healthyWeight(77, 160).maxKg)
   })
 })

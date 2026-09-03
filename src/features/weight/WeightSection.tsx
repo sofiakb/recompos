@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Scale } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { LineChart, type SecondaryAxis } from '@/components/charts/LineChart'
+import { LineChart, type ChartReference, type SecondaryAxis } from '@/components/charts/LineChart'
 import { TrendSection } from '@/features/trends/TrendSection'
 import { BmiCard } from '@/features/weight/BmiCard'
 import { WeightSheet } from '@/features/weight/WeightSheet'
 import { useWeight } from '@/features/weight/useWeight'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useUiStore } from '@/stores/uiStore'
-import { bmi } from '@/lib/bmi'
+import { bmi, healthyWeight } from '@/lib/bmi'
 import { formatShortDate } from '@/lib/date'
 import { formatDecimal, formatSignedDelta } from '@/lib/format'
 import { t } from '@/i18n/fr'
@@ -16,11 +16,13 @@ import { t } from '@/i18n/fr'
 /**
  * One sentence under the section, never two.
  *
- * The BMI legend explains the same chart the weigh-in note explains, so when
- * the second axis is drawn it takes the slot rather than stacking below it.
+ * Three notes compete for the slot and the most specific wins: a dashed line
+ * on the chart is the thing a reader has just seen and cannot name, so it
+ * explains itself before the second axis does.
  */
-function hintFor(hasWeight: boolean, showsBmi: boolean): string {
+function hintFor(hasWeight: boolean, showsBmi: boolean, bound: number | null): string {
   if (!hasWeight) return t.weight.emptyHint
+  if (bound !== null) return t.trends.weightBoundHint(bound)
   if (showsBmi) return t.trends.weightBmiHint
   return t.weight.latestHint
 }
@@ -48,6 +50,17 @@ export function WeightSection() {
       ? undefined
       : { label: t.trends.bmi, convert: (kg: number) => bmi(kg, heightCm) }
   const showsBmiChart = series.length > 1 && bmiAxis !== undefined
+
+  // The edge of « corpulence normale », drawn on the scale the weights are in.
+  // It joins the chart's vertical range, so the curve flattens a little to make
+  // room for it — which is the price of a reference you can actually see.
+  const healthy =
+    heightCm !== null && weight.currentKg !== null
+      ? healthyWeight(weight.currentKg, heightCm)
+      : null
+  const reference: ChartReference | undefined = healthy
+    ? { value: healthy.boundKg, label: t.trends.bmiLine(healthy.boundIndex) }
+    : undefined
   // No delta rather than « +0,0 kg »: a trend that has not moved is not news.
   const delta =
     weight.trendKg !== null && weight.trendKg !== 0 ? formatSignedDelta(weight.trendKg, 'kg') : null
@@ -56,7 +69,7 @@ export function WeightSection() {
     <>
       <TrendSection
         title={t.weight.title}
-        hint={hintFor(weight.hasWeight, showsBmiChart)}
+        hint={hintFor(weight.hasWeight, showsBmiChart, healthy?.boundIndex ?? null)}
         aside={delta}
       >
         {weight.hasWeight && weight.currentKg !== null ? (
@@ -73,6 +86,7 @@ export function WeightSection() {
             ariaLabel={showsBmiChart ? t.trends.weightBmiChart : t.weight.title}
             unit="kg"
             secondaryAxis={bmiAxis}
+            reference={reference}
             points={series.map((entry) => ({
               label: formatShortDate(entry.date),
               value: entry.weightKg ?? null,

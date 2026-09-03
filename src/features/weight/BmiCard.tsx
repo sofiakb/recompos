@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { bmi, bmiBand, bmiPercent, type BmiBand } from '@/lib/bmi'
+import { bmi, bmiBand, bmiPercent, healthyWeight, type BmiBand } from '@/lib/bmi'
 import { formatDecimal } from '@/lib/format'
 import { t } from '@/i18n/fr'
 
@@ -52,6 +52,9 @@ export function BmiCard({ weightKg, heightCm }: Readonly<BmiCardProps>) {
   const value = bmi(weightKg, heightCm)
   const band = t.trends.bmiBand[bmiBand(value)]
   const shown = formatDecimal(value)
+  // The band, read on the scale rather than on the index: « de 56,0 à 75,7 kg »
+  // is actionable in a way that « entre 18,5 et 25 » is not.
+  const healthy = healthyWeight(weightKg, heightCm)
 
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-muted/50 px-3.5 py-3">
@@ -95,6 +98,14 @@ export function BmiCard({ weightKg, heightCm }: Readonly<BmiCardProps>) {
           ))}
         </div>
       </div>
+
+      {/* No colour and no verb: the distance is an observation, like the band
+          above it. The app has no target weight and does not acquire one here. */}
+      <p className="tnum text-[13px] text-muted-foreground">
+        {healthy.toGoKg === null
+          ? t.trends.healthyRange(healthy.minKg, healthy.maxKg)
+          : t.trends.healthyRangeAway(healthy.minKg, healthy.maxKg, healthy.toGoKg)}
+      </p>
     </div>
   )
 }

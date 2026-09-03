@@ -2,6 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { LineChart } from '@/components/charts/LineChart'
 
+/** The drawn series: the filled area under it is a path too, and is not one. */
+function lines(container: HTMLElement): SVGPathElement[] {
+  return [...container.querySelectorAll<SVGPathElement>('path[stroke]')]
+}
+
+/** Every y the curve is drawn through, control points included. */
+function drawnYs(path: SVGPathElement): number[] {
+  return [...(path.getAttribute('d') ?? '').matchAll(/-?[\d.]+,(-?[\d.]+)/g)].map((match) =>
+    Number(match[1]),
+  )
+}
+
 function axisLabels(container: HTMLElement): string[] {
   // The two date captions sit at the bottom; the axis labels are the ones
   // anchored to the end of the left gutter.
@@ -97,8 +109,8 @@ describe('LineChart', () => {
     expect(right).toContain('IMC')
     expect(right).toContain('25,1')
     expect(right).toContain('24,6')
-    // One polyline, not two: the second axis is a reading, not a second series.
-    expect(container.querySelectorAll('polyline')).toHaveLength(1)
+    // One line, not two: the second axis is a reading, not a second series.
+    expect(lines(container)).toHaveLength(1)
   })
 
   it('leaves the right gutter alone without a secondary axis', () => {
@@ -125,5 +137,96 @@ describe('LineChart', () => {
       />,
     )
     expect(screen.getByRole('img', { name: 'Poids' })).toBeTruthy()
+  })
+})
+
+describe('LineChart curve', () => {
+  const PEAK = [
+    { label: '23 août', value: 77.4 },
+    { label: '27 août', value: 78.3 },
+    { label: '3 sept.', value: 77.0 },
+  ]
+
+  it('draws a curve, not a run of straight chords', () => {
+    const { container } = render(<LineChart ariaLabel="Poids" points={PEAK} />)
+
+    expect(lines(container)[0].getAttribute('d')).toContain('C')
+  })
+
+  /**
+   * The reason the spline is monotone rather than Catmull-Rom. A rounded peak
+   * that bulges past 78,3 kg draws a weight that was never recorded — on a
+   * chart whose whole job is to say what the scale said.
+   */
+  it('never bulges past the weigh-ins it joins', () => {
+    const { container } = render(<LineChart ariaLabel="Poids" points={PEAK} />)
+
+    // `M a C c c a C c c a` — every third y from the start is a weigh-in, the
+    // rest are the bezier handles that could carry the curve outside them.
+    const ys = drawnYs(lines(container)[0])
+    const weighIns = ys.filter((_, index) => index % 3 === 0)
+    expect(weighIns).toHaveLength(3)
+
+    // Screen coordinates: a smaller y is a heavier weight.
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(Math.min(...weighIns) - 0.001)
+    expect(Math.max(...ys)).toBeLessThanOrEqual(Math.max(...weighIns) + 0.001)
+  })
+
+  it('breaks the line where the data breaks, and curves each run', () => {
+    const { container } = render(
+      <LineChart
+        ariaLabel="Poids"
+        points={[
+          { label: '1 jan', value: 78 },
+          { label: '2 jan', value: 79 },
+          { label: '3 jan', value: null },
+          { label: '4 jan', value: 77 },
+          { label: '5 jan', value: 76 },
+        ]}
+      />,
+    )
+
+    expect(lines(container)).toHaveLength(2)
+  })
+})
+
+describe('LineChart reference', () => {
+  const POINTS = [
+    { label: '23 août', value: 77.4 },
+    { label: '3 sept.', value: 77.0 },
+  ]
+
+  it('draws the line dashed, and names it', () => {
+    const { container } = render(
+      <LineChart ariaLabel="Poids" points={POINTS} reference={{ value: 75.7, label: 'IMC 25' }} />,
+    )
+
+    const dashed = container.querySelector('line[stroke-dasharray]')
+    expect(dashed).not.toBeNull()
+    expect([...container.querySelectorAll('text')].map((node) => node.textContent)).toContain(
+      'IMC 25',
+    )
+  })
+
+  it('stretches the drawing to hold it, rather than cropping it away', () => {
+    const { container } = render(
+      <LineChart ariaLabel="Poids" points={POINTS} reference={{ value: 75.7, label: 'IMC 25' }} />,
+    )
+
+    const dashed = container.querySelector('line[stroke-dasharray]') as SVGLineElement
+    const y = Number(dashed.getAttribute('y1'))
+    const curveYs = drawnYs(lines(container)[0])
+    // Below the whole series on screen, and still inside the plot.
+    expect(y).toBeGreaterThan(Math.max(...curveYs))
+    expect(y).toBeLessThan(140)
+  })
+
+  it('leaves the axis reading the weights actually recorded', () => {
+    const { container } = render(
+      <LineChart ariaLabel="Poids" points={POINTS} reference={{ value: 75.7, label: 'IMC 25' }} />,
+    )
+
+    // 75,7 never becomes a tick: it is a threshold, not a weigh-in.
+    expect(axisLabels(container)).toEqual(['77,4', '77,2', '77,0'])
   })
 })
