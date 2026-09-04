@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bandFor, consistencyScore, dayNumber } from '@/lib/consistency'
+import { bandFor, consistencyScore, dayNumber, mealStreak } from '@/lib/consistency'
 
 const TODAY = '2026-08-22'
 
@@ -72,5 +72,36 @@ describe('dayNumber', () => {
 
   it('counts elapsed days, not consecutive completed ones', () => {
     expect(dayNumber('2026-05-24', TODAY)).toBe(91)
+  })
+})
+
+describe('mealStreak', () => {
+  const TODAY = '2026-09-04'
+
+  it('compte les jours d’affilée jusqu’à aujourd’hui', () => {
+    expect(mealStreak(['2026-09-02', '2026-09-03', '2026-09-04'], TODAY)).toBe(3)
+  })
+
+  it('s’arrête au premier trou, sans compter ce qu’il y a derrière', () => {
+    const days = ['2026-08-20', '2026-08-21', '2026-09-03', '2026-09-04']
+    expect(mealStreak(days, TODAY)).toBe(2)
+  })
+
+  it('tient pendant la journée en cours, tant qu’elle n’est pas finie', () => {
+    // Rien de noté ce matin : la série de la veille tient jusqu’à minuit.
+    expect(mealStreak(['2026-09-02', '2026-09-03'], TODAY)).toBe(2)
+  })
+
+  it('tombe à zéro une fois la journée manquée passée', () => {
+    expect(mealStreak(['2026-09-01', '2026-09-02'], TODAY)).toBe(0)
+  })
+
+  it('vaut un le premier jour', () => {
+    expect(mealStreak([TODAY], TODAY)).toBe(1)
+    expect(mealStreak([], TODAY)).toBe(0)
+  })
+
+  it('ignore les jours à venir', () => {
+    expect(mealStreak(['2026-09-04', '2026-09-05'], TODAY)).toBe(1)
   })
 })

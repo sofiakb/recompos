@@ -34,6 +34,23 @@ export async function recentMeals(days = 30, database: RecompDb = db): Promise<M
   return rows.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
 }
 
+/**
+ * Every day that holds at least one meal, distinct and sorted.
+ *
+ * Read from the `date` index rather than by loading the rows: the streak only
+ * asks which days exist, and a year of meals is a lot of photos to page through
+ * to answer that.
+ *
+ * A day counts as soon as something was written down, whatever it turned out to
+ * be worth — a photo still being read, one that failed, a hundred calories
+ * typed by hand. The question is « ai-je tenu le journal », not « ai-je bien
+ * mangé ».
+ */
+export async function mealDays(database: RecompDb = db): Promise<IsoDate[]> {
+  const keys = await database.meals.orderBy('date').uniqueKeys()
+  return keys as IsoDate[]
+}
+
 /** Rows the retry queue owes an analysis to, oldest first. */
 export async function pendingMeals(database: RecompDb = db): Promise<MealEntry[]> {
   const rows = await database.meals.where('status').anyOf('pending', 'analysing').toArray()

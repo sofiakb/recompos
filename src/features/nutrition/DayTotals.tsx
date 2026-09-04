@@ -16,8 +16,12 @@ export interface DayFigures {
 
 interface DayTotalsProps {
   dateLabel: string
-  /** Rolling 7-day consistency, or null on a day that is not today. */
-  consistencyPercent: number | null
+  /**
+   * Days in a row holding at least one meal. Null on a day that is not today,
+   * and 0 when the run is broken — the flame then stays away rather than
+   * announcing a zero.
+   */
+  streakDays: number | null
   totals: DayFigures
   /** A macro target of 0 means « no denominator », not « a target of zero ». */
   targets: DayFigures
@@ -63,7 +67,7 @@ function Figure({
  */
 export function DayTotals({
   dateLabel,
-  consistencyPercent,
+  streakDays,
   totals,
   targets,
   explain,
@@ -84,13 +88,13 @@ export function DayTotals({
         <p className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
           {dateLabel}
         </p>
-        {consistencyPercent !== null ? (
+        {streakDays !== null && streakDays > 0 ? (
           <span
-            className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-[13px] font-semibold"
-            title={t.today.consistencySummary(consistencyPercent)}
+            className="tnum flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-[13px] font-semibold"
+            title={t.nutrition.streakTitle(streakDays)}
           >
             <Flame size={14} className="text-primary" aria-hidden />
-            {t.nutrition.consistencyPill(consistencyPercent)}
+            {t.nutrition.streakPill(streakDays)}
           </span>
         ) : null}
       </div>

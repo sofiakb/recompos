@@ -5,7 +5,7 @@
  * nothing resets. The denominator is capped at the number of days since install
  * so a brand-new user is not shown 14% on day two.
  */
-import { daysBetween, lastDays, toLogicalDate, type IsoDate } from '@/lib/date'
+import { addDays, daysBetween, lastDays, toLogicalDate, type IsoDate } from '@/lib/date'
 
 export type ConsistencyBand = 'restart' | 'onTrack' | 'solid'
 
@@ -48,4 +48,29 @@ export function consistencyScore(
 /** Cumulative milestone — « Jour N », never a countdown to a deadline. */
 export function dayNumber(installedOn: IsoDate, today: IsoDate = toLogicalDate()): number {
   return Math.max(1, daysBetween(installedOn, today) + 1)
+}
+
+/**
+ * Days in a row, up to today, that hold at least one meal.
+ *
+ * The one place the app counts consecutive days. It goes against §6.1, which
+ * replaced the streak with an elastic percentage precisely so a missed day
+ * could not punish anyone — and it is kept away from the floor for that reason.
+ * This one counts *writing a meal down*, not eating well: it says « le journal
+ * est tenu », which is the habit the nutrition tab exists to build.
+ *
+ * The day in progress never breaks it. A morning with nothing logged yet shows
+ * yesterday's count, because a day is only missed once it is over.
+ */
+export function mealStreak(mealDays: Iterable<IsoDate>, today: IsoDate = toLogicalDate()): number {
+  const days = mealDays instanceof Set ? mealDays : new Set(mealDays)
+  // Today when it already holds a meal, yesterday otherwise: the count is the
+  // same either way until midnight, and only then does the gap become real.
+  let cursor = days.has(today) ? today : addDays(today, -1)
+  let streak = 0
+  while (days.has(cursor)) {
+    streak += 1
+    cursor = addDays(cursor, -1)
+  }
+  return streak
 }
