@@ -12,7 +12,7 @@ function renderTotals(overrides: Partial<Parameters<typeof DayTotals>[0]> = {}) 
   return render(
     <DayTotals
       dateLabel="vendredi 28 août"
-      consistencyPercent={86}
+      streakDays={40}
       totals={TOTALS}
       targets={TARGETS}
       explain={EXPLAIN}
@@ -69,9 +69,22 @@ describe('DayTotals', () => {
     expect(screen.getByText('/ 140 g')).toBeTruthy()
   })
 
-  it('hides the consistency pill on a day that is not today', () => {
-    renderTotals({ consistencyPercent: null })
+  it('compte les jours d’affilée plutôt qu’un pourcentage', () => {
+    renderTotals()
 
-    expect(screen.queryByText(t.nutrition.consistencyPill(86))).toBeNull()
+    expect(screen.getByText('40')).toBeTruthy()
+    expect(screen.getByTitle(t.nutrition.streakTitle(40))).toBeTruthy()
+  })
+
+  it('cache la flamme sur un jour qui n’est pas aujourd’hui', () => {
+    renderTotals({ streakDays: null })
+
+    expect(screen.queryByTitle(t.nutrition.streakTitle(40))).toBeNull()
+  })
+
+  it('et la cache aussi quand la série est à zéro, plutôt que d’annoncer un 0', () => {
+    renderTotals({ streakDays: 0 })
+
+    expect(screen.queryByText('0')).toBeNull()
   })
 })

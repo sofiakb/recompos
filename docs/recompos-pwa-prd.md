@@ -62,13 +62,16 @@ une décision d'implémentation.
 | 28 | Favoris | **Une seule liste : un aliment épinglé est un favori à une ligne, un repas épinglé en a plusieurs. Étoile sur la ligne dans le détail d'un repas, et sur la rangée dans « Vos habitudes ».** Décidée le 29/08/2026 | « Vos habitudes » est dérivé des trente derniers jours : c'est un constat, pas un choix, et une semaine d'absence le vide. Un favori est l'inverse — il tient jusqu'à ce que l'étoile soit retouchée. La feuille s'ouvre dessus dès qu'il y en a un, ce qui met le café du matin à un geste du `+`. Voir §6.11 |
 | 29 | Détail d'un repas | **Le repas se lit, il ne s'édite plus. Une ligne s'ouvre sur sa quantité ; l'ajout repasse par la feuille d'ajout du journal.** Décidée le 29/08/2026 sur le handoff « Détail d'un repas (lecture) » | Quatre aliments faisaient seize champs, et l'éditeur portait trois boutons d'ajout qui doublaient la feuille du `+`. La seule correction que quelqu'un fait deux fois est « c'était 200 g, pas 300 » : elle devient un pas de dix, sur une ligne ouverte. La saisie des quatre macros reste, repliée. Voir §6.12 |
 | 30 | Compter en portions | **Une ligne se compte en grammes ou en portions, au choix, et retient ce que pèse une portion.** Décidée le 31/08/2026 | « 168 g » ne veut rien dire pour une dosette de café ; « 2 dosettes » si. La portion vient du produit quand il la déclare, et sinon de la personne, une fois : ce qui est sur la ligne au moment où elle bascule *devient* la portion. Rien n'est inventé, et les deux unités se convertissent — 252 g font 1,5 portion de 168. Voir §6.12 |
+| 31 | Série du journal | **Le bandeau Nutrition compte les jours d'affilée où au moins un repas a été noté, à la place du pourcentage de consistance.** Décidée le 04/09/2026 | Seule entorse au principe n°2, et elle est cantonnée : elle compte le fait de *tenir le journal*, jamais le fait de bien manger, et ne touche pas au plancher — dont le score élastique reste intact sur Aujourd'hui et Progression. La journée en cours ne casse rien : sans repas encore aujourd'hui, la flamme affiche le compte de la veille, parce qu'un jour n'est manqué qu'une fois fini. Voir §6.1 |
 ---
 
 ## 3. Principes produit
 
 1. **Zéro friction de saisie** — toute action cœur (protéine, habitude plancher, série de 5 reps) se
    complète en moins de 3 taps depuis le dashboard, sans navigation intermédiaire.
-2. **Système plutôt que motivation** — pas de honte, pas de série cassée, pas de reset punitif.
+2. **Système plutôt que motivation** — pas de honte, pas de reset punitif. Une seule série
+   consécutive existe, et elle porte sur le fait de noter ses repas, pas sur le plancher
+   (décision n°31) ; tout le reste est élastique.
    Consistance élastique en pourcentage glissant.
 3. **Recomposition plutôt que poids sur la balance** — les métriques primaires sont les PR de force,
    l'adhérence au plancher, le tour de taille et les photos. Jamais le poids seul.
@@ -215,12 +218,28 @@ Cases à cocher, toggle en 1 tap, réinitialisées chaque jour à 04h00 locale.
 
 **Score de consistance élastique**
 
-Remplace explicitement la série consécutive.
+Remplace la série consécutive partout où l'app juge un comportement.
 
 ```
 score7  = jours avec plancher validé sur les 7 derniers jours  / min(7, jours depuis installation)  × 100
 score30 = jours avec plancher validé sur les 30 derniers jours / min(30, jours depuis installation) × 100
 ```
+
+**La série du journal, seule exception** (décision n°31)
+
+Le bandeau de l'écran Nutrition ne montre plus le `score7` mais **le nombre de jours d'affilée où au
+moins un repas a été noté** — « 🔥 40 ». Ce n'est pas le même objet que le score élastique, et c'est
+volontaire :
+
+- Il compte **noter**, pas **bien manger**. Un jour compte dès qu'une ligne existe, quelle qu'elle
+  soit : une photo encore en lecture, une qui a échoué, cent calories tapées à la main. La question
+  posée est « ai-je tenu le journal », et un journal tenu est le seul prérequis de tout le reste.
+- Il ne touche pas au plancher. Le score élastique reste inchangé sur Aujourd'hui et Progression :
+  rater une séance ne remet toujours aucun compteur à zéro.
+- **La journée en cours ne casse rien.** Sans repas encore aujourd'hui, la flamme affiche le compte
+  de la veille : un jour n'est manqué qu'une fois fini.
+- À zéro, la flamme disparaît au lieu d'annoncer un « 0 ».
+
 
 - Arrondi à l'entier. Le dénominateur exclut les jours antérieurs à l'installation, pour ne pas
   afficher 3 % le deuxième jour.

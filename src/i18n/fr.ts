@@ -80,7 +80,12 @@ export const fr = {
     proteinTargetNoWeight: 'Protéines — cible provisoire, ajoute ton poids',
     previousDay: 'Jour précédent',
     nextDay: 'Jour suivant',
-    consistencyPill: (percent: number) => `${percent} %`,
+    /** Jours d'affilée avec au moins un repas noté. Le seul compte consécutif de l'app. */
+    streakPill: (days: number) => formatCount(days),
+    streakTitle: (days: number) =>
+      days === 1
+        ? '1 jour d’affilée avec au moins un repas noté'
+        : `${formatCount(days)} jours d’affilée avec au moins un repas noté`,
     slotTotals: (kcal: number, target: number) =>
       `${formatCount(kcal)} / ${formatCount(target)} kcal`,
     slotProtein: (grams: number) => `${grams} g de protéines`,

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/sheet'
-import { useFloor } from '@/features/floor/useFloor'
 import { AddSheet } from '@/features/meals/add/AddSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
 import { MealSheet } from '@/features/meals/MealSheet'
@@ -20,6 +20,8 @@ import { useMeals, type FoodOrigin, type StagedPhoto } from '@/features/nutritio
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget, type ProteinTargetState } from '@/features/nutrition/useProteinTarget'
 import { useUiStore } from '@/stores/uiStore'
+import { mealDays } from '@/db/repositories/mealRepository'
+import { mealStreak } from '@/lib/consistency'
 import { formatLongDate, toLogicalDate } from '@/lib/date'
 import { toMealItem } from '@/lib/foods/food'
 import { macroTargetsG, mealTargetKcal } from '@/lib/nutrition'
@@ -57,7 +59,6 @@ export function NutritionScreen() {
   const meals = useMeals(day)
   const target = useProteinTarget()
   const calories = useCalorieTarget()
-  const { score7 } = useFloor()
   const showToast = useUiStore((state) => state.showToast)
 
   const fileInput = useRef<HTMLInputElement>(null)
@@ -119,6 +120,15 @@ export function NutritionScreen() {
           : undefined,
     }
   }, [barcode.food])
+
+  /**
+   * Days in a row with at least one meal written down.
+   *
+   * Read from the days that exist rather than from the day being browsed:
+   * walking back through the week must not change the run it reports.
+   */
+  const days = useLiveQuery(() => mealDays(), [], [])
+  const streak = mealStreak(days ?? [], toLogicalDate())
 
   const macroTargets = macroTargetsG(calories.targetKcal, target.targetGrams)
   const slotKcal = journal.find((group) => group.slot === targetSlot)?.kcal ?? 0
@@ -212,7 +222,7 @@ export function NutritionScreen() {
     <>
       <DayTotals
         dateLabel={formatLongDate(day)}
-        consistencyPercent={day === toLogicalDate() ? score7.percent : null}
+        streakDays={day === toLogicalDate() ? streak : null}
         totals={totals}
         targets={{
           kcal: calories.targetKcal,
