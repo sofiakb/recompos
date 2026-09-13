@@ -94,11 +94,13 @@ function Tab({ to, label, Icon, end, collapsed }: Readonly<TabProps>) {
         end={end}
         className={({ isActive }) =>
           cn(
-            // A squircle rather than a capsule: the chip is wider than it is
-            // tall, and a full pill around a two-line stack reads as a button,
-            // not as a place.
-            'flex min-h-touch flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 text-[11px] font-medium transition-[color,background-color,box-shadow] duration-200',
-            collapsed && 'w-12 rounded-full',
+            // The chip has to be concentric with the capsule holding it, or the
+            // two curves collide at the ends of the row: the capsule's inner
+            // edge has a 28px radius, minus 4px of padding leaves 24 — exactly
+            // half of the 48px chip, so the chip is a pill. Any smaller radius
+            // (a squircle, say) eats into the capsule's own corner.
+            'flex min-h-touch flex-col items-center justify-center gap-0.5 rounded-full px-1 py-1 text-[11px] font-medium transition-[color,background-color,box-shadow] duration-200',
+            collapsed && 'w-12',
             isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground',
           )
         }
