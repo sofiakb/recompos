@@ -235,7 +235,7 @@ export function QuantitySheet({
           ) : null}
         </div>
 
-        <div className="rounded-lg border border-border bg-muted/40 transition-[border-color,box-shadow] focus-visible:border-primary/50 p-3.5">
+        <div className="rounded-lg border border-border bg-muted/40 p-3.5 transition-[border-color,box-shadow] focus-visible:border-primary/50">
           <div className="grid grid-cols-4 gap-2.5">
             {MACROS.map(([key, short]) => (
               <div key={key} className="text-center">

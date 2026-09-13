@@ -16,9 +16,7 @@ export function TrendSection({ title, hint, aside, children }: TrendSectionProps
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-          {title}
-        </h2>
+        <h2 className="eyebrow">{title}</h2>
         {aside ? (
           <span className="tnum shrink-0 text-sm text-muted-foreground">{aside}</span>
         ) : null}

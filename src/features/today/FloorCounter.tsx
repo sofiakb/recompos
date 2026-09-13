@@ -19,9 +19,7 @@ export function FloorCounter({ done, total, states }: FloorCounterProps) {
     <div className="flex flex-col gap-3">
       <div className="flex items-end justify-between gap-4">
         <p className="flex items-baseline">
-          <span className="figure text-[56px] font-semibold">
-            {done}
-          </span>
+          <span className="figure text-[56px] font-semibold">{done}</span>
           <span className="tnum text-2xl font-medium text-muted-foreground"> / {total}</span>
         </p>
         <p className="max-w-[150px] text-right text-[13px] leading-tight text-muted-foreground">

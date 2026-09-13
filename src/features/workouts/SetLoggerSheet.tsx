@@ -97,7 +97,7 @@ export function SetLoggerSheet({
                 const parsed = Number(event.target.value.replace(/\D/g, ''))
                 setReps(Number.isFinite(parsed) ? parsed : 0)
               }}
-              className="tnum min-h-touch flex-1 rounded-lg border border-border bg-muted/40 transition-[border-color,box-shadow] focus-visible:border-primary/50 text-center text-3xl font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+              className="tnum min-h-touch flex-1 rounded-lg border border-border bg-muted/40 text-center text-3xl font-semibold transition-[border-color,box-shadow] focus-visible:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
             />
             <Button
               variant="outline"

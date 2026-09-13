@@ -92,13 +92,12 @@
     inset: 0 0 auto 0;
     height: 42vh;
     pointer-events: none;
-    background:
-      radial-gradient(
-        118% 76% at 50% -18%,
-        hsl(var(--primary) / 0.16) 0%,
-        hsl(var(--primary) / 0.05) 42%,
-        transparent 72%
-      );
+    background: radial-gradient(
+      118% 76% at 50% -18%,
+      hsl(var(--primary) / 0.16) 0%,
+      hsl(var(--primary) / 0.05) 42%,
+      transparent 72%
+    );
   }
 
   /*
@@ -151,6 +150,18 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
     line-height: 0.95;
+    /* A hero figure that wraps stops being one: « 100 % » broke in two. */
+    white-space: nowrap;
+  }
+
+  /*
+    The frame a chart is drawn in. A curve on the raw page floats; on a lit
+    panel it reads as a measurement someone took.
+  */
+  .chart-panel {
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border) / 0.7);
+    padding: 0.75rem 0.5rem 0.25rem;
   }
 
   /* Section eyebrow — uppercase, spaced, secondary. */

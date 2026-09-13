@@ -90,9 +90,7 @@ export function WorkoutsScreen() {
 
   const sets = (
     <section className="flex flex-col gap-2">
-      <h2 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-        {t.workouts.setsToday}
-      </h2>
+      <h2 className="eyebrow">{t.workouts.setsToday}</h2>
       <SetList
         sets={workouts.todaySets}
         exerciseById={workouts.exerciseById}

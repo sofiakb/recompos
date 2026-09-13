@@ -64,9 +64,7 @@ export function SearchPanel({
       </div>
 
       <section className="flex flex-col gap-1">
-        <h3 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-          {t.nutrition.habits}
-        </h3>
+        <h3 className="eyebrow">{t.nutrition.habits}</h3>
         {shown.length === 0 ? (
           <p className="py-2 text-sm text-muted-foreground">{emptyMessage(recent.length > 0)}</p>
         ) : (
@@ -80,9 +78,7 @@ export function SearchPanel({
 
       {query.trim() ? (
         <section className="flex flex-col gap-1">
-          <h3 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-            {t.foods.title}
-          </h3>
+          <h3 className="eyebrow">{t.foods.title}</h3>
           <FoodResults {...search} onPick={onPickFood} />
         </section>
       ) : null}

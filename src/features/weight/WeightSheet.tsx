@@ -34,7 +34,7 @@ export function WeightSheet({ open, initialKg, onClose, onSubmit }: WeightSheetP
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="80,5"
-          className="tnum min-h-[56px] flex-1 rounded-lg border border-border bg-muted/40 transition-[border-color,box-shadow] focus-visible:border-primary/50 px-4 text-2xl font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+          className="tnum min-h-[56px] flex-1 rounded-lg border border-border bg-muted/40 px-4 text-2xl font-semibold transition-[border-color,box-shadow] focus-visible:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
         />
         <span className="text-lg text-muted-foreground">kg</span>
       </div>

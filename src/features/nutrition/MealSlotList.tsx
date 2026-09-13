@@ -183,7 +183,7 @@ export function MealSlotList({
                   onClick={() => onAdd(group.slot)}
                   className="-mr-2 flex h-touch w-touch shrink-0 items-center justify-center"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center lit-accent lit-glow-sm rounded-full text-primary-foreground transition-transform active:scale-95">
+                  <span className="lit-accent lit-glow-sm flex h-8 w-8 items-center justify-center rounded-full text-primary-foreground transition-transform active:scale-95">
                     <Plus size={18} aria-hidden />
                   </span>
                 </TapTarget>

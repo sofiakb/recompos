@@ -56,9 +56,7 @@ export function QuickPanel({
       </div>
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-          {t.nutrition.kcalOnly}
-        </h3>
+        <h3 className="eyebrow">{t.nutrition.kcalOnly}</h3>
         <Input
           inputMode="numeric"
           className="tnum"

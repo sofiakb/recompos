@@ -19,11 +19,7 @@ export function ScreenHeader({
   return (
     <header className="flex items-start justify-between gap-4 px-4 pb-2 pt-[calc(1rem+env(safe-area-inset-top))]">
       <div>
-        {eyebrow ? (
-          <p className="eyebrow mb-1.5">
-            {eyebrow}
-          </p>
-        ) : null}
+        {eyebrow ? <p className="eyebrow mb-1.5">{eyebrow}</p> : null}
         <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">{title}</h1>
         {subtitle ? <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p> : null}
       </div>

@@ -19,9 +19,7 @@ interface FloorChecklistProps {
 export function FloorChecklist({ habits, completedIds, onToggle }: FloorChecklistProps) {
   return (
     <section className="flex flex-col gap-1">
-      <h2 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-        {t.today.recap}
-      </h2>
+      <h2 className="eyebrow">{t.today.recap}</h2>
       <ul className="flex flex-col">
         {habits.map((habit) => {
           const done = completedIds.has(habit.id)
