@@ -94,14 +94,14 @@ function Tab({ to, label, Icon, end, collapsed }: Readonly<TabProps>) {
         end={end}
         className={({ isActive }) =>
           cn(
-            // A squircle rather than a capsule: the chip is wider than it is
-            // tall, and a full pill around a two-line stack reads as a button,
-            // not as a place.
-            'flex min-h-touch flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 text-[11px] font-medium transition-[color,background-color,box-shadow] duration-200',
-            collapsed && 'w-12 rounded-full',
-            isActive
-              ? 'bg-primary/12 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.25)]'
-              : 'text-muted-foreground hover:text-foreground',
+            // The chip has to be concentric with the capsule holding it, or the
+            // two curves collide at the ends of the row: the capsule's inner
+            // edge has a 28px radius, minus 4px of padding leaves 24 — exactly
+            // half of the 48px chip, so the chip is a pill. Any smaller radius
+            // (a squircle, say) eats into the capsule's own corner.
+            'flex min-h-touch flex-col items-center justify-center gap-0.5 rounded-full px-1 py-1 text-[11px] font-medium transition-[color,background-color,box-shadow] duration-200',
+            collapsed && 'w-12',
+            isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground',
           )
         }
       >
@@ -138,7 +138,7 @@ export function BottomNav() {
     <nav
       aria-label="Navigation principale"
       data-collapsed={collapsed}
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-[var(--nav-inset)] z-40 px-4"
       // A tap anywhere on the bar opens it: the collapsed chip is the tab you
       // are already on, so the tap costs nothing if it also navigates.
       onPointerDown={() => setCollapsed(false)}

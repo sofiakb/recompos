@@ -109,7 +109,7 @@ export function TodayScreen() {
           onToggle={(habit) => void onToggle(habit)}
         />
 
-        <section className="flex flex-col">
+        <section className="flex flex-col gap-2">
           <SummaryRow
             to="/nutrition"
             label={t.today.proteinTitle}
