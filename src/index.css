@@ -40,13 +40,22 @@
       toast, the end of a scroll — is derived from these two, so the bar can
       move without leaving something behind it.
 
-      A phone with a home indicator already reserves ~34px of safe area under
-      the bar. Adding a full gap on top of that pushes it into the middle of
-      the screen, so the gap is taken *out* of the inset instead: a floating
-      bar is meant to sit over that strip, not above it.
+      The gap is a constant, and deliberately not a function of
+      `env(safe-area-inset-bottom)`.
+
+      iOS does not hold that value still: it is reported differently from one
+      screen to the next, and a bar positioned with it drifts vertically as you
+      move between tabs — measured at 13px between Nutrition and the other
+      three. The old bar was welded to the bottom edge and carried the inset as
+      inner padding, so the same variation only changed its height and never
+      showed; a floating bar turns it into a jump.
+
+      18px clears the home indicator (which occupies the first ~13px of the
+      screen) without leaning on a number the system keeps rewriting, and reads
+      as deliberate on a phone that reserves nothing at all.
     */
     --nav-height: 3.625rem;
-    --nav-inset: max(0.5rem, calc(env(safe-area-inset-bottom) - 1rem));
+    --nav-inset: 1.125rem;
     /* The first line under the capsule, and where the FAB sits. */
     --nav-clearance: calc(var(--nav-inset) + var(--nav-height) + 0.75rem);
   }
