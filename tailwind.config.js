@@ -20,6 +20,10 @@ export default {
         ring: 'hsl(var(--ring))',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
+          // The ends of the accent gradient, for the rare spot that needs one
+          // of them on its own (a chart stop, an icon on a lit surface).
+          bright: 'hsl(var(--primary-bright))',
+          deep: 'hsl(var(--primary-deep))',
           foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
@@ -35,7 +39,13 @@ export default {
           foreground: 'hsl(var(--destructive-foreground))',
         },
       },
+      boxShadow: {
+        // The halo under an accent surface, as a utility for one-offs.
+        glow: '0 6px 24px -8px hsl(var(--primary) / 0.55)',
+        'glow-sm': '0 0 12px -2px hsl(var(--primary) / 0.45)',
+      },
       borderRadius: {
+        xl: 'calc(var(--radius) + 6px)',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 4px)',
         sm: 'calc(var(--radius) - 8px)',
@@ -71,7 +81,7 @@ export default {
       },
       animation: {
         'pop-in': 'pop-in 180ms cubic-bezier(0.2, 0.9, 0.3, 1)',
-        'slide-up': 'slide-up 180ms ease-out',
+        'slide-up': 'slide-up 220ms cubic-bezier(0.2, 0.9, 0.3, 1)',
       },
     },
   },

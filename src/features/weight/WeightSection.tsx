@@ -74,7 +74,7 @@ export function WeightSection() {
       >
         {weight.hasWeight && weight.currentKg !== null ? (
           <>
-            <p className="tnum text-3xl font-semibold">
+            <p className="figure text-3xl font-semibold">
               {formatDecimal(weight.currentKg)}
               <span className="ml-1 text-sm font-normal text-muted-foreground">kg</span>
             </p>

@@ -18,9 +18,9 @@ export function Toast() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4"
+      className="fixed inset-x-0 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4"
     >
-      <div className="flex animate-slide-up items-center gap-3 rounded-full border border-border bg-card py-2 pl-4 pr-2 shadow-lg">
+      <div className="flex animate-slide-up items-center gap-3 rounded-full border border-border/70 bg-card/90 py-2 pl-4 pr-2 shadow-xl backdrop-blur-xl">
         <p className="text-sm">{toast.message}</p>
         {toast.action ? (
           <TapTarget

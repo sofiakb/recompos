@@ -21,11 +21,11 @@ export function SummaryRow({ to, label, value, valueSuffix, progress }: SummaryR
   return (
     <Link
       to={to}
-      className="flex min-h-[56px] flex-col justify-center gap-2 border-b border-border py-2 transition-colors hover:bg-accent"
+      className="lit-surface flex min-h-[64px] flex-col justify-center gap-2 rounded-lg border border-border/70 px-4 py-3 transition-[filter] hover:brightness-125"
     >
       <span className="flex items-center gap-3">
         <span className="flex-1 text-sm text-muted-foreground">{label}</span>
-        <span className="tnum text-[15px] font-semibold">
+        <span className="figure text-[15px] font-semibold">
           {value}
           {valueSuffix ? (
             <span className="font-normal text-muted-foreground">{valueSuffix}</span>

@@ -21,9 +21,7 @@ export function StackChips({ habits, completedIds, onToggle }: StackChipsProps) 
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-        {t.today.stackTitle}
-      </h2>
+      <h2 className="eyebrow">{t.today.stackTitle}</h2>
       <ul className="flex flex-wrap gap-2">
         {habits.map((habit) => {
           const done = completedIds.has(habit.id)

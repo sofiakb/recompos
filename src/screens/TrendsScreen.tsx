@@ -45,7 +45,7 @@ export function TrendsScreen() {
           aside={t.consistency.over30(score30.percent)}
         >
           <p className="flex items-baseline gap-2">
-            <span className="tnum text-[44px] font-semibold leading-none">{score7.percent} %</span>
+            <span className="figure text-[44px] font-semibold">{score7.percent} %</span>
             <span className="text-[13px] text-muted-foreground">
               {t.consistency.summary(t.consistency.band[score7.band])}
             </span>
@@ -68,7 +68,7 @@ export function TrendsScreen() {
         >
           {waist.latest?.waistCm !== undefined && waist.latest !== null ? (
             <>
-              <p className="tnum text-3xl font-semibold">
+              <p className="figure text-3xl font-semibold">
                 {formatDecimal(waist.latest.waistCm)}
                 <span className="ml-1 text-sm font-normal text-muted-foreground">cm</span>
               </p>

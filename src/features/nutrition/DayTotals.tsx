@@ -44,9 +44,7 @@ function Figure({
 }: Readonly<{ value: string; label: string; accent?: boolean }>) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <p className={cn('tnum text-[22px] font-semibold leading-none', accent && 'text-primary')}>
-        {value}
-      </p>
+      <p className={cn('figure text-[22px] font-semibold', accent && 'text-primary')}>{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
     </div>
   )
@@ -79,14 +77,12 @@ export function DayTotals({
   // page everywhere else, and the figures holding still while the journal moves
   // is the whole point of the band.
   return (
-    <div className="sticky top-0 z-10 border-b border-border bg-card px-5 pb-1 pt-[calc(0.625rem+env(safe-area-inset-top))]">
+    <div className="lit-surface sticky top-0 z-10 border-b border-border/70 px-5 pb-1 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
-          {dateLabel}
-        </p>
+        <p className="eyebrow">{dateLabel}</p>
         {consistencyPercent !== null ? (
           <span
-            className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-[13px] font-semibold"
+            className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-3 py-1.5 text-[13px] font-semibold"
             title={t.today.consistencySummary(consistencyPercent)}
           >
             <Flame size={14} className="text-primary" aria-hidden />
@@ -107,9 +103,7 @@ export function DayTotals({
           ratio={ratio(totals.kcal, targets.kcal)}
           ariaLabel={t.nutrition.kcalRing(totals.kcal, targets.kcal)}
         >
-          <p className="tnum text-[30px] font-semibold leading-none tracking-[-0.02em]">
-            {formatCount(centre)}
-          </p>
+          <p className="figure text-[30px] font-semibold">{formatCount(centre)}</p>
           <p className="mt-0.5 text-[13px] font-medium text-muted-foreground">
             {t.nutrition.kcalUnit}
           </p>
@@ -121,7 +115,7 @@ export function DayTotals({
       </div>
 
       {expanded ? (
-        <div className="mt-2.5 rounded-lg border border-border bg-background p-4">
+        <div className="mt-2.5 rounded-lg border border-border bg-muted/40 p-4 transition-[border-color,box-shadow] focus-visible:border-primary/50">
           <div className="grid grid-cols-3 gap-2">
             {MACROS.map((macro) => (
               <div key={macro} className="flex flex-col items-center gap-1.5">

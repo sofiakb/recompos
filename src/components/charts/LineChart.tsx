@@ -143,6 +143,7 @@ export function LineChart({
   className,
 }: Readonly<LineChartProps>) {
   const gradientId = useId()
+  const strokeId = `${gradientId}-stroke`
   const values = [...points.map((point) => point.value), ...(overlay ?? [])].filter(
     (value): value is number => value !== null,
   )
@@ -215,12 +216,17 @@ export function LineChart({
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
       aria-label={ariaLabel}
-      className={cn('w-full', className)}
+      className={cn('chart-panel w-full', className)}
     >
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.12" />
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
           <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+        </linearGradient>
+        {/* Left to right, bright to deep: the same accent ramp as a CTA. */}
+        <linearGradient id={strokeId} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="hsl(var(--primary-bright))" />
+          <stop offset="100%" stopColor="hsl(var(--primary-deep))" />
         </linearGradient>
       </defs>
 
@@ -248,7 +254,7 @@ export function LineChart({
             x2={WIDTH - padRight}
             y1={y(value)}
             y2={y(value)}
-            stroke="hsl(var(--border))"
+            stroke="hsl(var(--border) / 0.7)"
             strokeWidth={1}
           />
           <text
@@ -303,11 +309,12 @@ export function LineChart({
           key={index}
           d={curvePath(segment)}
           fill="none"
-          stroke="hsl(var(--primary))"
+          stroke={`url(#${strokeId})`}
           strokeWidth={2.5}
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
+          style={{ filter: 'drop-shadow(0 0 4px hsl(var(--primary) / 0.35))' }}
         />
       ))}
 
@@ -322,7 +329,18 @@ export function LineChart({
         />
       ) : null}
 
-      {lastDot ? <circle cx={lastDot.x} cy={lastDot.y} r={3} fill="hsl(var(--primary))" /> : null}
+      {lastDot ? (
+        <g>
+          <circle cx={lastDot.x} cy={lastDot.y} r={6} fill="hsl(var(--primary) / 0.18)" />
+          <circle
+            cx={lastDot.x}
+            cy={lastDot.y}
+            r={3}
+            fill="hsl(var(--primary))"
+            style={{ filter: 'drop-shadow(0 0 4px hsl(var(--primary) / 0.6))' }}
+          />
+        </g>
+      ) : null}
 
       <text x={PAD.left} y={HEIGHT - 4} fontSize="8" fill="hsl(var(--muted-foreground))">
         {points[0]?.label}

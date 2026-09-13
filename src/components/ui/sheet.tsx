@@ -89,12 +89,12 @@ export function Sheet({
       <TapTarget
         type="button"
         aria-label="Fermer"
-        className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/65 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
         className={cn(
-          'animate-slide-up border-t border-border bg-card',
+          'lit-surface animate-slide-up border-t border-border/70',
           tall
             ? 'absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-3xl'
             : 'relative w-full rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]',
@@ -103,7 +103,7 @@ export function Sheet({
       >
         {header ?? (
           <>
-            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-muted" />
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-muted-foreground/30" />
             {title ? <h2 className="mb-3 text-base font-semibold">{title}</h2> : null}
           </>
         )}

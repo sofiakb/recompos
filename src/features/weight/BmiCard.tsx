@@ -40,7 +40,7 @@ const GRADUATIONS = [
 export function BmiCard({ weightKg, heightCm }: Readonly<BmiCardProps>) {
   if (heightCm === null) {
     return (
-      <div className="flex min-h-touch items-center justify-between gap-3 rounded-lg bg-muted/50 px-3.5 py-3">
+      <div className="lit-surface flex min-h-touch items-center justify-between gap-3 rounded-lg border border-border/70 px-3.5 py-3">
         <p className="text-[13px] text-muted-foreground">{t.trends.bmi}</p>
         <Link to="/settings/objectifs" className="text-[13px] font-medium underline">
           {t.trends.bmiNoHeight}
@@ -57,7 +57,7 @@ export function BmiCard({ weightKg, heightCm }: Readonly<BmiCardProps>) {
   const healthy = healthyWeight(weightKg, heightCm)
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg bg-muted/50 px-3.5 py-3">
+    <div className="lit-surface flex flex-col gap-2 rounded-lg border border-border/70 px-3.5 py-3">
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[13px] text-muted-foreground">{t.trends.bmi}</p>
         <p className="tnum text-[13px] text-muted-foreground">

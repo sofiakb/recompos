@@ -34,22 +34,46 @@ Les prototypes utilisent des styles inline et un état local factice ; le codeba
 
 ## Tokens de design
 
-Inchangés — ceux de `src/index.css`, thème sombre unique. Ne jamais écrire de hex ni de couleur Tailwind brute (`bg-zinc-900`, `text-white`) : uniquement les noms sémantiques.
+Ceux de `src/index.css`, thème sombre unique. Ne jamais écrire de hex ni de couleur Tailwind brute
+(`bg-zinc-900`, `text-white`) : uniquement les noms sémantiques.
+
+La palette est un near-black neutre-froid éclairé par un seul accent menthe : une couleur porte tous
+les états positifs, tout le reste est une nuance de la surface qui la porte.
 
 | Token | HSL | Usage |
 | --- | --- | --- |
-| `--background` | `240 6% 4%` | fond de page |
+| `--background` | `170 8% 5%` | fond de page |
 | `--foreground` | `0 0% 98%` | texte principal |
-| `--card` | `240 5% 8%` | surface de carte |
-| `--muted` | `240 4% 13%` | pistes de barres, fond de Segmented |
-| `--muted-foreground` | `240 5% 65%` | texte secondaire |
-| `--border` / `--input` | `240 4% 16%` | filets, bordures de champ |
-| `--primary` / `--ring` | `82 78% 55%` | accent lime, focus |
-| `--primary-foreground` | `240 10% 5%` | texte sur accent |
-| `--secondary` | `240 4% 13%` | boutons secondaires |
-| `--accent` | `240 4% 16%` | survol |
+| `--card` | `168 6% 10%` | surface de carte (bas du dégradé `.lit-surface`) |
+| `--card-top` | `168 6% 14%` | haut du dégradé d'une carte |
+| `--muted` | `168 5% 16%` | pistes de barres, fond de Segmented |
+| `--muted-foreground` | `165 6% 62%` | texte secondaire |
+| `--border` / `--input` | `168 6% 18%` | filets, bordures de champ |
+| `--primary` / `--ring` | `167 68% 63%` | accent menthe, focus |
+| `--primary-bright` | `166 74% 72%` | début du dégradé d'accent |
+| `--primary-deep` | `169 56% 50%` | fin du dégradé d'accent |
+| `--primary-foreground` | `172 40% 7%` | texte sur accent |
+| `--secondary` | `168 5% 16%` | boutons secondaires |
+| `--accent` | `168 6% 20%` | survol |
 | `--destructive` | `0 62% 50%` | suppressions |
-| `--radius` | `0.875rem` (14 px) | cartes, boutons |
+| `--radius` | `1.125rem` (18 px) | cartes, feuilles |
+
+**Classes de composition** (`src/index.css`, `@layer components`). Elles portent la lumière du
+thème ; ne pas réécrire leurs dégradés à la main.
+
+| Classe | Rôle |
+| --- | --- |
+| `.app-glow` | le halo menthe derrière le haut de chaque écran — la seule source de lumière de l'app |
+| `.lit-surface` | une surface éclairée par le haut : dégradé `--card-top` → `--card` + filet de lumière interne |
+| `.lit-accent` | le dégradé d'accent (`--primary-bright` → `--primary-deep`) des CTA, barres et anneaux |
+| `.lit-glow` / `.lit-glow-sm` | le halo sous une surface d'accent |
+| `.figure` | un chiffre héros : chiffres tabulaires, `letter-spacing:-.03em`, `line-height:.95` |
+| `.eyebrow` | l'étiquette de section en majuscules espacées |
+
+**Formes.** Tout ce qui se tape est un **pilule** (`rounded-full`) : boutons, chips, Segmented,
+FAB, toast, bouton de retour. Les surfaces (cartes, feuilles, rangées de réglages) prennent
+`--radius`. L'accent ne remplit jamais un état passif : l'option sélectionnée d'un `Segmented`
+est une surface éclairée, pas un bloc de menthe — la menthe est réservée à la prochaine action.
 
 **Typographie** — pile système (`ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif`).
 

@@ -155,7 +155,7 @@ export function QuantitySheet({
             aria-pressed={star.pinned}
             aria-label={star.pinned ? t.favorites.remove(item.name) : t.favorites.add(item.name)}
             onClick={star.onToggle}
-            className="-mr-1 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="-mr-1 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
           >
             <Star
               size={20}
@@ -235,7 +235,7 @@ export function QuantitySheet({
           ) : null}
         </div>
 
-        <div className="rounded-lg border border-border bg-background p-3.5">
+        <div className="rounded-lg border border-border bg-muted/40 p-3.5 transition-[border-color,box-shadow] focus-visible:border-primary/50">
           <div className="grid grid-cols-4 gap-2.5">
             {MACROS.map(([key, short]) => (
               <div key={key} className="text-center">
@@ -304,7 +304,7 @@ export function QuantitySheet({
               type="button"
               aria-label={t.meals.removeItem(item.name)}
               onClick={onRemove}
-              className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-lg border border-border text-destructive transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-lg border border-border text-destructive transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
             >
               <Trash2 size={19} aria-hidden />
             </TapTarget>
@@ -369,7 +369,7 @@ function StepButton({
       type="button"
       aria-label={label}
       onClick={onPress}
-      className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl border border-border bg-muted transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl border border-border bg-muted transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
     >
       {children}
     </TapTarget>

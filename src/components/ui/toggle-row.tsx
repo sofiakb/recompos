@@ -28,7 +28,7 @@ export function ToggleRow({ label, checked, onChange, description, className }: 
       />
       <span
         aria-hidden
-        className="relative h-6 w-11 shrink-0 rounded-full bg-muted transition-colors peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background peer-checked:[&>span]:translate-x-5"
+        className="peer-checked:lit-accent peer-checked:lit-glow-sm relative h-6 w-11 shrink-0 rounded-full bg-muted transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background peer-checked:[&>span]:translate-x-5"
       >
         <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-foreground transition-transform" />
       </span>

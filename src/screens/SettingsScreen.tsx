@@ -16,7 +16,7 @@ function RubricRow({ to, title, subtitle }: Rubric) {
     <li>
       <Link
         to={to}
-        className="flex min-h-[68px] items-center gap-3 border-b border-border py-3 transition-colors hover:bg-accent"
+        className="lit-surface flex min-h-[68px] items-center gap-3 rounded-lg border border-border/70 px-4 py-3 transition-[filter] hover:brightness-125"
       >
         <span className="min-w-0 flex-1">
           <span className="block text-base font-medium">{title}</span>
@@ -76,7 +76,7 @@ export function SettingsScreen() {
 
   return (
     <SubPage title={t.settings.title} backTo="/">
-      <ul className="flex flex-col">
+      <ul className="flex flex-col gap-2">
         {rubrics.map((rubric) => (
           <RubricRow key={rubric.to} {...rubric} />
         ))}

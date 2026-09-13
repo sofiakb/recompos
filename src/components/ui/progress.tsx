@@ -24,13 +24,13 @@ export function Progress({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={label}
-      className={cn('h-2 w-full overflow-hidden rounded-full bg-muted', className)}
+      className={cn('h-2 w-full overflow-hidden rounded-full bg-muted/80', className)}
       {...props}
     >
       <div
         className={cn(
           'h-full rounded-full transition-[width] duration-300 ease-out',
-          accent === 'primary' ? 'bg-primary' : 'bg-muted-foreground',
+          accent === 'primary' ? 'lit-accent lit-glow-sm' : 'bg-muted-foreground',
         )}
         style={{ width: `${percent}%` }}
       />

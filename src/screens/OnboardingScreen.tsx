@@ -6,7 +6,7 @@ import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
 import { useWeight } from '@/features/weight/useWeight'
 import { MAX_WEIGHT_KG, MIN_WEIGHT_KG } from '@/lib/nutrition'
 import { selectHabits, useSettingsStore } from '@/stores/settingsStore'
-import { cn } from '@/lib/utils'
+import { StepProgress } from '@/components/ui/step-progress'
 import { t } from '@/i18n/fr'
 
 const TOTAL_STEPS = 3
@@ -43,7 +43,9 @@ export function OnboardingScreen() {
   const next = () => (step === TOTAL_STEPS - 1 ? finish() : setStep((s) => s + 1))
 
   return (
-    <div className="flex min-h-full flex-col px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(2rem+env(safe-area-inset-top))]">
+    <div className="relative flex min-h-full flex-col px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(2rem+env(safe-area-inset-top))]">
+      {/* Onboarding renders outside AppLayout, so it lights itself. */}
+      <div className="app-glow" aria-hidden />
       <div className="flex items-center justify-between">
         <span className="tnum text-xs text-muted-foreground">
           {t.onboarding.step(step + 1, TOTAL_STEPS)}
@@ -53,23 +55,13 @@ export function OnboardingScreen() {
         </Button>
       </div>
 
-      <div className="mt-2 flex gap-1.5" aria-hidden>
-        {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-          <span
-            key={i}
-            className={cn(
-              'h-1 flex-1 rounded-full transition-colors',
-              i <= step ? 'bg-primary' : 'bg-muted',
-            )}
-          />
-        ))}
-      </div>
+      <StepProgress step={step} total={TOTAL_STEPS} className="mt-3" />
 
       <div className="flex flex-1 flex-col justify-center py-8">
         {step === 0 ? (
           <section>
             <p className="text-sm font-medium text-primary">{t.app.tagline}</p>
-            <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight">
+            <h1 className="mt-2 text-[30px] font-semibold leading-tight tracking-[-0.02em]">
               {t.onboarding.welcome.title}
             </h1>
             <p className="mt-4 text-muted-foreground">{t.onboarding.welcome.body}</p>
@@ -78,7 +70,7 @@ export function OnboardingScreen() {
 
         {step === 1 ? (
           <section>
-            <h1 className="text-3xl font-semibold leading-tight tracking-tight">
+            <h1 className="text-[30px] font-semibold leading-tight tracking-[-0.02em]">
               {t.onboarding.weight.title}
             </h1>
             <p className="mt-3 text-muted-foreground">{t.onboarding.weight.body}</p>
@@ -97,7 +89,7 @@ export function OnboardingScreen() {
                   }
                 }}
                 placeholder="80,5"
-                className="tnum min-h-[56px] flex-1 rounded-lg border border-border bg-card px-4 text-2xl font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="figure min-h-[56px] flex-1 rounded-lg border border-border bg-muted/40 px-4 text-3xl font-semibold transition-[border-color,box-shadow] focus-visible:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
               />
               <span className="text-lg text-muted-foreground">kg</span>
             </div>
@@ -111,7 +103,7 @@ export function OnboardingScreen() {
 
         {step === 2 ? (
           <section>
-            <h1 className="text-3xl font-semibold leading-tight tracking-tight">
+            <h1 className="text-[30px] font-semibold leading-tight tracking-[-0.02em]">
               {t.onboarding.floor.title}
             </h1>
             <p className="mt-3 text-muted-foreground">{t.onboarding.floor.body}</p>
