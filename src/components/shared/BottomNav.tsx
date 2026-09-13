@@ -151,7 +151,13 @@ export function BottomNav() {
           'pointer-events-auto flex items-center gap-1 overflow-hidden rounded-full border border-border/70 bg-card/55 p-1 shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.06),0_10px_30px_-12px_hsl(0_0%_0%/0.9)] backdrop-blur-2xl backdrop-saturate-150 transition-[max-width] duration-300 ease-out',
           // max-width rather than width: open, the bar keeps sizing itself from
           // the column it sits in, and only the ceiling is animated.
-          collapsed ? 'mr-auto max-w-[3.5rem]' : 'mx-auto max-w-md',
+          //
+          // 58px is the height the capsule already has — the 48px touch target
+          // plus 4px of padding and 1px of border on each side. Anything less
+          // and `border-box` takes the difference out of the chip, which then
+          // gets clipped on one side: at 56px the collapsed bar was a 56×58
+          // oval with its icon a pixel off centre.
+          collapsed ? 'mr-auto max-w-[3.625rem]' : 'mx-auto max-w-md',
         )}
       >
         {TABS.map((tab) => (
