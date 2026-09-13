@@ -12,13 +12,22 @@ const TABS = [
   { to: '/trends', label: t.nav.trends, Icon: TrendingUp, end: false },
 ]
 
+/**
+ * A capsule floating above the bottom edge, not a bar welded to it.
+ *
+ * Detaching it is what lets the page keep going underneath: the blurred glass
+ * shows the list scrolling past on both sides, so the app reads as one surface
+ * with a control on top rather than as two stacked panels. The active tab is a
+ * lit pill wrapping the icon *and* its label — one shape says where you are,
+ * instead of a colour the label has to repeat.
+ */
 export function BottomNav() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 px-4"
     >
-      <ul className="mx-auto flex max-w-md">
+      <ul className="mx-auto flex max-w-md items-center gap-1 rounded-full border border-border/70 bg-card/95 p-2 shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.05),0_10px_30px_-12px_hsl(0_0%_0%/0.9)] backdrop-blur-xl">
         {TABS.map(({ to, label, Icon, end }) => (
           <li key={to} className="flex-1">
             <NavLink
@@ -26,24 +35,19 @@ export function BottomNav() {
               end={end}
               className={({ isActive }) =>
                 cn(
-                  'flex min-h-touch flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors duration-200',
-                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                  // A squircle rather than a capsule: the chip is wider than it is tall, and
+                  // a full pill around a two-line stack reads as a button, not as a place.
+                  'flex min-h-touch flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-medium transition-[color,background-color,box-shadow] duration-200',
+                  isActive
+                    ? 'bg-primary/12 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.25)]'
+                    : 'text-muted-foreground hover:text-foreground',
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <span
-                    className={cn(
-                      'flex h-7 w-12 items-center justify-center rounded-full transition-colors duration-200',
-                      // A lit pill behind the active icon: the tab bar reads at
-                      // a glance without the label having to carry it.
-                      isActive && 'bg-primary/12 ring-1 ring-inset ring-primary/25',
-                    )}
-                  >
-                    <Icon size={21} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden />
-                  </span>
-                  {label}
+                  <Icon size={21} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden />
+                  <span className="max-w-full truncate">{label}</span>
                 </>
               )}
             </NavLink>

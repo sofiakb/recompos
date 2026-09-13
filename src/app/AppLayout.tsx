@@ -9,11 +9,11 @@ export function AppLayout() {
       {/* The one light source of the app — see `.app-glow` in index.css. */}
       <div className="app-glow" aria-hidden />
       {/*
-        Bottom padding clears the nav bar *and* the FAB floating above it: the FAB
-        is 56px tall at 4.5rem from the bottom, so anything under 8rem of the end
-        of a scroll would sit behind it.
+        Bottom padding clears the nav capsule *and* the FAB floating above it.
+        The capsule sits 12px off the bottom edge and stands ~64px tall, which
+        pushes the FAB to 6rem; the last row of a scroll has to clear that.
       */}
-      <main className="relative flex-1 pb-[calc(8.5rem+env(safe-area-inset-bottom))]">
+      <main className="relative flex-1 pb-[calc(10rem+env(safe-area-inset-bottom))]">
         <Outlet />
       </main>
       <QuickActionFab />
