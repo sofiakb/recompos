@@ -85,7 +85,7 @@ export function QuickActionFab() {
         type="button"
         aria-label={t.quickAction.open}
         onClick={() => setOpen(true)}
-        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
+        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center lit-accent lit-glow rounded-full text-primary-foreground transition-transform active:scale-95"
       >
         <Plus size={26} aria-hidden />
       </TapTarget>

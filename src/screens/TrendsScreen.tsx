@@ -68,7 +68,7 @@ export function TrendsScreen() {
         >
           {waist.latest?.waistCm !== undefined && waist.latest !== null ? (
             <>
-              <p className="tnum text-3xl font-semibold">
+              <p className="figure text-3xl font-semibold">
                 {formatDecimal(waist.latest.waistCm)}
                 <span className="ml-1 text-sm font-normal text-muted-foreground">cm</span>
               </p>

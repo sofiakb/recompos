@@ -33,7 +33,7 @@ export function WaistSheet({ open, initialCm, onClose, onSubmit }: WaistSheetPro
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="88"
-          className="tnum min-h-[56px] flex-1 rounded-lg border border-border bg-background px-4 text-2xl font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="tnum min-h-[56px] flex-1 rounded-lg border border-border bg-muted/40 transition-[border-color,box-shadow] focus-visible:border-primary/50 px-4 text-2xl font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
         />
         <span className="text-lg text-muted-foreground">cm</span>
       </div>

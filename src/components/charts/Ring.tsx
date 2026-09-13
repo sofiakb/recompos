@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { cn } from '@/lib/utils'
 
 interface RingProps {
@@ -38,7 +39,10 @@ export function Ring({
   const circumference = 2 * Math.PI * radius
   const capped = Math.min(1, Math.max(0, ratio))
   const percent = Math.round(capped * 100)
-  const arc = accent === 'primary' ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'
+  // One gradient per instance: two rings on a screen would otherwise share an
+  // id, and the second definition wins for both.
+  const gradientId = useId()
+  const arc = accent === 'primary' ? `url(#${gradientId})` : 'hsl(var(--muted-foreground))'
 
   return (
     <div className={cn('relative', className)} style={{ width: size, height: size }}>
@@ -53,6 +57,12 @@ export function Ring({
         aria-label={ariaLabel}
         className="-rotate-90"
       >
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary-bright))" />
+            <stop offset="100%" stopColor="hsl(var(--primary-deep))" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -72,6 +82,11 @@ export function Ring({
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - capped)}
           className="transition-[stroke-dashoffset] duration-500 ease-out"
+          style={
+            accent === 'primary'
+              ? { filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.35))' }
+              : undefined
+          }
         />
       </svg>
 

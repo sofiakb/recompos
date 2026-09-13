@@ -23,7 +23,7 @@ export function NowCard({ habit, onDone, onLater }: NowCardProps) {
   if (!habit) {
     return (
       <div className="flex flex-col gap-3 rounded-lg border border-primary/40 bg-card p-4">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <span className="flex h-8 w-8 items-center justify-center lit-accent lit-glow-sm rounded-full text-primary-foreground">
           <Check size={18} strokeWidth={3} aria-hidden />
         </span>
         <div className="flex flex-col gap-1">

@@ -36,7 +36,7 @@ export function CustomAmountSheet({ open, onClose, onSubmit }: CustomAmountSheet
 
   return (
     <Sheet open={open} onClose={onClose} title={t.nutrition.custom}>
-      <p className="tnum mb-4 text-center text-5xl font-semibold">
+      <p className="figure mb-4 text-center text-5xl font-semibold">
         {value || '0'}
         <span className="ml-1 text-lg text-muted-foreground">g</span>
       </p>

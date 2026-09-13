@@ -121,7 +121,7 @@ export function DayTotals({
       </div>
 
       {expanded ? (
-        <div className="mt-2.5 rounded-lg border border-border bg-background p-4">
+        <div className="mt-2.5 rounded-lg border border-border bg-muted/40 transition-[border-color,box-shadow] focus-visible:border-primary/50 p-4">
           <div className="grid grid-cols-3 gap-2">
             {MACROS.map((macro) => (
               <div key={macro} className="flex flex-col items-center gap-1.5">

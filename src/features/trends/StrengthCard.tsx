@@ -47,7 +47,7 @@ export function StrengthCard({ exerciseById }: StrengthCardProps) {
           <>
             <div>
               <div className="flex items-baseline justify-between">
-                <span className="tnum text-3xl font-semibold">{lastWeek?.index ?? 0}</span>
+                <span className="figure text-3xl font-semibold">{lastWeek?.index ?? 0}</span>
                 <span className="text-sm text-muted-foreground">
                   {t.strength.setsThisWeek(lastWeek?.setCount ?? 0)}
                 </span>

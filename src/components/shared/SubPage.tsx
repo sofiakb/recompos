@@ -20,15 +20,15 @@ interface SubPageProps {
 export function SubPage({ title, backTo, children }: SubPageProps) {
   return (
     <>
-      <header className="flex items-center gap-2 px-2 pb-2 pt-[calc(1rem+env(safe-area-inset-top))]">
+      <header className="flex items-center gap-3 px-4 pb-3 pt-[calc(1rem+env(safe-area-inset-top))]">
         <Link
           to={backTo}
           aria-label={t.onboarding.back}
-          className="flex h-touch w-touch items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="flex h-touch w-touch shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <ArrowLeft size={22} aria-hidden />
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-[-0.02em]">{title}</h1>
       </header>
 
       <div className="flex flex-col gap-3 px-4">{children}</div>

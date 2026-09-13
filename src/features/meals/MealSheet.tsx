@@ -188,7 +188,7 @@ export function MealSheet({
             </span>
           </div>
           <div className="flex h-[5px] overflow-hidden rounded-full bg-muted">
-            <div className="bg-primary" style={{ width: `${withinPercent}%` }} />
+            <div className="lit-accent" style={{ width: `${withinPercent}%` }} />
             <div className="bg-destructive" style={{ width: `${overPercent}%` }} />
           </div>
           <p className="tnum text-[13px] text-muted-foreground">
