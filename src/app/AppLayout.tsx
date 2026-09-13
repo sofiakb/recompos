@@ -10,10 +10,10 @@ export function AppLayout() {
       <div className="app-glow" aria-hidden />
       {/*
         Bottom padding clears the nav capsule *and* the FAB floating above it.
-        The capsule sits 12px off the bottom edge and stands ~64px tall, which
-        pushes the FAB to 6rem; the last row of a scroll has to clear that.
+        The capsule sits 12px off the bottom edge and stands 56px tall, which
+        pushes the FAB to 5.5rem; the last row of a scroll has to clear that.
       */}
-      <main className="relative flex-1 pb-[calc(10rem+env(safe-area-inset-bottom))]">
+      <main className="relative flex-1 pb-[calc(9.5rem+env(safe-area-inset-bottom))]">
         <Outlet />
       </main>
       <QuickActionFab />

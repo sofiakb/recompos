@@ -25,9 +25,9 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 px-4"
+      className="fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 px-4"
     >
-      <ul className="mx-auto flex max-w-md items-center gap-1 rounded-full border border-border/70 bg-card/95 p-2 shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.05),0_10px_30px_-12px_hsl(0_0%_0%/0.9)] backdrop-blur-xl">
+      <ul className="mx-auto flex max-w-md items-center gap-1 rounded-full border border-border/70 bg-card/55 p-1 shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.06),0_10px_30px_-12px_hsl(0_0%_0%/0.9)] backdrop-blur-2xl backdrop-saturate-150">
         {TABS.map(({ to, label, Icon, end }) => (
           <li key={to} className="flex-1">
             <NavLink
@@ -37,7 +37,7 @@ export function BottomNav() {
                 cn(
                   // A squircle rather than a capsule: the chip is wider than it is tall, and
                   // a full pill around a two-line stack reads as a button, not as a place.
-                  'flex min-h-touch flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-medium transition-[color,background-color,box-shadow] duration-200',
+                  'flex min-h-touch flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 text-[11px] font-medium transition-[color,background-color,box-shadow] duration-200',
                   isActive
                     ? 'bg-primary/12 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.25)]'
                     : 'text-muted-foreground hover:text-foreground',
@@ -46,7 +46,7 @@ export function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  <Icon size={21} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden />
+                  <Icon size={20} strokeWidth={isActive ? 2.4 : 1.8} aria-hidden />
                   <span className="max-w-full truncate">{label}</span>
                 </>
               )}
