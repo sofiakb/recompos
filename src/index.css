@@ -32,6 +32,23 @@
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
     --radius: 1.125rem;
+
+    /*
+      The floating nav capsule, once: its height (48px touch target + 4px of
+      padding and 1px of border on each side) and how far it rests above the
+      bottom edge. Everything else measured from that edge — the FAB, the
+      toast, the end of a scroll — is derived from these two, so the bar can
+      move without leaving something behind it.
+
+      A phone with a home indicator already reserves ~34px of safe area under
+      the bar. Adding a full gap on top of that pushes it into the middle of
+      the screen, so the gap is taken *out* of the inset instead: a floating
+      bar is meant to sit over that strip, not above it.
+    */
+    --nav-height: 3.625rem;
+    --nav-inset: max(0.5rem, calc(env(safe-area-inset-bottom) - 1rem));
+    /* The first line under the capsule, and where the FAB sits. */
+    --nav-clearance: calc(var(--nav-inset) + var(--nav-height) + 0.75rem);
   }
 
   * {
