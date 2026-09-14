@@ -43,7 +43,7 @@ export function OnboardingScreen() {
   const next = () => (step === TOTAL_STEPS - 1 ? finish() : setStep((s) => s + 1))
 
   return (
-    <div className="relative flex h-full flex-col overflow-y-auto px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(2rem+env(safe-area-inset-top))]">
+    <div className="relative flex min-h-full flex-col px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(2rem+env(safe-area-inset-top))]">
       {/* Onboarding renders outside AppLayout, so it lights itself. */}
       <div className="app-glow" aria-hidden />
       <div className="flex items-center justify-between">

@@ -49,10 +49,8 @@ function read(): Readings {
     screenHeight: window.screen.height,
     clientHeight: document.documentElement.clientHeight,
     visualHeight: window.visualViewport ? Math.round(window.visualViewport.height) : null,
-    scrollHeight: (document.getElementById('app-scroll') ?? document.documentElement).scrollHeight,
-    scrolls:
-      (document.getElementById('app-scroll') ?? document.documentElement).scrollHeight >
-      window.innerHeight + 1,
+    scrollHeight: document.documentElement.scrollHeight,
+    scrolls: document.documentElement.scrollHeight > window.innerHeight + 1,
     safeTop: readSafeArea('top'),
     safeBottom: readSafeArea('bottom'),
     navGap: navRect ? Math.round(window.innerHeight - navRect.bottom) : null,
@@ -71,7 +69,6 @@ export function ViewportProbe() {
     // ones that move it without firing anything at all.
     const timer = window.setInterval(update, 500)
     window.addEventListener('scroll', update, { passive: true })
-    document.getElementById('app-scroll')?.addEventListener('scroll', update, { passive: true })
     window.addEventListener('resize', update)
     window.visualViewport?.addEventListener('resize', update)
     window.visualViewport?.addEventListener('scroll', update)
