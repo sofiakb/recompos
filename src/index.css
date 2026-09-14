@@ -127,6 +127,31 @@
   }
 
   /*
+    Pinned `var(--dock)` above the bottom edge of the screen.
+
+    An installed PWA on iOS anchors `position: fixed` to a window whose height
+    depends on the screen: 932px when the document scrolls, 873 when it does
+    not — the screen minus its top inset, read with the viewport probe. Measured
+    from the bottom, everything fixed jumps 59px between two tabs. The window
+    always starts at the top, so a position measured from there holds still;
+    `100vh` is the full screen either way.
+
+    Standalone only: in Safari's tab, `100vh` is the viewport *without* its
+    toolbars, and a dock measured from it would slide under them.
+  */
+  .dock {
+    bottom: var(--dock);
+  }
+
+  @media (display-mode: standalone) {
+    .dock {
+      @apply -translate-y-full;
+      bottom: auto;
+      top: calc(100vh - var(--dock));
+    }
+  }
+
+  /*
     A card is lit from its top edge, the way a physical panel under a light is:
     a two-stop gradient plus a hairline highlight on the first pixel row. Flat
     `bg-card` reads as a hole in the page at these contrast levels.

@@ -24,17 +24,23 @@ interface Readings {
   scrolls: boolean
   safeTop: number
   safeBottom: number
+  /** What the docked elements measure from — has to be the full screen everywhere. */
+  vh: number
   navGap: number | null
 }
 
-/** `env()` has no JS accessor: a witness element is the only way to read one. */
-function readSafeArea(side: 'top' | 'bottom'): number {
+/** `env()` and `vh` have no JS accessor: a witness element is the only way to read one. */
+function readHeight(height: string): number {
   const probe = document.createElement('div')
-  probe.style.cssText = `position:fixed;height:env(safe-area-inset-${side});visibility:hidden`
+  probe.style.cssText = `position:fixed;height:${height};visibility:hidden`
   document.body.appendChild(probe)
   const value = Math.round(probe.getBoundingClientRect().height)
   probe.remove()
   return value
+}
+
+function readSafeArea(side: 'top' | 'bottom'): number {
+  return readHeight(`env(safe-area-inset-${side})`)
 }
 
 function read(): Readings {
@@ -53,6 +59,7 @@ function read(): Readings {
     scrolls: document.documentElement.scrollHeight > window.innerHeight + 1,
     safeTop: readSafeArea('top'),
     safeBottom: readSafeArea('bottom'),
+    vh: readHeight('100vh'),
     navGap: navRect ? Math.round(window.innerHeight - navRect.bottom) : null,
   }
 }
@@ -98,6 +105,7 @@ export function ViewportProbe() {
     ['scrolls', String(readings.scrolls)],
     ['safeTop', String(readings.safeTop)],
     ['safeBottom', String(readings.safeBottom)],
+    ['100vh', String(readings.vh)],
     ['navGap', String(readings.navGap)],
   ]
 
