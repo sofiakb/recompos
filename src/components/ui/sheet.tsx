@@ -66,13 +66,15 @@ export function Sheet({
   // render, and locking the page is not something to redo forty times a second.
   useEffect(() => {
     if (!open) return
-    if (openSheets === 0) pageOverflow = document.body.style.overflow
+    // The app's scroll region, or the body wherever the shell is not mounted.
+    const scroller = document.getElementById('app-scroll') ?? document.body
+    if (openSheets === 0) pageOverflow = scroller.style.overflow
     openSheets += 1
-    document.body.style.overflow = 'hidden'
+    scroller.style.overflow = 'hidden'
     return () => {
       openSheets -= 1
       // The last one out gives the page back, whichever order they left in.
-      if (openSheets === 0) document.body.style.overflow = pageOverflow
+      if (openSheets === 0) scroller.style.overflow = pageOverflow
     }
   }, [open])
 
