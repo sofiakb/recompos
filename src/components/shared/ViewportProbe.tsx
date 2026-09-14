@@ -11,38 +11,48 @@ import { useUiStore } from '@/stores/uiStore'
  * toggle and its store flag once the cause is known.
  */
 interface Readings {
-  standalone: boolean
   innerHeight: number
+  innerWidth: number
+  /** 1 unless the page is zoomed — which would shrink the viewport in CSS px. */
+  scale: number | null
+  dpr: number
+  screenHeight: number
+  /** The html box. Short of `innerHeight` means the window shrank under it. */
+  clientHeight: number
   visualHeight: number | null
-  visualOffsetTop: number | null
-  scrollY: number
   scrollHeight: number
   scrolls: boolean
+  safeTop: number
   safeBottom: number
   navGap: number | null
 }
 
-function read(): Readings {
-  // `env()` has no JS accessor: a probe element is the only way to see the
-  // number the engine resolved.
+/** `env()` has no JS accessor: a witness element is the only way to read one. */
+function readSafeArea(side: 'top' | 'bottom'): number {
   const probe = document.createElement('div')
-  probe.style.cssText = 'position:fixed;height:env(safe-area-inset-bottom);visibility:hidden'
+  probe.style.cssText = `position:fixed;height:env(safe-area-inset-${side});visibility:hidden`
   document.body.appendChild(probe)
-  const safeBottom = Math.round(probe.getBoundingClientRect().height)
+  const value = Math.round(probe.getBoundingClientRect().height)
   probe.remove()
+  return value
+}
 
+function read(): Readings {
   const nav = document.querySelector('nav[aria-label="Navigation principale"]')
   const navRect = nav?.getBoundingClientRect() ?? null
 
   return {
-    standalone: window.matchMedia('(display-mode: standalone)').matches,
     innerHeight: window.innerHeight,
+    innerWidth: window.innerWidth,
+    scale: window.visualViewport ? Math.round(window.visualViewport.scale * 1000) / 1000 : null,
+    dpr: window.devicePixelRatio,
+    screenHeight: window.screen.height,
+    clientHeight: document.documentElement.clientHeight,
     visualHeight: window.visualViewport ? Math.round(window.visualViewport.height) : null,
-    visualOffsetTop: window.visualViewport ? Math.round(window.visualViewport.offsetTop) : null,
-    scrollY: Math.round(window.scrollY),
     scrollHeight: document.documentElement.scrollHeight,
     scrolls: document.documentElement.scrollHeight > window.innerHeight + 1,
-    safeBottom,
+    safeTop: readSafeArea('top'),
+    safeBottom: readSafeArea('bottom'),
     navGap: navRect ? Math.round(window.innerHeight - navRect.bottom) : null,
   }
 }
@@ -74,13 +84,19 @@ export function ViewportProbe() {
   if (!on || !readings) return null
 
   const rows: Array<[string, string]> = [
-    ['standalone', String(readings.standalone)],
+    // The three that tell a zoomed page from a shrunken window apart: under
+    // zoom the width and the ratio move with the height; under a resize they
+    // do not.
     ['innerH', String(readings.innerHeight)],
+    ['innerW', String(readings.innerWidth)],
+    ['scale', String(readings.scale)],
+    ['dpr', String(readings.dpr)],
+    ['screenH', String(readings.screenHeight)],
+    ['clientH', String(readings.clientHeight)],
     ['visualH', String(readings.visualHeight)],
-    ['visualTop', String(readings.visualOffsetTop)],
-    ['scrollY', String(readings.scrollY)],
     ['scrollH', String(readings.scrollHeight)],
     ['scrolls', String(readings.scrolls)],
+    ['safeTop', String(readings.safeTop)],
     ['safeBottom', String(readings.safeBottom)],
     ['navGap', String(readings.navGap)],
   ]
