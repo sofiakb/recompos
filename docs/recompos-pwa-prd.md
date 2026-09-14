@@ -640,9 +640,16 @@ Les macros vivent en trois jauges de 4 px, dépliables en trois anneaux accompag
 derrière les cibles. Le détail se lit une fois par jour ; les kcal restantes se lisent à chaque
 ouverture de l'onglet.
 
-Une pastille rappelle la **consistance sur 7 jours** — pas une série de jours. « Un pourcentage
-glissant, jamais une série » est un principe du produit (§3), et une série est exactement le compteur
-qu'une semaine ratée remet à zéro.
+Une pastille compte les **jours saisis sur les 7 derniers** — « 4 / 7 j ». Elle parle de saisie de
+repas, pas du plancher d'habitudes : celui-ci a son pourcentage, mais sur un écran fait de kcal il
+répondait à une question que personne ne posait là. Le compte est en jours parce qu'il se vérifie
+d'un coup d'œil contre les flèches de navigation juste en dessous, là où « 57 % » se lit comme une
+part de la journée.
+
+Fenêtre glissante, jamais une série (§3) : un jour manqué fait baisser le compte, le lendemain le
+remonte, rien ne se remet à zéro. D'où l'absence de flamme — une flamme est exactement le compteur
+qu'une semaine ratée efface. Avant l'installation, la pastille disparaît au lieu d'afficher « 0 / 7 j »
+pour des jours qui n'ont jamais existé.
 
 **Les deux cibles dérivées** (décision n°25)
 

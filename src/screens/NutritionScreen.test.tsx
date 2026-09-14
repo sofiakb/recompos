@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { db } from '@/db/dexie'
 import { NutritionScreen } from '@/screens/NutritionScreen'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { addDays, formatLongDate, toLogicalDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
 
 /**
@@ -54,6 +55,12 @@ vi.mock('@/features/nutrition/useMeals', async (importOriginal) => {
   }
 })
 
+/** Testing Library collapses U+00A0 and U+202F to a plain space before matching. */
+const plain = (text: string) => text.replaceAll(/[\u00a0\u202f]/gu, ' ')
+
+/** The logged-days pill, whatever numbers it happens to carry. */
+const LOGGED_PILL = /^\d+ \/ \d+ j$/
+
 const DESCRIPTION = 'deux œufs et du pain'
 
 function renderScreen() {
@@ -84,6 +91,48 @@ describe('NutritionScreen — la feuille se ferme après le travail, pas avant',
     await db.meals.clear()
     await db.proteinLogs.clear()
     useSettingsStore.setState(useSettingsStore.getInitialState())
+  })
+
+  it('compte les jours saisis, et les garde en remontant la semaine', async () => {
+    // Le chiffre parlait du plancher d'habitudes, sur un écran fait de kcal — et
+    // il disparaissait dès qu'on quittait aujourd'hui.
+    const state = useSettingsStore.getState()
+    useSettingsStore.setState({
+      settings: { ...state.settings, installedAt: '2026-01-01T09:00:00.000Z' },
+    })
+    const yesterday = addDays(toLogicalDate(), -1)
+    await db.proteinLogs.add({
+      id: 'log-hier',
+      date: yesterday,
+      timestamp: `${yesterday}T12:00:00.000Z`,
+      grams: 30,
+      sourceType: 'meal',
+    })
+    const user = renderScreen()
+
+    // Une seule journée saisie sur les sept, et la fenêtre glisse avec le jour lu :
+    // hier, elle est le dernier de ses sept jours.
+    await waitFor(() =>
+      expect(screen.getByText(plain(t.nutrition.loggedDaysLabel(1, 7)))).toBeTruthy(),
+    )
+
+    await user.click(screen.getByRole('button', { name: t.nutrition.previousDay }))
+
+    // L'en-tête et la barre de navigation portent tous deux la date.
+    await waitFor(() => expect(screen.getAllByText(formatLongDate(yesterday)).length).toBe(2))
+    expect(screen.getByText(plain(t.nutrition.loggedDaysLabel(1, 7)))).toBeTruthy()
+  })
+
+  it('ne compte rien avant l’installation, plutôt qu’un 0 / 7 j accusateur', async () => {
+    // installedAt vaut « maintenant » par défaut : la veille est antérieure à
+    // l'app, et sept jours manqués n'y ont jamais existé.
+    const user = renderScreen()
+    await user.click(screen.getByRole('button', { name: t.nutrition.previousDay }))
+
+    await waitFor(() =>
+      expect(screen.getAllByText(formatLongDate(addDays(toLogicalDate(), -1))).length).toBe(2),
+    )
+    expect(screen.queryByText(LOGGED_PILL)).toBeNull()
   })
 
   it('garde la feuille ouverte pendant l’analyse, avec son bouton en attente', async () => {

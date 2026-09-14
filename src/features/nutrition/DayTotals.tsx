@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, Flame } from 'lucide-react'
+import { CalendarCheck, ChevronDown } from 'lucide-react'
 import { Ring } from '@/components/charts/Ring'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
@@ -16,8 +16,12 @@ export interface DayFigures {
 
 interface DayTotalsProps {
   dateLabel: string
-  /** Rolling 7-day consistency, or null on a day that is not today. */
-  consistencyPercent: number | null
+  /**
+   * Days with something written down, over the window ending on the day on
+   * screen — `null` for a day the history cannot answer for, before the install
+   * or beyond the range that was loaded.
+   */
+  logged: { days: number; outOf: number } | null
   totals: DayFigures
   /** A macro target of 0 means « no denominator », not « a target of zero ». */
   targets: DayFigures
@@ -61,7 +65,7 @@ function Figure({
  */
 export function DayTotals({
   dateLabel,
-  consistencyPercent,
+  logged,
   totals,
   targets,
   explain,
@@ -80,13 +84,21 @@ export function DayTotals({
     <div className="lit-surface sticky top-0 z-10 border-b border-border/70 px-5 pb-1 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
         <p className="eyebrow">{dateLabel}</p>
-        {consistencyPercent !== null ? (
-          <span
-            className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-3 py-1.5 text-[13px] font-semibold"
-            title={t.today.consistencySummary(consistencyPercent)}
-          >
-            <Flame size={14} className="text-primary" aria-hidden />
-            {t.nutrition.consistencyPill(consistencyPercent)}
+        {/* Days, not a percentage, and never a flame. « 4 / 7 j » is countable
+            against the arrows right below it, where « 57 % » in a header made of
+            kcal reads as a share of the day. The flame was worse still: it is
+            the one metaphor this number is not — a flame is a streak, and a
+            streak is the counter a missed week resets, the opposite of the
+            rolling window the product is built on (PRD §3). */}
+        {logged !== null ? (
+          <span className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-3 py-1.5 text-[13px] font-semibold">
+            <CalendarCheck size={14} className="text-primary" aria-hidden />
+            {/* « 6 / 7 j » is read out as a date or a fraction; the sentence is
+                what a screen reader needs, and the glance is what the eye needs. */}
+            <span className="sr-only">
+              {t.nutrition.loggedDaysLabel(logged.days, logged.outOf)}
+            </span>
+            <span aria-hidden>{t.nutrition.loggedDaysPill(logged.days, logged.outOf)}</span>
           </span>
         ) : null}
       </div>

@@ -76,18 +76,18 @@ export const MEAL_TEXT_SYSTEM_PROMPT = [
   '',
   MEAL_JSON_SHAPE,
   '',
-  'Principes d\'analyse :',
+  "Principes d'analyse :",
   '1. PLATS COMPOSÉS ET RECETTES NOMMÉES (ex: "Veau à la marocaine", "Pâtes carbo", "Couscous") :',
   '   - Décompose systématiquement le plat en ses ingrédients canoniques :',
   '     * La protéine principale (ex: Veau ~150g)',
   '     * La garniture/légumes/fruits cuits (ex: Pruneaux ~30g, Amandes effilées ~15g, Oignons compotés)',
-  '     * La matière grasse et la sauce (ex: Huile d\'olive de cuisson ~10-15g, sauce liée)',
-  '     * L\'accompagnement s\'il est mentionné ou indissociable.',
-  '   - Si une quantité n\'est pas précisée, applique la portion standard d\'un service adulte de restaurant/famille.',
+  "     * La matière grasse et la sauce (ex: Huile d'olive de cuisson ~10-15g, sauce liée)",
+  "     * L'accompagnement s'il est mentionné ou indissociable.",
+  "   - Si une quantité n'est pas précisée, applique la portion standard d'un service adulte de restaurant/famille.",
   '   - Passe "confidence" à "medium" et précise dans "notes" que les ingrédients sont déduits de la recette standard.',
   '',
   '2. INGRÉDIENTS BRUTS OU LISTES SIMPLES (ex: "200g de poulet", "1 pomme", "1 café") :',
-  '   - Les quantités explicites de l\'utilisateur font autorité absolue.',
+  "   - Les quantités explicites de l'utilisateur font autorité absolue.",
   '   - Ajoute uniquement l\'huile/matière grasse si le mode de cuisson le sous-entend (ex: "steak poêlé" implique ~5-10g de matière grasse).',
   '',
   '3. COHÉRENCE ET RÈGLES DE CALCUL :',
@@ -95,7 +95,7 @@ export const MEAL_TEXT_SYSTEM_PROMPT = [
   '   - Calcul énergétique strict : Glucides*4 + Protéines*4 + Lipides*9 = Calories (tolérance ±5 kcal).',
   '   - Ne sous-estime jamais les graisses de cuisson et les sauces dans les plats traditionnels ou mijotés.',
   '   - Tout en français. Aucun champ additionnel.',
-].join('\n');
+].join('\n')
 
 export const MEAL_PHOTO_USER_PROMPT = "Analyse ce repas. Rends le JSON demandé, rien d'autre."
 
