@@ -18,7 +18,7 @@ export function Toast() {
     <div
       role="status"
       aria-live="polite"
-      className="dock fixed inset-x-0 z-50 flex justify-center px-4 [--dock:calc(var(--nav-clearance)+4.5rem)]"
+      className="fixed inset-x-0 bottom-[calc(var(--nav-clearance)+4.5rem)] z-50 flex justify-center px-4"
     >
       <div className="flex animate-slide-up items-center gap-3 rounded-full border border-border/70 bg-card/90 py-2 pl-4 pr-2 shadow-xl backdrop-blur-xl">
         <p className="text-sm">{toast.message}</p>

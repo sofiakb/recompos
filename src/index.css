@@ -70,6 +70,27 @@
     @apply h-full;
   }
 
+  /*
+    Never shorter than the screen.
+
+    An installed PWA on iOS lays the page out in a box of 873px — the screen
+    minus its top inset — and, as long as the document fits in it, sizes the
+    window to it too: everything below is neither laid out nor painted, the
+    fixed nav included (read with the viewport probe: innerH 873, 100vh 932,
+    and a nav placed at the right height but clipped). A document taller than
+    that box gets a window of the full 932. `100vh` is that full height.
+
+    Standalone only: in Safari's tab, `100vh` ignores the toolbars and would
+    add a scroll to every short page.
+  */
+  @media (display-mode: standalone) {
+    html,
+    body,
+    #root {
+      min-height: 100vh;
+    }
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family:
@@ -124,31 +145,6 @@
       hsl(var(--primary) / 0.05) 42%,
       transparent 72%
     );
-  }
-
-  /*
-    Pinned `var(--dock)` above the bottom edge of the screen.
-
-    An installed PWA on iOS anchors `position: fixed` to a window whose height
-    depends on the screen: 932px when the document scrolls, 873 when it does
-    not — the screen minus its top inset, read with the viewport probe. Measured
-    from the bottom, everything fixed jumps 59px between two tabs. The window
-    always starts at the top, so a position measured from there holds still;
-    `100vh` is the full screen either way.
-
-    Standalone only: in Safari's tab, `100vh` is the viewport *without* its
-    toolbars, and a dock measured from it would slide under them.
-  */
-  .dock {
-    bottom: var(--dock);
-  }
-
-  @media (display-mode: standalone) {
-    .dock {
-      @apply -translate-y-full;
-      bottom: auto;
-      top: calc(100vh - var(--dock));
-    }
   }
 
   /*
