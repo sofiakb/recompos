@@ -650,6 +650,9 @@ export const fr = {
     restTimerCustomTitle: 'Durée de repos',
     restTimerRange: (min: number, max: number) => `Entre ${min} et ${max} secondes.`,
     haptics: 'Retour haptique',
+    viewportProbe: "Diagnostic d'affichage",
+    viewportProbeHint:
+      'Temporaire. Affiche ce que le téléphone déclare de son écran, pour comprendre pourquoi la barre du bas ne se pose pas à la même hauteur selon les pages. S’éteint en rouvrant l’app.',
     sound: 'Sons',
     storage: 'Stockage',
     storageUsage: (used: string, quota: string) => `${used} utilisés sur ${quota}`,

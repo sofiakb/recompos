@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { BottomNav } from '@/components/shared/BottomNav'
 import { QuickActionFab } from '@/components/shared/QuickActionFab'
 import { Toast } from '@/components/shared/Toast'
+import { ViewportProbe } from '@/components/shared/ViewportProbe'
 
 export function AppLayout() {
   return (
@@ -19,6 +20,7 @@ export function AppLayout() {
       <QuickActionFab />
       <BottomNav />
       <Toast />
+      <ViewportProbe />
     </div>
   )
 }
