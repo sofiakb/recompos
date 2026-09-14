@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
 import { DayTotals } from '@/features/nutrition/DayTotals'
 import { t } from '@/i18n/fr'
+
+/** Testing Library collapses U+00A0 and U+202F to a plain space before matching. */
+const plain = (text: string) => text.replaceAll(/[\u00a0\u202f]/gu, ' ')
 
 const TOTALS = { kcal: 1247, proteinG: 78, carbsG: 120, fatG: 40 }
 const TARGETS = { kcal: 1850, proteinG: 140, carbsG: 175, fatG: 65 }
@@ -11,16 +13,14 @@ const EXPLAIN = { kcal: 'Cible 1 850 kcal', protein: 'Protéines calculées sur 
 
 function renderTotals(overrides: Partial<Parameters<typeof DayTotals>[0]> = {}) {
   return render(
-    <MemoryRouter>
-      <DayTotals
-        dateLabel="vendredi 28 août"
-        consistencyPercent={86}
-        totals={TOTALS}
-        targets={TARGETS}
-        explain={EXPLAIN}
-        {...overrides}
-      />
-    </MemoryRouter>,
+    <DayTotals
+      dateLabel="vendredi 28 août"
+      logged={{ days: 6, outOf: 7 }}
+      totals={TOTALS}
+      targets={TARGETS}
+      explain={EXPLAIN}
+      {...overrides}
+    />,
   )
 }
 
@@ -72,18 +72,20 @@ describe('DayTotals', () => {
     expect(screen.getByText('/ 140 g')).toBeTruthy()
   })
 
-  it('says the window the percentage is read over, and opens the trend behind it', () => {
-    // A bare « 86 % » in a header made of kcal reads as a share of the day.
+  it('counts the days written down, rather than a percentage of nothing named', () => {
+    // « 57 % » in a header made of kcal reads as a share of the day; « 6 / 7 j »
+    // is countable against the day arrows right below it.
     renderTotals()
 
-    const pill = screen.getByRole('link', { name: t.nutrition.consistencyPillLabel(86) })
-    expect(pill.textContent).toContain(t.nutrition.consistencyPill(86))
-    expect(pill.getAttribute('href')).toBe('/trends')
+    expect(screen.getByText(plain(t.nutrition.loggedDaysLabel(6, 7)))).toBeTruthy()
+    expect(screen.getByText(plain(t.nutrition.loggedDaysPill(6, 7)))).toBeTruthy()
   })
 
-  it('hides the consistency pill on a day the history cannot answer for', () => {
-    renderTotals({ consistencyPercent: null })
+  it('hides the pill on a day the history cannot answer for', () => {
+    // Before the install there is no window to count over, and a « 0 / 7 j »
+    // there would read as seven days missed.
+    renderTotals({ logged: null })
 
-    expect(screen.queryByText(t.nutrition.consistencyPill(86))).toBeNull()
+    expect(screen.queryByText(plain(t.nutrition.loggedDaysPill(6, 7)))).toBeNull()
   })
 })

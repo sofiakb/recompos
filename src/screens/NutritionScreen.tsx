@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet } from '@/components/ui/sheet'
-import { useFloor } from '@/features/floor/useFloor'
 import { AddSheet } from '@/features/meals/add/AddSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
 import { MealSheet } from '@/features/meals/MealSheet'
@@ -16,6 +15,7 @@ import { DayTotals } from '@/features/nutrition/DayTotals'
 import { buildSlotJournal } from '@/features/nutrition/journal'
 import { MealSlotList } from '@/features/nutrition/MealSlotList'
 import { useCalorieTarget, type CalorieTargetState } from '@/features/nutrition/useCalorieTarget'
+import { useLoggedDays } from '@/features/nutrition/useLoggedDays'
 import { useMeals, type FoodOrigin, type StagedPhoto } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget, type ProteinTargetState } from '@/features/nutrition/useProteinTarget'
@@ -57,7 +57,7 @@ export function NutritionScreen() {
   const meals = useMeals(day)
   const target = useProteinTarget()
   const calories = useCalorieTarget()
-  const { consistencyOn } = useFloor()
+  const loggedDays = useLoggedDays()
   const showToast = useUiStore((state) => state.showToast)
 
   const fileInput = useRef<HTMLInputElement>(null)
@@ -120,6 +120,7 @@ export function NutritionScreen() {
     }
   }, [barcode.food])
 
+  const loggedWindow = loggedDays.scoreOn(day)
   const macroTargets = macroTargetsG(calories.targetKcal, target.targetGrams)
   const slotKcal = journal.find((group) => group.slot === targetSlot)?.kcal ?? 0
   // Protein comes from the ledger, not from the meals: a meal writes its protein
@@ -210,13 +211,15 @@ export function NutritionScreen() {
 
   return (
     <>
-      {/* The consistency window ends on the day being read, rather than the pill
-          blanking out the moment you step off today: walking back through the
-          week is how the history gets read, and a figure that vanishes there
-          looks broken rather than deliberate. */}
+      {/* The window ends on the day being read, rather than the pill blanking
+          out the moment you step off today: walking back through the week is how
+          the history gets read, and a figure that vanishes there looks broken
+          rather than deliberate. */}
       <DayTotals
         dateLabel={formatLongDate(day)}
-        consistencyPercent={consistencyOn(day)?.percent ?? null}
+        logged={
+          loggedWindow ? { days: loggedWindow.completed, outOf: loggedWindow.eligible } : null
+        }
         totals={totals}
         targets={{
           kcal: calories.targetKcal,

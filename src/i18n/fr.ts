@@ -80,9 +80,10 @@ export const fr = {
     proteinTargetNoWeight: 'Protéines — cible provisoire, ajoute ton poids',
     previousDay: 'Jour précédent',
     nextDay: 'Jour suivant',
-    consistencyPill: (percent: number) => `${percent} % sur 7 j`,
-    consistencyPillLabel: (percent: number) =>
-      `Consistance du plancher : ${percent} % sur 7 jours — voir Progression`,
+    /** Repas saisis, en jours comptables : « 4 / 7 j », jamais une série. */
+    loggedDaysPill: (days: number, outOf: number) => `${days} / ${outOf} j`,
+    loggedDaysLabel: (days: number, outOf: number) =>
+      `Repas saisis : ${days} jour${days > 1 ? 's' : ''} sur les ${outOf} derniers`,
     slotTotals: (kcal: number, target: number) =>
       `${formatCount(kcal)} / ${formatCount(target)} kcal`,
     slotProtein: (grams: number) => `${grams} g de protéines`,
