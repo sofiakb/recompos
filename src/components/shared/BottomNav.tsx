@@ -31,22 +31,12 @@ function useCollapseOnScroll(): [boolean, (collapsed: boolean) => void] {
   const lastY = useRef(0)
 
   useEffect(() => {
-    // The document does not scroll any more (see `index.css`): the app's one
-    // scroll region does. Falling back to the window keeps the hook working
-    // wherever the shell is not mounted — a test, or the intro screen.
-    // Two bindings rather than one union: `instanceof Window` answers false
-    // under jsdom, and the hook would then read `scrollTop` off the window and
-    // see NaN for every move.
-    const region = document.getElementById('app-scroll')
-    const target: EventTarget = region ?? window
-    const scrollTop = () => region?.scrollTop ?? window.scrollY
-
-    lastY.current = scrollTop()
+    lastY.current = window.scrollY
     let frame = 0
 
     const read = () => {
       frame = 0
-      const y = scrollTop()
+      const y = window.scrollY
       const moved = y - lastY.current
       if (y <= TOP_ZONE_PX) setCollapsed(false)
       else if (moved > DIRECTION_THRESHOLD_PX) setCollapsed(true)
@@ -61,9 +51,9 @@ function useCollapseOnScroll(): [boolean, (collapsed: boolean) => void] {
       if (frame === 0) frame = window.requestAnimationFrame(read)
     }
 
-    target.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
     return () => {
-      target.removeEventListener('scroll', onScroll)
+      window.removeEventListener('scroll', onScroll)
       if (frame !== 0) window.cancelAnimationFrame(frame)
     }
   }, [])
