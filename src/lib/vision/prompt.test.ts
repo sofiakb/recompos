@@ -10,9 +10,10 @@ import {
 } from '@/lib/vision/prompt'
 
 describe('prompts partagés', () => {
-  it('donne le même bloc de règles aux deux modalités', () => {
+  // Le chemin texte a ses propres principes d'analyse (plats composés,
+  // ingrédients bruts) : seul le chemin photo garde le bloc partagé.
+  it('garde le bloc de règles partagé côté photo', () => {
     expect(MEAL_PHOTO_SYSTEM_PROMPT).toContain(MEAL_RULES)
-    expect(MEAL_TEXT_SYSTEM_PROMPT).toContain(MEAL_RULES)
   })
 
   it('donne le même format de sortie aux deux modalités', () => {
