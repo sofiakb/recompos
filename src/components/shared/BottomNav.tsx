@@ -138,7 +138,7 @@ export function BottomNav() {
     <nav
       aria-label="Navigation principale"
       data-collapsed={collapsed}
-      className="dock pointer-events-none fixed inset-x-0 z-40 px-4 [--dock:var(--nav-inset)]"
+      className="pointer-events-none fixed inset-x-0 bottom-[var(--nav-inset)] z-40 px-4"
       // A tap anywhere on the bar opens it: the collapsed chip is the tab you
       // are already on, so the tap costs nothing if it also navigates.
       onPointerDown={() => setCollapsed(false)}
