@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { ToggleRow } from '@/components/ui/toggle-row'
 import { SubPage } from '@/components/shared/SubPage'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useUiStore } from '@/stores/uiStore'
 import { formatCalendarDate, toLogicalDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
 
@@ -11,6 +12,8 @@ export function AppSettingsScreen() {
   const toggleHaptics = useSettingsStore((state) => state.toggleHaptics)
   const toggleSound = useSettingsStore((state) => state.toggleSound)
   const replayOnboarding = useSettingsStore((state) => state.replayOnboarding)
+  const viewportProbe = useUiStore((state) => state.viewportProbe)
+  const toggleViewportProbe = useUiStore((state) => state.toggleViewportProbe)
 
   return (
     <SubPage title={t.settings.sections.app.title} backTo="/settings">
@@ -25,6 +28,13 @@ export function AppSettingsScreen() {
             label={t.settings.sound}
             checked={settings.soundEnabled}
             onChange={toggleSound}
+          />
+          {/* Temporary, with the probe it switches on — remove both together. */}
+          <ToggleRow
+            label={t.settings.viewportProbe}
+            description={t.settings.viewportProbeHint}
+            checked={viewportProbe}
+            onChange={toggleViewportProbe}
           />
         </CardContent>
       </Card>
