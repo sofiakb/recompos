@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { DayTotals } from '@/features/nutrition/DayTotals'
 import { t } from '@/i18n/fr'
 
@@ -10,14 +11,16 @@ const EXPLAIN = { kcal: 'Cible 1 850 kcal', protein: 'Protéines calculées sur 
 
 function renderTotals(overrides: Partial<Parameters<typeof DayTotals>[0]> = {}) {
   return render(
-    <DayTotals
-      dateLabel="vendredi 28 août"
-      consistencyPercent={86}
-      totals={TOTALS}
-      targets={TARGETS}
-      explain={EXPLAIN}
-      {...overrides}
-    />,
+    <MemoryRouter>
+      <DayTotals
+        dateLabel="vendredi 28 août"
+        consistencyPercent={86}
+        totals={TOTALS}
+        targets={TARGETS}
+        explain={EXPLAIN}
+        {...overrides}
+      />
+    </MemoryRouter>,
   )
 }
 
@@ -69,7 +72,16 @@ describe('DayTotals', () => {
     expect(screen.getByText('/ 140 g')).toBeTruthy()
   })
 
-  it('hides the consistency pill on a day that is not today', () => {
+  it('says the window the percentage is read over, and opens the trend behind it', () => {
+    // A bare « 86 % » in a header made of kcal reads as a share of the day.
+    renderTotals()
+
+    const pill = screen.getByRole('link', { name: t.nutrition.consistencyPillLabel(86) })
+    expect(pill.textContent).toContain(t.nutrition.consistencyPill(86))
+    expect(pill.getAttribute('href')).toBe('/trends')
+  })
+
+  it('hides the consistency pill on a day the history cannot answer for', () => {
     renderTotals({ consistencyPercent: null })
 
     expect(screen.queryByText(t.nutrition.consistencyPill(86))).toBeNull()

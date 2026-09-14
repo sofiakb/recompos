@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { db } from '@/db/dexie'
 import { NutritionScreen } from '@/screens/NutritionScreen'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { addDays, formatLongDate, toLogicalDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
 
 /**
@@ -84,6 +85,26 @@ describe('NutritionScreen — la feuille se ferme après le travail, pas avant',
     await db.meals.clear()
     await db.proteinLogs.clear()
     useSettingsStore.setState(useSettingsStore.getInitialState())
+  })
+
+  it('garde la pastille de consistance en remontant la semaine', async () => {
+    // Elle disparaissait dès qu'on quittait aujourd'hui : le chiffre avait l'air
+    // cassé alors qu'il était seulement masqué.
+    const state = useSettingsStore.getState()
+    useSettingsStore.setState({
+      settings: { ...state.settings, installedAt: '2026-01-01T09:00:00.000Z' },
+    })
+    const user = renderScreen()
+
+    expect(screen.getByRole('link', { name: t.nutrition.consistencyPillLabel(0) })).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: t.nutrition.previousDay }))
+
+    // L'en-tête et la barre de navigation portent tous deux la date.
+    await waitFor(() =>
+      expect(screen.getAllByText(formatLongDate(addDays(toLogicalDate(), -1))).length).toBe(2),
+    )
+    expect(screen.getByRole('link', { name: t.nutrition.consistencyPillLabel(0) })).toBeTruthy()
   })
 
   it('garde la feuille ouverte pendant l’analyse, avec son bouton en attente', async () => {

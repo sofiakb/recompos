@@ -57,7 +57,7 @@ export function NutritionScreen() {
   const meals = useMeals(day)
   const target = useProteinTarget()
   const calories = useCalorieTarget()
-  const { score7 } = useFloor()
+  const { consistencyOn } = useFloor()
   const showToast = useUiStore((state) => state.showToast)
 
   const fileInput = useRef<HTMLInputElement>(null)
@@ -210,9 +210,13 @@ export function NutritionScreen() {
 
   return (
     <>
+      {/* The consistency window ends on the day being read, rather than the pill
+          blanking out the moment you step off today: walking back through the
+          week is how the history gets read, and a figure that vanishes there
+          looks broken rather than deliberate. */}
       <DayTotals
         dateLabel={formatLongDate(day)}
-        consistencyPercent={day === toLogicalDate() ? score7.percent : null}
+        consistencyPercent={consistencyOn(day)?.percent ?? null}
         totals={totals}
         targets={{
           kcal: calories.targetKcal,

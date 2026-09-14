@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronDown, Flame } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { CalendarCheck, ChevronDown } from 'lucide-react'
 import { Ring } from '@/components/charts/Ring'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
@@ -16,7 +17,10 @@ export interface DayFigures {
 
 interface DayTotalsProps {
   dateLabel: string
-  /** Rolling 7-day consistency, or null on a day that is not today. */
+  /**
+   * Rolling 7-day consistency as of the day on screen, or null for a day the
+   * history cannot answer for — before the install, or beyond the window.
+   */
   consistencyPercent: number | null
   totals: DayFigures
   /** A macro target of 0 means « no denominator », not « a target of zero ». */
@@ -80,14 +84,22 @@ export function DayTotals({
     <div className="lit-surface sticky top-0 z-10 border-b border-border/70 px-5 pb-1 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
         <p className="eyebrow">{dateLabel}</p>
+        {/* Never a flame: the icon carried the one metaphor this number is not.
+            A flame is a streak, and a streak is the counter a missed week resets
+            — the whole point of a rolling window (PRD §6.1). The unit rides
+            along too: a bare « 0 % » in a header of kcal reads as a share of the
+            day, not as six days out of seven. And it opens Progression, where
+            the window is spelt out, rather than relying on a title attribute no
+            phone ever shows. */}
         {consistencyPercent !== null ? (
-          <span
-            className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-3 py-1.5 text-[13px] font-semibold"
-            title={t.today.consistencySummary(consistencyPercent)}
+          <Link
+            to="/trends"
+            aria-label={t.nutrition.consistencyPillLabel(consistencyPercent)}
+            className="flex min-h-9 items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-3 text-[13px] font-semibold"
           >
-            <Flame size={14} className="text-primary" aria-hidden />
+            <CalendarCheck size={14} className="text-primary" aria-hidden />
             {t.nutrition.consistencyPill(consistencyPercent)}
-          </span>
+          </Link>
         ) : null}
       </div>
 

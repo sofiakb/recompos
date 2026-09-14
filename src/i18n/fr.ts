@@ -80,7 +80,9 @@ export const fr = {
     proteinTargetNoWeight: 'Protéines — cible provisoire, ajoute ton poids',
     previousDay: 'Jour précédent',
     nextDay: 'Jour suivant',
-    consistencyPill: (percent: number) => `${percent} %`,
+    consistencyPill: (percent: number) => `${percent} % sur 7 j`,
+    consistencyPillLabel: (percent: number) =>
+      `Consistance du plancher : ${percent} % sur 7 jours — voir Progression`,
     slotTotals: (kcal: number, target: number) =>
       `${formatCount(kcal)} / ${formatCount(target)} kcal`,
     slotProtein: (grams: number) => `${grams} g de protéines`,

@@ -32,6 +32,13 @@ export interface FloorState {
   floorCompleted: boolean
   score7: ConsistencyScore
   score30: ConsistencyScore
+  /**
+   * The rolling 7-day score as it stood on any past day, or `null` for a day the
+   * loaded history cannot answer for — before the install, or older than the
+   * window read from Dexie, where a missing row is absence of data rather than a
+   * day that was missed.
+   */
+  consistencyOn: (day: string) => ConsistencyScore | null
   toggle: (habit: FloorHabitDefinition) => Promise<ToggleOutcome>
   /** Completes a `protein_portion` habit and logs the portion's grams. */
   completeWithPortion: (habit: FloorHabitDefinition, item: ZeroCookItem) => Promise<void>
@@ -113,6 +120,14 @@ export function useFloor(): FloorState {
     [today, sync, targetGrams],
   )
 
+  const consistencyOn = useCallback(
+    (day: string): ConsistencyScore | null => {
+      if (day > today || day < installedOn || day < historyWindow[0]) return null
+      return consistencyScore(7, completedDates, installedOn, day)
+    },
+    [completedDates, historyWindow, installedOn, today],
+  )
+
   const completeFloor = useCallback(async () => {
     const pending: FloorHabitDefinition[] = []
     for (const habit of floorHabits) {
@@ -139,6 +154,7 @@ export function useFloor(): FloorState {
     floorCompleted,
     score7: consistencyScore(7, completedDates, installedOn, today),
     score30: consistencyScore(30, completedDates, installedOn, today),
+    consistencyOn,
     toggle,
     completeWithPortion,
     completeFloor,
