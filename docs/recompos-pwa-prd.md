@@ -640,16 +640,16 @@ Les macros vivent en trois jauges de 4 px, dépliables en trois anneaux accompag
 derrière les cibles. Le détail se lit une fois par jour ; les kcal restantes se lisent à chaque
 ouverture de l'onglet.
 
-Une pastille compte les **jours saisis sur les 7 derniers** — « 4 / 7 j ». Elle parle de saisie de
-repas, pas du plancher d'habitudes : celui-ci a son pourcentage, mais sur un écran fait de kcal il
-répondait à une question que personne ne posait là. Le compte est en jours parce qu'il se vérifie
-d'un coup d'œil contre les flèches de navigation juste en dessous, là où « 57 % » se lit comme une
-part de la journée.
+Une pastille compte la **série de saisie** : le nombre de jours consécutifs, finissant sur le jour
+affiché, où un repas ou une entrée de protéines a été noté. Sans fenêtre et sans plafond — elle peut
+lire 0 comme 180. Une journée pas encore saisie ne casse rien : la série se compte alors depuis la
+veille, sinon le compteur repartirait de zéro chaque matin avant le petit-déjeuner.
 
-Fenêtre glissante, jamais une série (§3) : un jour manqué fait baisser le compte, le lendemain le
-remonte, rien ne se remet à zéro. D'où l'absence de flamme — une flamme est exactement le compteur
-qu'une semaine ratée efface. Avant l'installation, la pastille disparaît au lieu d'afficher « 0 / 7 j »
-pour des jours qui n'ont jamais existé.
+C'est une exception assumée au principe §3 (« un pourcentage glissant, jamais une série »), et elle
+ne vaut que pour la saisie. Le plancher d'habitudes garde son pourcentage élastique : c'est là qu'une
+semaine ratée ne doit pas effacer un trimestre de travail. Le journal, lui, est le seul endroit où
+« combien de jours d'affilée » est la question réellement posée — d'où la flamme, qui redevient
+l'icône juste puisque ce compteur-là se remet bel et bien à zéro.
 
 **Les deux cibles dérivées** (décision n°25)
 

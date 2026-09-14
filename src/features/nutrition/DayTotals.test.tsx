@@ -15,7 +15,7 @@ function renderTotals(overrides: Partial<Parameters<typeof DayTotals>[0]> = {}) 
   return render(
     <DayTotals
       dateLabel="vendredi 28 août"
-      logged={{ days: 6, outOf: 7 }}
+      streakDays={6}
       totals={TOTALS}
       targets={TARGETS}
       explain={EXPLAIN}
@@ -72,20 +72,19 @@ describe('DayTotals', () => {
     expect(screen.getByText('/ 140 g')).toBeTruthy()
   })
 
-  it('counts the days written down, rather than a percentage of nothing named', () => {
-    // « 57 % » in a header made of kcal reads as a share of the day; « 6 / 7 j »
-    // is countable against the day arrows right below it.
+  it('compte les jours d’affilée, avec la phrase que le chiffre seul ne dit pas', () => {
     renderTotals()
 
-    expect(screen.getByText(plain(t.nutrition.loggedDaysLabel(6, 7)))).toBeTruthy()
-    expect(screen.getByText(plain(t.nutrition.loggedDaysPill(6, 7)))).toBeTruthy()
+    expect(screen.getByText(plain(t.nutrition.streakLabel(6)))).toBeTruthy()
+    expect(screen.getByText(plain(t.nutrition.streakPill(6)))).toBeTruthy()
   })
 
-  it('hides the pill on a day the history cannot answer for', () => {
-    // Before the install there is no window to count over, and a « 0 / 7 j »
-    // there would read as seven days missed.
-    renderTotals({ logged: null })
+  it('reste affichée à zéro, plutôt que de disparaître', () => {
+    // Une série commence quelque part, et une pastille qui va et vient est
+    // exactement ce qui faisait passer ce chiffre pour cassé.
+    renderTotals({ streakDays: 0 })
 
-    expect(screen.queryByText(plain(t.nutrition.loggedDaysPill(6, 7)))).toBeNull()
+    expect(screen.getByText(plain(t.nutrition.streakPill(0)))).toBeTruthy()
+    expect(screen.getByText(plain(t.nutrition.streakLabel(0)))).toBeTruthy()
   })
 })

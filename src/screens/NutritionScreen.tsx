@@ -15,7 +15,7 @@ import { DayTotals } from '@/features/nutrition/DayTotals'
 import { buildSlotJournal } from '@/features/nutrition/journal'
 import { MealSlotList } from '@/features/nutrition/MealSlotList'
 import { useCalorieTarget, type CalorieTargetState } from '@/features/nutrition/useCalorieTarget'
-import { useLoggedDays } from '@/features/nutrition/useLoggedDays'
+import { useLoggingStreak } from '@/features/nutrition/useLoggingStreak'
 import { useMeals, type FoodOrigin, type StagedPhoto } from '@/features/nutrition/useMeals'
 import { useProtein } from '@/features/nutrition/useProtein'
 import { useProteinTarget, type ProteinTargetState } from '@/features/nutrition/useProteinTarget'
@@ -57,7 +57,7 @@ export function NutritionScreen() {
   const meals = useMeals(day)
   const target = useProteinTarget()
   const calories = useCalorieTarget()
-  const loggedDays = useLoggedDays()
+  const streakDays = useLoggingStreak(day)
   const showToast = useUiStore((state) => state.showToast)
 
   const fileInput = useRef<HTMLInputElement>(null)
@@ -120,7 +120,6 @@ export function NutritionScreen() {
     }
   }, [barcode.food])
 
-  const loggedWindow = loggedDays.scoreOn(day)
   const macroTargets = macroTargetsG(calories.targetKcal, target.targetGrams)
   const slotKcal = journal.find((group) => group.slot === targetSlot)?.kcal ?? 0
   // Protein comes from the ledger, not from the meals: a meal writes its protein
@@ -211,15 +210,13 @@ export function NutritionScreen() {
 
   return (
     <>
-      {/* The window ends on the day being read, rather than the pill blanking
+      {/* The series ends on the day being read, rather than the pill blanking
           out the moment you step off today: walking back through the week is how
           the history gets read, and a figure that vanishes there looks broken
           rather than deliberate. */}
       <DayTotals
         dateLabel={formatLongDate(day)}
-        logged={
-          loggedWindow ? { days: loggedWindow.completed, outOf: loggedWindow.eligible } : null
-        }
+        streakDays={streakDays}
         totals={totals}
         targets={{
           kcal: calories.targetKcal,

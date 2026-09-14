@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarCheck, ChevronDown } from 'lucide-react'
+import { ChevronDown, Flame } from 'lucide-react'
 import { Ring } from '@/components/charts/Ring'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
@@ -16,12 +16,8 @@ export interface DayFigures {
 
 interface DayTotalsProps {
   dateLabel: string
-  /**
-   * Days with something written down, over the window ending on the day on
-   * screen — `null` for a day the history cannot answer for, before the install
-   * or beyond the range that was loaded.
-   */
-  logged: { days: number; outOf: number } | null
+  /** Consecutive days of meal logging ending on the day on screen. */
+  streakDays: number
   totals: DayFigures
   /** A macro target of 0 means « no denominator », not « a target of zero ». */
   targets: DayFigures
@@ -65,7 +61,7 @@ function Figure({
  */
 export function DayTotals({
   dateLabel,
-  logged,
+  streakDays,
   totals,
   targets,
   explain,
@@ -84,23 +80,25 @@ export function DayTotals({
     <div className="lit-surface sticky top-0 z-10 border-b border-border/70 px-5 pb-1 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
         <p className="eyebrow">{dateLabel}</p>
-        {/* Days, not a percentage, and never a flame. « 4 / 7 j » is countable
-            against the arrows right below it, where « 57 % » in a header made of
-            kcal reads as a share of the day. The flame was worse still: it is
-            the one metaphor this number is not — a flame is a streak, and a
-            streak is the counter a missed week resets, the opposite of the
-            rolling window the product is built on (PRD §3). */}
-        {logged !== null ? (
-          <span className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-3 py-1.5 text-[13px] font-semibold">
-            <CalendarCheck size={14} className="text-primary" aria-hidden />
-            {/* « 6 / 7 j » is read out as a date or a fraction; the sentence is
-                what a screen reader needs, and the glance is what the eye needs. */}
-            <span className="sr-only">
-              {t.nutrition.loggedDaysLabel(logged.days, logged.outOf)}
-            </span>
-            <span aria-hidden>{t.nutrition.loggedDaysPill(logged.days, logged.outOf)}</span>
-          </span>
-        ) : null}
+        {/* A flame, and this time it is the right icon: what it counts really is
+            a run of consecutive days, and it really does end at a day nobody
+            logged. The floor keeps its elastic percentage — a missed week must
+            not erase a quarter of habits — but the journal is the one place
+            where « combien de jours d'affilée » is the question being asked.
+            Shown at zero too, rather than hidden: a series starts somewhere,
+            and a pill that comes and goes is what made this thing look broken
+            in the first place. */}
+        <span className="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-3 py-1.5 text-[13px] font-semibold">
+          <Flame
+            size={14}
+            className={cn(streakDays > 0 ? 'text-primary' : 'text-muted-foreground')}
+            aria-hidden
+          />
+          {/* « 4 j » alone gets read out as a unit; the sentence is what a screen
+              reader needs, the glance is what the eye needs. */}
+          <span className="sr-only">{t.nutrition.streakLabel(streakDays)}</span>
+          <span aria-hidden>{t.nutrition.streakPill(streakDays)}</span>
+        </span>
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-0.5">

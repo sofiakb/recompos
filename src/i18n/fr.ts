@@ -80,10 +80,12 @@ export const fr = {
     proteinTargetNoWeight: 'Protéines — cible provisoire, ajoute ton poids',
     previousDay: 'Jour précédent',
     nextDay: 'Jour suivant',
-    /** Repas saisis, en jours comptables : « 4 / 7 j », jamais une série. */
-    loggedDaysPill: (days: number, outOf: number) => `${days} / ${outOf} j`,
-    loggedDaysLabel: (days: number, outOf: number) =>
-      `Repas saisis : ${days} jour${days > 1 ? 's' : ''} sur les ${outOf} derniers`,
+    /** La série de saisie, en jours d'affilée. Sans plafond : 0 comme 180. */
+    streakPill: (days: number) => `${days} j`,
+    streakLabel: (days: number) =>
+      days === 0
+        ? 'Série de saisie interrompue'
+        : `Série de saisie : ${days} jour${days > 1 ? 's' : ''} d’affilée`,
     slotTotals: (kcal: number, target: number) =>
       `${formatCount(kcal)} / ${formatCount(target)} kcal`,
     slotProtein: (grams: number) => `${grams} g de protéines`,
