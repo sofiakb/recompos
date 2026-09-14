@@ -70,6 +70,26 @@
     @apply h-full;
   }
 
+  /*
+    The document never scrolls. The content does, inside `#app-scroll`.
+
+    Read on the phone, on three screens: the page box never moves — 873px on
+    every one, the screen minus its top inset — while the *window* around it
+    measures 932, 919 or 873 depending on the screen. No zoom is involved
+    (scale 1, width 430, ratio 3 throughout). The floating bar is anchored to
+    that window, so it landed somewhere different on each screen.
+
+    The one screen where it landed right was the one screen whose document
+    scrolled: iOS keeps adjusting the viewport of a document that does not.
+    Giving the scroll to an element inside the page leaves it nothing to
+    adjust — and, unlike padding the document past the viewport, it adds no
+    scroll to a screen that does not need one.
+  */
+  html,
+  body {
+    overflow: hidden;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family:
