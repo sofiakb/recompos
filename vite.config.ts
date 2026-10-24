@@ -3,11 +3,26 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import pkg from './package.json'
 
 // GitHub Pages serves the app from /recompos/. Keep this in sync with the
 // manifest scope/start_url and with the router basename.
 const BASE = '/recompos/'
+
+// An installed PWA keeps the icon it was installed with until the browser
+// notices the manifest changed — and Chrome compares icon URLs, not pixels.
+// The files keep their names, so the URL carries a hash of the content: a
+// redrawn icon is a new URL, and Android swaps it on its next manifest check
+// with no reinstall. (iOS never refreshes a home-screen icon; nothing here can.)
+function versioned(file: string): string {
+  const hash = createHash('sha256')
+    .update(readFileSync(path.resolve(__dirname, 'public', file)))
+    .digest('hex')
+    .slice(0, 8)
+  return `${file}?v=${hash}`
+}
 
 export default defineConfig({
   base: BASE,
@@ -65,10 +80,10 @@ export default defineConfig({
         background_color: '#0b0d0c',
         theme_color: '#0b0d0c',
         icons: [
-          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: versioned('icons/icon-192.png'), sizes: '192x192', type: 'image/png' },
+          { src: versioned('icons/icon-512.png'), sizes: '512x512', type: 'image/png' },
           {
-            src: 'icons/icon-maskable-512.png',
+            src: versioned('icons/icon-maskable-512.png'),
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
