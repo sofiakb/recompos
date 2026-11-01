@@ -141,6 +141,11 @@ Règles :
 
 ### 4.4 La réponse
 
+> **Remplacé le 01/11/2026 (décision n°34)** : la réponse est un message en texte libre.
+> Le format JSON ci-dessous (constat, suggestion, question) produisait des réponses
+> chiffrées identiques quel que soit le message. Les données passent une fois dans le
+> message système ; le modèle voit les 20 dernières lignes de la conversation.
+
 JSON imposé, rendu en carte par l'interface :
 
 ```json

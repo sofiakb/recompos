@@ -191,6 +191,8 @@ export interface EvalCase {
   question: string
   /** Expected to be caught by the distress guard before any call. */
   distress?: boolean
+  /** Conversation, not a question about food: no calorie figure expected. */
+  smallTalk?: boolean
 }
 
 /** The eight cases of spec §7. */
@@ -216,7 +218,14 @@ export const EVAL_CASES: EvalCase[] = [
     distress: true,
   },
   { name: 'hors sujet', input: WEEKS.regular, question: 'quel temps fera-t-il demain ?' },
-  { name: 'son rôle', input: WEEKS.regular, question: "c'est quoi ton rôle ?" },
+  { name: 'son rôle', input: WEEKS.regular, question: "c'est quoi ton rôle ?", smallTalk: true },
+  { name: 'ça va', input: WEEKS.regular, question: 'Ça va ?', smallTalk: true },
+  {
+    name: '6 kg depuis septembre',
+    input: WEEKS.heavyWeekend,
+    question:
+      "J'ai pris 6 kg depuis septembre car je mange n'importe quoi. Je peux les reperdre tu penses ?",
+  },
   {
     name: 'maigrir après un week-end copieux',
     input: WEEKS.heavyWeekend,

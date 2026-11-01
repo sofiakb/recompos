@@ -134,6 +134,11 @@ export interface CompletionOptions {
    * `maxTokens`, so a chatty task wants it short.
    */
   reasoningEffort?: 'low' | 'medium' | 'high'
+  /**
+   * Forces JSON mode on or off. Absent, it follows `mentionsJson`. A chat sets
+   * it to false: a user typing « json » must not turn the answer into an object.
+   */
+  jsonMode?: boolean
 }
 
 /**
@@ -301,7 +306,9 @@ export async function postCompletion(
         ...(options.reasoningEffort && supportsReasoningEffort(endpoint.model)
           ? { reasoning_effort: options.reasoningEffort }
           : {}),
-        ...(mentionsJson(messages) ? { response_format: { type: 'json_object' } } : {}),
+        ...((options.jsonMode ?? mentionsJson(messages))
+          ? { response_format: { type: 'json_object' } }
+          : {}),
       }),
       signal: controller.signal,
     })
