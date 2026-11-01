@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CoachConsentCard } from '@/features/coach/CoachConsentCard'
 import { MealPhotoRetention } from '@/features/meals/MealPhotoRetention'
 import { VisionSettingsCard } from '@/features/vision/VisionSettingsCard'
 import { SubPage } from '@/components/shared/SubPage'
@@ -21,6 +22,8 @@ export function VisionSettingsScreen() {
           <MealPhotoRetention />
         </CardContent>
       </Card>
+
+      <CoachConsentCard />
     </SubPage>
   )
 }

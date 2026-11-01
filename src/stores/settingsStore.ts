@@ -79,6 +79,8 @@ interface SettingsState {
   clearVisionProvider: (id: VisionProviderId) => void
   toggleHaptics: (enabled: boolean) => void
   toggleSound: (enabled: boolean) => void
+  /** Records or withdraws the coach's access to the last seven days. */
+  setCoachConsent: (given: boolean) => void
   completeOnboarding: () => void
   /** Reopens the intro. Only the seen-flag is dropped; no setting or log is touched. */
   replayOnboarding: () => void
@@ -201,6 +203,16 @@ export const useSettingsStore = create<SettingsState>()(
 
       toggleHaptics: (enabled) =>
         set((state) => ({ settings: { ...state.settings, hapticsEnabled: enabled } })),
+
+      setCoachConsent: (given) =>
+        set((state) => {
+          // Dropped rather than set to undefined, so a withdrawn consent does
+          // not travel in the export as a key with nothing behind it.
+          const { coachConsentAt: _dropped, ...settings } = state.settings
+          return {
+            settings: given ? { ...settings, coachConsentAt: new Date().toISOString() } : settings,
+          }
+        }),
 
       toggleSound: (enabled) =>
         set((state) => ({ settings: { ...state.settings, soundEnabled: enabled } })),
