@@ -5,6 +5,7 @@
  * export/import round-trips without guesswork, and so a habit definition can be
  * archived instead of deleted (deleting one would punch a hole in history).
  */
+import type { CoachReply, QuickPromptId } from '@/lib/coach/types'
 import type { IsoDate } from '@/lib/date'
 
 export type { IsoDate }
@@ -302,6 +303,33 @@ export type CalorieTargetMode = 'auto' | 'manual'
 
 export type ProteinTargetMode = 'auto' | 'manual'
 
+/** Who the coach is speaking as. `training` arrives with the sports coach. */
+export type CoachPersonaId = 'nutrition'
+
+/**
+ * One line of the coach thread (spec coach §8).
+ *
+ * A question keeps its text; an answer keeps its parsed reply. Nothing stored
+ * here is ever re-parsed, so nothing here can fail to render.
+ */
+export interface CoachMessage {
+  id: string
+  persona: CoachPersonaId
+  role: 'user' | 'coach'
+  /** The question, or the fixed text of a synthetic answer. */
+  text?: string
+  reply?: CoachReply
+  quickPromptId?: QuickPromptId
+  providerId?: VisionProviderId
+  /**
+   * A fixed answer (distress guard, neutral fallback). Shown, but never sent
+   * back to the model as history: it did not write it.
+   */
+  synthetic?: boolean
+  timestamp: IsoDateTime
+  date: IsoDate
+}
+
 export interface AppSettings {
   schemaVersion: number
   /** Anchors both the consistency denominator and the « Jour N » milestone. */
@@ -359,6 +387,11 @@ export interface AppSettings {
   manualCalorieTargetKcal?: number
   /** Days a meal photo is kept before its bytes are dropped. 0 keeps none. */
   mealPhotoRetentionDays: number
+  /**
+   * When the user agreed to send their last seven days to the AI service for
+   * the coach. Absent means never asked, or withdrawn: nothing leaves.
+   */
+  coachConsentAt?: IsoDateTime
 }
 
 export interface ExportBundle {
@@ -377,6 +410,7 @@ export interface ExportBundle {
   photos?: Array<Omit<ProgressPhoto, 'bytes'> & { dataUrl: string }>
   meals?: MealEntry[]
   favorites?: FavoriteMeal[]
+  coachMessages?: CoachMessage[]
 }
 
 /** Bumped whenever the shape above changes. Guards Dexie and import. */

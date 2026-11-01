@@ -8,6 +8,7 @@
 import Dexie, { type Table } from 'dexie'
 import { DEFAULT_EXERCISES, DEFAULT_TAKEOUT, DEFAULT_ZERO_COOK } from '@/db/seed'
 import type {
+  CoachMessage,
   DailyLog,
   Exercise,
   ExerciseSet,
@@ -37,6 +38,7 @@ export class RecompDb extends Dexie {
   meals!: Table<MealEntry, string>
   mealPhotos!: Table<MealPhoto, string>
   favorites!: Table<FavoriteMeal, string>
+  coachMessages!: Table<CoachMessage, string>
 
   constructor(name = 'recompos') {
     super(name)
@@ -68,6 +70,12 @@ export class RecompDb extends Dexie {
       // twice is the same favourite, and the database is where that is settled
       // — not in whichever screen happened to send the second star.
       favorites: 'id, &key, createdAt',
+    })
+    // The coach thread arrives in version 4, again as a delta. `date` is
+    // indexed for the seven-day purge, `persona` for the day a second coach
+    // shares the table.
+    this.version(4).stores({
+      coachMessages: 'id, persona, date, timestamp',
     })
   }
 }
