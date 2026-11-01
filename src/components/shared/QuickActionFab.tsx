@@ -75,6 +75,8 @@ export function QuickActionFab() {
 
   // Settings is a place to configure, not to log: no quick action there.
   if (pathname.startsWith('/settings')) return null
+  // The coach is a chat: its send button sits where the FAB would float.
+  if (pathname.startsWith('/coach')) return null
   // During a session the screen is already a set of primary actions; the FAB
   // would float a second « log a set » over the one that is right there.
   if (session) return null

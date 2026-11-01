@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { Eye } from 'lucide-react'
 import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { TapTarget } from '@/components/ui/tap-target'
-import { CoachInput } from '@/features/coach/CoachInput'
-import { CoachExchanges } from '@/features/coach/CoachExchanges'
-import { exchangesOf } from '@/features/coach/exchanges'
+import { CoachComposer } from '@/features/coach/CoachComposer'
+import { CoachMessages } from '@/features/coach/CoachMessages'
 import { ConsentSheet } from '@/features/coach/ConsentSheet'
 import { DigestSheet } from '@/features/coach/DigestSheet'
-import { QuickPrompts } from '@/features/coach/QuickPrompts'
 import { useCoach } from '@/features/coach/useCoach'
 import { isQuickPromptId, PERSONAS } from '@/lib/coach/personas'
 import type { QuickPromptId } from '@/lib/coach/types'
@@ -20,7 +19,7 @@ interface Pending {
 }
 
 /**
- * The coach tab (spec coach §6.1).
+ * The coach tab, as a chat (spec coach §6.1).
  *
  * Asks only when asked: nothing on this screen calls the network by itself,
  * except `?ask=` — which is the user's own tap on another screen, carried here.
@@ -33,12 +32,9 @@ export function CoachScreen() {
   const [digestOpen, setDigestOpen] = useState(false)
   // The question that opened the consent sheet, asked as soon as it is accepted.
   const queued = useRef<Pending | null>(null)
+  const end = useRef<HTMLDivElement>(null)
 
   const canSend = coach.online && !coach.pending
-  // The latest exchange sits right under the title, where an answer lands in
-  // view; the rest of the week reads below the question field.
-  const exchanges = exchangesOf(coach.thread).reverse()
-  const [latest, ...earlier] = exchanges
 
   // Kept in a ref so the `?ask=` effect reads today's state without re-running
   // every time that state changes.
@@ -63,64 +59,58 @@ export function CoachScreen() {
     if (prompt) send.current({ text: prompt.question, id: prompt.id })
   }, [askParam, coach.online, persona, setParams])
 
+  // Like any chat, the newest line is the one in view: on arrival, on a new
+  // message, and while the coach is typing.
+  const lines = coach.thread.length
+  useEffect(() => {
+    end.current?.scrollIntoView?.({ block: 'end' })
+  }, [lines, coach.pending, coach.error])
+
+  const notice = !coach.online
+    ? t.coach.offline
+    : !coach.hasProvider
+      ? t.coach.noProvider
+      : coach.error
+
   return (
     <>
-      <ScreenHeader title={t.coach.title} subtitle={t.coach.intro} />
+      <ScreenHeader
+        title={t.coach.title}
+        action={
+          <TapTarget
+            aria-label={t.coach.seeDigest}
+            onClick={() => setDigestOpen(true)}
+            className="flex h-touch w-touch shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Eye size={22} aria-hidden />
+          </TapTarget>
+        }
+      />
 
-      <div className="flex flex-col gap-5 px-5 pt-2">
-        {coach.online ? null : <p className="text-sm text-muted-foreground">{t.coach.offline}</p>}
-
-        <section aria-live="polite">
-          {latest ? (
-            <CoachExchanges exchanges={[latest]} pending={coach.pending} />
-          ) : (
-            <p className="text-sm text-muted-foreground">{t.coach.empty}</p>
-          )}
-        </section>
-
+      <div className="flex flex-col gap-3 px-4 pt-1">
+        <CoachMessages thread={coach.thread} pending={coach.pending} notice={notice} />
         {coach.online && !coach.hasProvider ? (
-          <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">{t.coach.noProvider}</p>
-            <Link
-              to="/settings/analyse-photo"
-              className={buttonVariants({ variant: 'secondary', size: 'default' })}
-            >
-              {t.coach.noProviderCta}
-            </Link>
-          </div>
+          <Link
+            to="/settings/analyse-photo"
+            className={buttonVariants({ variant: 'secondary', className: 'self-center' })}
+          >
+            {t.coach.noProviderCta}
+          </Link>
         ) : null}
-
-        <QuickPrompts
-          prompts={persona.quickPrompts}
-          // A quick prompt always needs the model; without a service it could
-          // only end in an error under the user's own question.
-          disabled={!canSend || !coach.hasProvider}
-          onPick={(prompt) => send.current({ text: prompt.question, id: prompt.id })}
-        />
-        {/* Usable without a provider: the distress guard answers without the
-            model, and that answer must stay reachable. */}
-        <CoachInput disabled={!canSend} onSend={(text) => send.current({ text })} />
-
-        {coach.error ? (
-          <p role="alert" className="text-sm text-destructive">
-            {coach.error}
-          </p>
-        ) : null}
-
-        <TapTarget
-          className="min-h-touch self-start text-sm text-muted-foreground underline underline-offset-4"
-          onClick={() => setDigestOpen(true)}
-        >
-          {t.coach.seeDigest}
-        </TapTarget>
-
-        {earlier.length > 0 ? (
-          <section className="flex flex-col gap-3">
-            <h2 className="eyebrow">{t.coach.earlier}</h2>
-            <CoachExchanges exchanges={earlier} />
-          </section>
-        ) : null}
+        {/* The scroll target sits right after the last line, with a margin as
+            tall as the pinned composer plus the tab bar under it, so the last
+            line stops just above the field instead of behind it. */}
+        <div ref={end} className="scroll-mb-[calc(var(--nav-clearance)+9.5rem)]" />
+        {/* The page needs that much room below the last line to scroll to it. */}
+        <div aria-hidden className="h-20" />
       </div>
+
+      <CoachComposer
+        prompts={persona.quickPrompts}
+        promptsDisabled={!coach.hasProvider}
+        disabled={!canSend}
+        onSend={(text, prompt) => send.current({ text, id: prompt?.id })}
+      />
 
       <ConsentSheet
         open={consentOpen}

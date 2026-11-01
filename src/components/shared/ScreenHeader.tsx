@@ -8,6 +8,8 @@ interface ScreenHeaderProps {
   eyebrow?: string
   subtitle?: string
   showSettings?: boolean
+  /** A control in the top-right corner, for screens that are not the root. */
+  action?: React.ReactNode
 }
 
 export function ScreenHeader({
@@ -15,6 +17,7 @@ export function ScreenHeader({
   eyebrow,
   subtitle,
   showSettings = false,
+  action,
 }: ScreenHeaderProps) {
   return (
     <header className="flex items-start justify-between gap-4 px-4 pb-2 pt-[calc(1rem+env(safe-area-inset-top))]">
@@ -32,6 +35,7 @@ export function ScreenHeader({
           <Settings size={22} aria-hidden />
         </Link>
       ) : null}
+      {action}
     </header>
   )
 }
