@@ -319,6 +319,41 @@ describe('favourites across a backup', () => {
   })
 })
 
+describe('coach thread across a backup', () => {
+  const MESSAGE = {
+    id: 'c1',
+    persona: 'nutrition' as const,
+    role: 'user' as const,
+    text: 'Bilan de ma semaine',
+    timestamp: '2026-11-01T18:00:00.000Z',
+    date: '2026-11-01',
+  }
+
+  it('carries it out and back in, replacing what was there', async () => {
+    await db.coachMessages.add(MESSAGE)
+    const { bundle } = await buildExport(SETTINGS, HABITS, db)
+    expect(bundle.coachMessages).toEqual([MESSAGE])
+
+    await db.coachMessages.clear()
+    await db.coachMessages.add({ ...MESSAGE, id: 'stale', text: 'avant import' })
+    const summary = await applyImport(bundle, db)
+
+    expect(summary.coachMessages).toBe(1)
+    expect(await db.coachMessages.toArray()).toEqual([MESSAGE])
+  })
+
+  it('leaves the key out of an export with no thread', async () => {
+    const { bundle } = await buildExport(SETTINGS, HABITS, db)
+    expect(bundle).not.toHaveProperty('coachMessages')
+  })
+
+  it('accepts a bundle written before the coach existed', async () => {
+    const { bundle } = await buildExport(SETTINGS, HABITS, db)
+    const result = validateBundle(JSON.parse(JSON.stringify(bundle)))
+    expect(result.ok && result.bundle.coachMessages).toEqual([])
+  })
+})
+
 describe('dataUrlToBytes', () => {
   it('restores the bytes and the mime type', () => {
     const original = new Uint8Array([1, 2, 3]).buffer
