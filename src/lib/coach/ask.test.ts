@@ -140,6 +140,10 @@ describe('askCoach', () => {
     expect(messages).toHaveLength(4)
     expect(messages[1]).toEqual({ role: 'user', content: 'q1' })
     expect(messages[2].role).toBe('assistant')
-    expect(messages[2].content).toContain('c1')
+    expect(JSON.parse(messages[2].content)).toEqual({
+      reponse: 'c1',
+      suggestion: null,
+      question: null,
+    })
   })
 })

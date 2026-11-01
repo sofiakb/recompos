@@ -35,6 +35,19 @@ export interface DigestDay {
   seances?: string[]
 }
 
+/**
+ * The week in numbers (décision n°33). Today is left out of the average: at
+ * 7 pm it is half a day, and counting it would make every evening look light.
+ */
+export interface DigestWeek {
+  /** Finished days with something logged, today excluded. */
+  joursComptes: number
+  moyenneKcal: number
+  cibleKcal: number
+  /** The lowest a single day may be planned at: 85 % of the target, never under 1 200. */
+  minimumJourKcal: number
+}
+
 export interface CoachDigest {
   aujourdhui: IsoDate
   heure: string
@@ -47,6 +60,8 @@ export interface CoachDigest {
     tailleCm: number | null
   }
   jours: DigestDay[]
+  /** Null until at least one finished day was logged in the window. */
+  semaine: DigestWeek | null
   poids: { tendance: number[]; derniere: IsoDate } | null
   tourDeTailleCm: number | null
   favoris: string[]

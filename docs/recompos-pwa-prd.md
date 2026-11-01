@@ -64,6 +64,7 @@ une décision d'implémentation.
 | 30 | Compter en portions | **Une ligne se compte en grammes ou en portions, au choix, et retient ce que pèse une portion.** Décidée le 31/08/2026 | « 168 g » ne veut rien dire pour une dosette de café ; « 2 dosettes » si. La portion vient du produit quand il la déclare, et sinon de la personne, une fois : ce qui est sur la ligne au moment où elle bascule *devient* la portion. Rien n'est inventé, et les deux unités se convertissent — 252 g font 1,5 portion de 168. Voir §6.12 |
 | 31 | Coach IA nutrition | **Un coach qui répond à la demande, à partir d'un résumé des 7 derniers jours calculé sur l'appareil, sans jamais culpabiliser.** Décidée le 01/11/2026 | Même chaîne de services et même clé que l'analyse de repas (décisions n°5 et n°16 maintenues). Questions rapides et champ libre court ; aucun message proactif ; consentement avant le premier envoi ; lexique culpabilisant filtré en sortie, détresse interceptée avant tout appel. Voir §6.13 et `docs/superpowers/specs/2026-11-01-coach-ia-nutrition-design.md` |
 | 32 | Cinq onglets | **« Coach » devient le 5ᵉ onglet, en dernier.** Décidée le 01/11/2026, amende la n°18 | L'ordre par fréquence d'usage tient : le coach est consulté de temps en temps, jamais ouvert par réflexe. Un onglet plutôt qu'une feuille, parce qu'un coach sportif viendra s'y ajouter comme seconde persona |
+| 33 | Bilan hebdomadaire franc | **Le coach raisonne sur la moyenne de la semaine et peut proposer un ajustement modéré des jours suivants.** Décidée le 01/11/2026, amende la n°31 | Maigrir passe par le déficit en moyenne, pas par la punition d'un repas. La moyenne des jours terminés et saisis est comparée à la cible ; au-dessus, le coach propose de viser un peu moins sur 2 à 4 jours, jamais sous 85 % de la cible ni sous 1 200 kcal, sans repas sauté ni sport pour « brûler ». Le vocabulaire de faute reste filtré |
 ---
 
 ## 3. Principes produit
@@ -972,13 +973,15 @@ savait faire, la dernière à partir le lui rend, quel que soit l'ordre.
 
 **Ce qu'il fait.** Il répond à une question — une des quatre questions rapides (« Une idée pour ce
 soir ? », « Bilan de ma semaine », « J'ai beaucoup mangé, et maintenant ? », « Comment finir mes
-protéines ? ») ou une question libre de 280 caractères — par une carte : un constat positif tiré des
-données, au plus une suggestion faisable aujourd'hui, éventuellement une question.
+protéines ? ») ou une question libre de 280 caractères — par un message : une réponse directe à la
+question, au plus une suggestion concrète, éventuellement une question. Il raisonne sur la moyenne de
+la semaine et peut proposer un ajustement modéré des jours suivants (décision n°33).
 
 **Sa mémoire n'est pas celle du modèle.** À chaque question, l'app recalcule un résumé des 7 derniers
 jours (repas, protéines, plancher, séances, poids, tour de taille, favoris, zéro-cuisson en stock,
 livraison) et l'envoie avec les 4 derniers échanges. Le résumé porte des valeurs et des cibles, jamais
-leur écart : le cadrage appartient au prompt. Un jour sans saisie vaut « non saisi », jamais zéro.
+leur écart : le cadrage appartient au prompt. Il ajoute la moyenne de la semaine (aujourd'hui exclu,
+car inachevé) et le plancher journalier d'un ajustement. Un jour sans saisie vaut « non saisi », jamais zéro.
 L'utilisateur voit le résumé exact envoyé (« Voir ce que le coach voit »).
 
 **Ce qui le tient.** Un consentement unique avant le premier envoi, révocable dans Réglages →

@@ -82,3 +82,43 @@ describe('buildDigest', () => {
     expect(JSON.stringify(buildDigest(input)).length).toBeLessThan(8000)
   })
 })
+
+describe('buildDigest — la semaine (décision n°33)', () => {
+  it("fait la moyenne des jours saisis, aujourd'hui exclu", () => {
+    // Cinq jours à 1 950, deux à 2 800 dont aujourd'hui : seul samedi compte.
+    const semaine = buildDigest(WEEKS.heavyWeekend).semaine
+    expect(semaine).toEqual({
+      joursComptes: 6,
+      moyenneKcal: Math.round((1950 * 5 + 2800) / 6),
+      cibleKcal: 2000,
+      minimumJourKcal: 1700,
+    })
+  })
+
+  it('ignore les jours non saisis plutôt que de les compter à zéro', () => {
+    const semaine = buildDigest(WEEKS.threeBlank).semaine
+    expect(semaine?.joursComptes).toBe(3)
+    expect(semaine?.moyenneKcal).toBe(1950)
+  })
+
+  it('ne descend jamais le minimum sous 1 200 kcal', () => {
+    const input = {
+      ...WEEKS.regular,
+      profile: { ...WEEKS.regular.profile, calorieTargetKcal: 1300 },
+    }
+    expect(buildDigest(input).semaine?.minimumJourKcal).toBe(1200)
+  })
+
+  it("rend null tant qu'aucun jour terminé n'est saisi", () => {
+    const input = week([
+      { kcal: null },
+      { kcal: null },
+      { kcal: null },
+      { kcal: null },
+      { kcal: null },
+      { kcal: null },
+      { kcal: 1800 },
+    ])
+    expect(buildDigest(input).semaine).toBeNull()
+  })
+})

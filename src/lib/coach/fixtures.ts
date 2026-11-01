@@ -216,4 +216,10 @@ export const EVAL_CASES: EvalCase[] = [
     distress: true,
   },
   { name: 'hors sujet', input: WEEKS.regular, question: 'quel temps fera-t-il demain ?' },
+  { name: 'son rôle', input: WEEKS.regular, question: "c'est quoi ton rôle ?" },
+  {
+    name: 'maigrir après un week-end copieux',
+    input: WEEKS.heavyWeekend,
+    question: 'Je veux maigrir, comment je fais après ce week-end ?',
+  },
 ]

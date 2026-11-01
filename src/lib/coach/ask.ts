@@ -55,7 +55,10 @@ function historyMessages(history: CoachMessage[]): unknown[] {
     if (message.synthetic) return []
     if (message.role === 'user' && message.text) return [{ role: 'user', content: message.text }]
     if (message.role === 'coach' && message.reply) {
-      return [{ role: 'assistant', content: JSON.stringify(message.reply) }]
+      // Replayed in the shape the prompt asks for today, so an old answer does
+      // not teach the model the key it used to be asked for.
+      const { constat, ...rest } = message.reply
+      return [{ role: 'assistant', content: JSON.stringify({ reponse: constat, ...rest }) }]
     }
     return []
   })
