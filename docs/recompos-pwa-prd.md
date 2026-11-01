@@ -1257,9 +1257,9 @@ de base ; l'import refuse un bundle de version supérieure à celle du code et m
 ├── 🥗 Nutrition     Compteur 1-tap, journal du jour, catalogues derrière « Que manger ? »
 ├── 🏋️ Séances       Séance rapide, séries du jour, circuit et timer de repos
 ├── 📈 Progression   Consistance, poids, force, tour de taille, séances passées, photos
-└── 💬 Coach         Questions rapides, question libre, fil des 7 derniers jours (décision n°32)
+└── 💬 Coach         Chat : 7 derniers jours, questions rapides au-dessus du champ (décision n°32)
 
-[ Bouton d'action flottant, présent sur les 5 onglets ]
+[ Bouton d'action flottant, présent sur les onglets sauf Coach, dont l'envoi occupe la place ]
 └── Feuille rapide : « +30 g protéines » · « +1 série » · « Valider le plancher » · « Enregistrer une pesée »
 
 [ Réglages ] accessible par l'icône en haut à droite du Dashboard — 6 rubriques, une sous-page chacune

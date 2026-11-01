@@ -220,10 +220,14 @@ Plus un champ libre de 280 caractères au plus.
   Icône `MessageCircleHeart` (lucide). Vérifier sur 360 px de large que les libellés
   tiennent sans troncature ; sinon raccourcir « Progression » n'est **pas** une option
   (décision de renommage déjà prise), on réduit l'espacement.
-- Écran : en-tête de persona, puces des questions rapides, champ libre, puis le fil des
-  échanges des 7 derniers jours, le plus récent en haut.
+- Écran : un chat. Les messages des 7 derniers jours dans l'ordre chronologique, séparés
+  par jour, le dernier en bas ; un message d'accueil fixe en tête. En bas, épinglés
+  au-dessus de la barre d'onglets : les questions rapides en puces défilantes, le champ
+  et le bouton d'envoi. Le bouton d'action flottant est masqué sur cet onglet.
+  _Révisé le 01/11/2026 : la première version (dernier échange en haut, champ au milieu)
+  n'était pas intuitive._
 - Chaque réponse est une carte : constat, puis suggestion mise en avant, puis question.
-- Lien discret « Voir ce que le coach voit » : ouvre une feuille avec le résumé exact
+- Icône œil dans l'en-tête, « Voir ce que le coach voit » : ouvre une feuille avec le résumé exact
   envoyé, formaté lisiblement.
 
 ### 6.2 Points d'entrée ailleurs
