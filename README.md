@@ -22,6 +22,9 @@ Le cahier des charges complet est dans [`docs/recompos-pwa-prd.md`](docs/recompo
   à un écran verrouillé.
 - **Tendances** : index de force hebdomadaire, meilleures séries, tour de taille avec moyenne glissante,
   coffre photos redimensionnées sur l'appareil.
+- **Coach** : 5ᵉ onglet. Un coach nutrition répond à la demande à partir d'un résumé des 7 derniers
+  jours calculé sur l'appareil, sans culpabiliser. Il utilise la même clé que l'analyse photo
+  (Réglages → Services IA) et ne part qu'après accord.
 - **Sauvegarde** : export JSON versionné, import avec confirmation explicite avant écrasement.
 - Mini-onboarding 3 écrans, PWA installable et hors ligne, bandeau de mise à jour non intrusif.
 

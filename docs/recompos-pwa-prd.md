@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Version | 2.2 — Nutrition calories d'abord, IMC dans Progression |
-| Date | 2026-08-28 |
+| Version | 2.3 — Coach IA nutrition, cinquième onglet |
+| Date | 2026-11-01 |
 | Statut | Jalons 1 à 7 livrés ; refonte livrée |
-| Remplace | v2.1 (décodeur de code-barres embarqué), v2.0 (trois sources de repas), v1.9 (refonte complète des écrans), v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
+| Remplace | v2.2 (nutrition calories d'abord, IMC dans Progression), v2.1 (décodeur de code-barres embarqué), v2.0 (trois sources de repas), v1.9 (refonte complète des écrans), v1.8 (coquille de la refonte), v1.7 (suivi calorique par photo), v1.6 (décision n°6 réexaminée), v1.5 (écarts refermés), v1.4 (V1 complète), v1.3 (plan recalé), v1.2 (poids et cible dérivée), v1.1 (cadrage), v1.0 (brouillon) |
 
 ---
 
@@ -62,6 +62,8 @@ une décision d'implémentation.
 | 28 | Favoris | **Une seule liste : un aliment épinglé est un favori à une ligne, un repas épinglé en a plusieurs. Étoile sur la ligne dans le détail d'un repas, et sur la rangée dans « Vos habitudes ».** Décidée le 29/08/2026 | « Vos habitudes » est dérivé des trente derniers jours : c'est un constat, pas un choix, et une semaine d'absence le vide. Un favori est l'inverse — il tient jusqu'à ce que l'étoile soit retouchée. La feuille s'ouvre dessus dès qu'il y en a un, ce qui met le café du matin à un geste du `+`. Voir §6.11 |
 | 29 | Détail d'un repas | **Le repas se lit, il ne s'édite plus. Une ligne s'ouvre sur sa quantité ; l'ajout repasse par la feuille d'ajout du journal.** Décidée le 29/08/2026 sur le handoff « Détail d'un repas (lecture) » | Quatre aliments faisaient seize champs, et l'éditeur portait trois boutons d'ajout qui doublaient la feuille du `+`. La seule correction que quelqu'un fait deux fois est « c'était 200 g, pas 300 » : elle devient un pas de dix, sur une ligne ouverte. La saisie des quatre macros reste, repliée. Voir §6.12 |
 | 30 | Compter en portions | **Une ligne se compte en grammes ou en portions, au choix, et retient ce que pèse une portion.** Décidée le 31/08/2026 | « 168 g » ne veut rien dire pour une dosette de café ; « 2 dosettes » si. La portion vient du produit quand il la déclare, et sinon de la personne, une fois : ce qui est sur la ligne au moment où elle bascule *devient* la portion. Rien n'est inventé, et les deux unités se convertissent — 252 g font 1,5 portion de 168. Voir §6.12 |
+| 31 | Coach IA nutrition | **Un coach qui répond à la demande, à partir d'un résumé des 7 derniers jours calculé sur l'appareil, sans jamais culpabiliser.** Décidée le 01/11/2026 | Même chaîne de services et même clé que l'analyse de repas (décisions n°5 et n°16 maintenues). Questions rapides et champ libre court ; aucun message proactif ; consentement avant le premier envoi ; lexique culpabilisant filtré en sortie, détresse interceptée avant tout appel. Voir §6.13 et `docs/superpowers/specs/2026-11-01-coach-ia-nutrition-design.md` |
+| 32 | Cinq onglets | **« Coach » devient le 5ᵉ onglet, en dernier.** Décidée le 01/11/2026, amende la n°18 | L'ordre par fréquence d'usage tient : le coach est consulté de temps en temps, jamais ouvert par réflexe. Un onglet plutôt qu'une feuille, parce qu'un coach sportif viendra s'y ajouter comme seconde persona |
 ---
 
 ## 3. Principes produit
@@ -966,6 +968,30 @@ savait faire, la dernière à partir le lui rend, quel que soit l'ordre.
 
 ---
 
+### 6.13 Le coach (décisions n°31 et n°32)
+
+**Ce qu'il fait.** Il répond à une question — une des quatre questions rapides (« Une idée pour ce
+soir ? », « Bilan de ma semaine », « J'ai beaucoup mangé, et maintenant ? », « Comment finir mes
+protéines ? ») ou une question libre de 280 caractères — par une carte : un constat positif tiré des
+données, au plus une suggestion faisable aujourd'hui, éventuellement une question.
+
+**Sa mémoire n'est pas celle du modèle.** À chaque question, l'app recalcule un résumé des 7 derniers
+jours (repas, protéines, plancher, séances, poids, tour de taille, favoris, zéro-cuisson en stock,
+livraison) et l'envoie avec les 4 derniers échanges. Le résumé porte des valeurs et des cibles, jamais
+leur écart : le cadrage appartient au prompt. Un jour sans saisie vaut « non saisi », jamais zéro.
+L'utilisateur voit le résumé exact envoyé (« Voir ce que le coach voit »).
+
+**Ce qui le tient.** Un consentement unique avant le premier envoi, révocable dans Réglages →
+Services IA. Un lexique culpabilisant vérifié sur chaque réponse : une réponse fautive est réécrite une
+fois, puis remplacée par une phrase neutre — elle n'est jamais affichée. Un message de détresse reçoit
+une réponse fixe orientant vers un professionnel, sans qu'aucun appel ne parte.
+
+**Où on le trouve.** L'onglet Coach, une ligne sur Aujourd'hui, et la puce « Une idée pour ce soir ? »
+sous les totaux du jour dans Nutrition — affichée sur aujourd'hui quels que soient les totaux, parce
+qu'un coach qui apparaît après un dépassement est un reproche.
+
+Le fil est gardé 7 jours dans Dexie (`coachMessages`, version 4) et voyage dans l'export.
+
 ---
 
 ## 7. Architecture applicative
@@ -1177,6 +1203,20 @@ export interface AppSettings {
   catalogsSeededAt?: IsoDateTime;           // vider un catalogue exprès doit tenir
   hapticsEnabled: boolean;
   soundEnabled: boolean;
+  coachConsentAt?: IsoDateTime;             // absent = jamais accordé, ou retiré : rien ne part
+}
+
+export interface CoachMessage {             // fil du coach, purgé au-delà de 7 jours
+  id: string;
+  persona: 'nutrition';                     // 'training' viendra avec le coach sportif
+  role: 'user' | 'coach';
+  text?: string;                            // la question, ou une réponse fixe
+  reply?: { constat: string; suggestion: { titre: string; detail: string } | null; question: string | null };
+  quickPromptId?: 'tonight' | 'week' | 'big_meal' | 'protein';
+  providerId?: 'groq' | 'openrouter' | 'custom';
+  synthetic?: boolean;                      // réponse fixe : affichée, jamais renvoyée au modèle
+  timestamp: IsoDateTime;
+  date: IsoDate;
 }
 
 export interface ExportBundle {
@@ -1195,6 +1235,7 @@ export interface ExportBundle {
   photos?: Array<Omit<ProgressPhoto, 'bytes'> & { dataUrl: string }>;
   meals?: MealEntry[];
   favorites?: FavoriteMeal[];              // une décision, que rien d'autre ne reconstruit
+  coachMessages?: CoachMessage[];           // 7 jours au plus
 }
 ```
 
@@ -1211,25 +1252,26 @@ de base ; l'import refuse un bundle de version supérieure à celle du code et m
 ## 9. Navigation
 
 ```text
-[ Barre de navigation basse — 4 onglets, cibles tactiles 48×48 px minimum ]
+[ Barre de navigation basse — 5 onglets, cibles tactiles 48×48 px minimum ]
 ├── 🏠 Aujourd'hui   Plancher du jour, anneau protéines, ancres d'habitude, bouton « Séance 20 min »
 ├── 🥗 Nutrition     Compteur 1-tap, journal du jour, catalogues derrière « Que manger ? »
 ├── 🏋️ Séances       Séance rapide, séries du jour, circuit et timer de repos
-└── 📈 Progression   Consistance, poids, force, tour de taille, séances passées, photos
+├── 📈 Progression   Consistance, poids, force, tour de taille, séances passées, photos
+└── 💬 Coach         Questions rapides, question libre, fil des 7 derniers jours (décision n°32)
 
-[ Bouton d'action flottant, présent sur les 4 onglets ]
+[ Bouton d'action flottant, présent sur les 5 onglets ]
 └── Feuille rapide : « +30 g protéines » · « +1 série » · « Valider le plancher » · « Enregistrer une pesée »
 
 [ Réglages ] accessible par l'icône en haut à droite du Dashboard — 6 rubriques, une sous-page chacune
 ├── Objectifs        Cible protéines, cible calorique et déficit, taille, année, sexe, activité
 ├── Habitudes        Plancher et empilées : réordonner, modifier, historique, archiver, restaurer
 ├── Séances          Timer de repos, catalogue de mouvements
-├── Analyse photo    Service de vision, clé, modèle, test, rétention des photos de repas
+├── Services IA      Service, clé, modèles, test, rétention des photos de repas, accord du coach
 ├── Données          Stockage et persistance, export/import, version de schéma
 └── Application      Haptique, sons, revoir l'introduction, à propos
 ```
 
-L'ordre des onglets suit la fréquence d'usage d'une journée (décision n°18). Le renommage
+L'ordre des onglets suit la fréquence d'usage d'une journée (décisions n°18 et n°32). Le renommage
 « Tendances » → « Progression » ne déplace pas la route `/trends`.
 
 L'onglet Aujourd'hui est la racine. Un retour à froid sur l'app y atterrit toujours.
@@ -1386,6 +1428,8 @@ Explicitement exclu, pour éviter la dérive :
   backend : rien de l'app n'est hébergé ailleurs, et l'app entière fonctionne sans lui.
 - Notifications push ou locales (décision n°6). Réexaminé le 23/08/2026 : maintenu, avec deux
   contournements sans serveur documentés en annexe B.
+- Messages proactifs du coach : il ne parle que lorsqu'on lui pose une question (décision n°31), et
+  rien ne le déclenche sur un dépassement de cible. Les notifications restent exclues (décision n°6).
 - Chiffrement des photos et code PIN (décision n°7).
 - ~~Suivi calorique complet~~ — **levé le 27/08/2026, voir décision n°15 et §6.6.**
   ~~Scan de code-barres~~ — **levé le 28/08/2026, voir décision n°21 et §6.8.** Reste

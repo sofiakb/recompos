@@ -125,6 +125,28 @@ const REQUEST_TIMEOUT_MS = 45_000
  */
 const MAX_TOKENS = 2048
 
+/** Per-call knobs. Absent, a call is exactly the extraction call it always was. */
+export interface CompletionOptions {
+  temperature?: number
+  maxTokens?: number
+  /**
+   * How long a reasoning model thinks before answering. Those tokens come out of
+   * `maxTokens`, so a chatty task wants it short.
+   */
+  reasoningEffort?: 'low' | 'medium' | 'high'
+}
+
+/**
+ * Whether a model takes `reasoning_effort`.
+ *
+ * Read off the model id rather than the provider: the same Groq key serves the
+ * gpt-oss default and a llama fallback, and the fallback must not earn a 400
+ * for a field it has never heard of.
+ */
+export function supportsReasoningEffort(model: string): boolean {
+  return model.startsWith('openai/gpt-oss')
+}
+
 /**
  * Hard ceiling documented for a request carrying an image: past it the provider
  * answers 400. Checked before sending so the failure names the real cause
@@ -250,6 +272,7 @@ export async function postCompletion(
   fetchImpl: typeof fetch,
   useFallbackModel = false,
   modality: Modality = 'vision',
+  options: CompletionOptions = {},
 ): Promise<string> {
   const endpoint = resolveEndpoint(id, settings, modality, useFallbackModel)
   if (!endpoint) throw new LlmError('bad_response', 'Provider mal configuré', id)
@@ -271,10 +294,13 @@ export async function postCompletion(
         // consistent end. Reading a plate is an extraction task, not a creative
         // one, so it sits at the bottom of the range — and not below it, which
         // is outside what the model is documented to handle well.
-        temperature: 0.5,
+        temperature: options.temperature ?? 0.5,
         // The OpenAI-compatible spelling the current provider docs use;
         // `max_tokens` is the deprecated alias.
-        max_completion_tokens: MAX_TOKENS,
+        max_completion_tokens: options.maxTokens ?? MAX_TOKENS,
+        ...(options.reasoningEffort && supportsReasoningEffort(endpoint.model)
+          ? { reasoning_effort: options.reasoningEffort }
+          : {}),
         ...(mentionsJson(messages) ? { response_format: { type: 'json_object' } } : {}),
       }),
       signal: controller.signal,

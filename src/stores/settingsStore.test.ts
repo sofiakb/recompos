@@ -123,3 +123,12 @@ describe('replayOnboarding', () => {
     expect('onboardingCompletedAt' in useSettingsStore.getState().settings).toBe(false)
   })
 })
+
+describe('coach consent', () => {
+  it('records then withdraws it', () => {
+    useSettingsStore.getState().setCoachConsent(true)
+    expect(useSettingsStore.getState().settings.coachConsentAt).toEqual(expect.any(String))
+    useSettingsStore.getState().setCoachConsent(false)
+    expect(useSettingsStore.getState().settings).not.toHaveProperty('coachConsentAt')
+  })
+})

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { Sheet } from '@/components/ui/sheet'
 import { AddSheet } from '@/features/meals/add/AddSheet'
 import { CapturePreviewSheet } from '@/features/meals/CapturePreviewSheet'
@@ -226,6 +228,19 @@ export function NutritionScreen() {
         }}
         explain={{ kcal: kcalExplain(calories), protein: proteinExplain(target) }}
       />
+
+      {/* Today only, and whatever the totals say: the coach is offered, never
+          summoned by a number (spec coach, décision H). */}
+      {day === toLogicalDate() ? (
+        <div className="px-5">
+          <Link
+            to="/coach?ask=tonight"
+            className={buttonVariants({ variant: 'secondary', block: true })}
+          >
+            {t.coach.quick.tonight}
+          </Link>
+        </div>
+      ) : null}
 
       <DayNav date={day} onChange={setDay} />
 

@@ -164,3 +164,22 @@ describe('NutritionScreen — la feuille se ferme après le travail, pas avant',
     await waitFor(() => expect(sheetIsOpen()).toBe(false))
   })
 })
+
+describe('NutritionScreen — le coach à un tap', () => {
+  beforeEach(async () => {
+    await db.meals.clear()
+    await db.proteinLogs.clear()
+    useSettingsStore.setState(useSettingsStore.getInitialState())
+  })
+
+  it("propose une idée pour ce soir aujourd'hui, et seulement aujourd'hui", async () => {
+    const user = renderScreen()
+    // The accessible name keeps the narrow no-break space, so match the words.
+    const tonight = /Une idée pour ce soir/
+    const link = screen.getByRole('link', { name: tonight })
+    expect(link).toHaveAttribute('href', '/coach?ask=tonight')
+
+    await user.click(screen.getByRole('button', { name: t.nutrition.previousDay }))
+    expect(screen.queryByRole('link', { name: tonight })).toBeNull()
+  })
+})

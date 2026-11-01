@@ -1,5 +1,6 @@
 import type { RouteObject } from 'react-router-dom'
 import { AppLayout } from '@/app/AppLayout'
+import { CoachScreen } from '@/screens/CoachScreen'
 import { NutritionScreen } from '@/screens/NutritionScreen'
 import { CataloguesScreen } from '@/screens/nutrition/CataloguesScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
@@ -19,7 +20,7 @@ import { WorkoutsScreen } from '@/screens/WorkoutsScreen'
  * row pointing at a path no route declares renders a blank screen, which
  * nothing else would catch.
  *
- * The settings rubrics use French paths, unlike the four tabs: they are only
+ * The settings rubrics use French paths, unlike the five tabs: they are only
  * ever reached by tapping a row, never typed, and `/settings/objectifs` says
  * what it opens.
  */
@@ -34,6 +35,7 @@ export const appRoutes: RouteObject[] = [
       { path: 'nutrition/catalogues', element: <CataloguesScreen /> },
       { path: 'trends', element: <TrendsScreen /> },
       { path: 'trends/photos', element: <PhotoVaultScreen /> },
+      { path: 'coach', element: <CoachScreen /> },
       { path: 'settings', element: <SettingsScreen /> },
       { path: 'settings/objectifs', element: <GoalsSettingsScreen /> },
       { path: 'settings/habitudes', element: <HabitsSettingsScreen /> },

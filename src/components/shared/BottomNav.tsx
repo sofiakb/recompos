@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useMatch } from 'react-router-dom'
-import { Dumbbell, Home, Salad, TrendingUp } from 'lucide-react'
+import { Dumbbell, Home, MessageCircleHeart, Salad, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/fr'
 
 // Ordered by how often a day touches them: the plan, then eating, then moving,
-// then the long view (handoff de refonte, docs/design).
+// then the long view (handoff de refonte, docs/design), then the coach — asked
+// a question now and then, never opened by reflex (spec coach, décision n°32).
 const TABS = [
   { to: '/', label: t.nav.today, Icon: Home, end: true },
   { to: '/nutrition', label: t.nav.nutrition, Icon: Salad, end: false },
   { to: '/workouts', label: t.nav.workouts, Icon: Dumbbell, end: false },
   { to: '/trends', label: t.nav.trends, Icon: TrendingUp, end: false },
+  { to: '/coach', label: t.nav.coach, Icon: MessageCircleHeart, end: false },
 ]
 
 /** Below this, the page counts as « at the top » and the bar always stands open. */
