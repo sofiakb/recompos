@@ -8,11 +8,12 @@
  *
  * It carries values and targets, never their difference. « 2 800 for a 2 000
  * target » is a fact; « +800 over » is already a verdict, and the verdict
- * belongs to the prompt's framing, not to the data.
+ * belongs to the prompt's framing, not to the data. The weekly average is a
+ * value too: it is what the weekly check-in reasons from (décision n°33).
  */
 import { lastDays } from '@/lib/date'
-import type { ActivityLevel, BiologicalSex } from '@/lib/nutrition'
-import type { CoachDigest, DigestDay } from '@/lib/coach/types'
+import { MIN_CALORIE_TARGET_KCAL, type ActivityLevel, type BiologicalSex } from '@/lib/nutrition'
+import type { CoachDigest, DigestDay, DigestWeek } from '@/lib/coach/types'
 import type {
   DailyLog,
   FavoriteMeal,
@@ -32,6 +33,11 @@ export const MAX_LABEL = 40
 const MAX_LIST = 8
 const MAX_TAKEOUT = 6
 const WEIGHT_POINTS = 4
+/**
+ * How far under the target a day may be planned, when a week runs above it.
+ * A modest dip spread over a few days, never a fast (décision n°33).
+ */
+export const MAX_DAILY_DIP = 0.15
 
 export interface DigestProfile {
   proteinTargetG: number
@@ -123,7 +129,23 @@ function weightTrend(weightsNewestFirst: Measurement[]): CoachDigest['poids'] {
   }
 }
 
+function weekOf(days: DigestDay[], today: IsoDate, targetKcal: number): DigestWeek | null {
+  const counted = days.filter((day) => day.saisi && day.date !== today)
+  if (counted.length === 0) return null
+  const total = counted.reduce((sum, day) => sum + (day.kcal ?? 0), 0)
+  return {
+    joursComptes: counted.length,
+    moyenneKcal: Math.round(total / counted.length),
+    cibleKcal: targetKcal,
+    minimumJourKcal: Math.max(
+      MIN_CALORIE_TARGET_KCAL,
+      Math.round(targetKcal * (1 - MAX_DAILY_DIP)),
+    ),
+  }
+}
+
 export function buildDigest(input: DigestInput): CoachDigest {
+  const jours = lastDays(DIGEST_DAYS, input.today).map((date) => dayOf(date, input))
   return {
     aujourdhui: input.today,
     heure: hourOf(input.now),
@@ -135,7 +157,8 @@ export function buildDigest(input: DigestInput): CoachDigest {
       sexe: input.profile.biologicalSex,
       tailleCm: input.profile.heightCm,
     },
-    jours: lastDays(DIGEST_DAYS, input.today).map((date) => dayOf(date, input)),
+    jours,
+    semaine: weekOf(jours, input.today, input.profile.calorieTargetKcal),
     poids: weightTrend(input.weightsNewestFirst),
     tourDeTailleCm: input.latestWaist?.waistCm ?? null,
     favoris: input.favorites.slice(0, MAX_LIST).map((favorite) => clip(favorite.label, MAX_LABEL)),

@@ -20,6 +20,22 @@ describe('prompt du coach', () => {
   })
 })
 
+describe('bilan hebdomadaire (décision n°33)', () => {
+  it('raisonne sur la moyenne et borne l’ajustement', () => {
+    expect(NUTRITION_SYSTEM_PROMPT).toContain('semaine.moyenneKcal')
+    expect(NUTRITION_SYSTEM_PROMPT).toContain('semaine.minimumJourKcal')
+  })
+
+  it('garde les interdits : ni repas sauté, ni sport pour brûler', () => {
+    expect(NUTRITION_SYSTEM_PROMPT).toMatch(/sauter un repas/)
+    expect(NUTRITION_SYSTEM_PROMPT).toMatch(/brûler/)
+  })
+
+  it('répond à une question sur son rôle sans bilan chiffré', () => {
+    expect(NUTRITION_SYSTEM_PROMPT).toMatch(/qui tu es ou à quoi tu sers/)
+  })
+})
+
 describe('persona nutrition', () => {
   it('propose les quatre questions rapides, dans l’ordre de la spec', () => {
     expect(PERSONAS.nutrition.quickPrompts.map((p) => p.id)).toEqual([

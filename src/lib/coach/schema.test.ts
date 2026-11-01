@@ -41,4 +41,10 @@ describe('parseCoachReply', () => {
   it('rend null sur du texte sans JSON', () => {
     expect(parseCoachReply('Désolé, je ne peux pas.')).toBeNull()
   })
+
+  it('lit la clé « reponse » demandée par le prompt', () => {
+    expect(parseCoachReply(JSON.stringify({ reponse: 'Je suis ton coach.' }))?.constat).toBe(
+      'Je suis ton coach.',
+    )
+  })
 })

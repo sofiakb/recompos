@@ -16,7 +16,9 @@ export function parseCoachReply(raw: string): CoachReply | null {
   if (!parsed || typeof parsed !== 'object') return null
   const record = parsed as Record<string, unknown>
 
-  const constat = text(record.constat, LIMITS.constat)
+  // `reponse` is what the prompt asks for; `constat` is what it asked for
+  // before décision n°33, and what a cached conversation may still produce.
+  const constat = text(record.reponse ?? record.constat, LIMITS.constat)
   if (!constat) return null
 
   const suggestion =
