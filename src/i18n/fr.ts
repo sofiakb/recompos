@@ -703,6 +703,7 @@ export const fr = {
     offline: 'Le coach a besoin du réseau. Tes derniers échanges restent lisibles.',
     noProvider: 'Le coach utilise ton service IA. Ajoute une clé dans Réglages → Services IA.',
     noProviderCta: 'Ouvrir les réglages',
+    earlier: 'Plus tôt cette semaine',
     empty: 'Aucun échange ces 7 derniers jours. Choisis une question pour commencer.',
     consentTitle: 'Avant ta première question',
     consentBody:

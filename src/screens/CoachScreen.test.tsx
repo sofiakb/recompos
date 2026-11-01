@@ -121,6 +121,7 @@ describe('CoachScreen', () => {
 
   it("renvoie vers les réglages quand aucun service n'est configuré", () => {
     renderAt()
+    expect(screen.getByRole('button', { name: plain(t.coach.quick.week) })).toBeDisabled()
     expect(screen.getByRole('link', { name: t.coach.noProviderCta })).toHaveAttribute(
       'href',
       '/settings/analyse-photo',

@@ -4,7 +4,8 @@ import { ScreenHeader } from '@/components/shared/ScreenHeader'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { TapTarget } from '@/components/ui/tap-target'
 import { CoachInput } from '@/features/coach/CoachInput'
-import { CoachThread } from '@/features/coach/CoachThread'
+import { CoachExchanges } from '@/features/coach/CoachExchanges'
+import { exchangesOf } from '@/features/coach/exchanges'
 import { ConsentSheet } from '@/features/coach/ConsentSheet'
 import { DigestSheet } from '@/features/coach/DigestSheet'
 import { QuickPrompts } from '@/features/coach/QuickPrompts'
@@ -34,6 +35,10 @@ export function CoachScreen() {
   const queued = useRef<Pending | null>(null)
 
   const canSend = coach.online && !coach.pending
+  // The latest exchange sits right under the title, where an answer lands in
+  // view; the rest of the week reads below the question field.
+  const exchanges = exchangesOf(coach.thread).reverse()
+  const [latest, ...earlier] = exchanges
 
   // Kept in a ref so the `?ask=` effect reads today's state without re-running
   // every time that state changes.
@@ -65,6 +70,14 @@ export function CoachScreen() {
       <div className="flex flex-col gap-5 px-5 pt-2">
         {coach.online ? null : <p className="text-sm text-muted-foreground">{t.coach.offline}</p>}
 
+        <section aria-live="polite">
+          {latest ? (
+            <CoachExchanges exchanges={[latest]} pending={coach.pending} />
+          ) : (
+            <p className="text-sm text-muted-foreground">{t.coach.empty}</p>
+          )}
+        </section>
+
         {coach.online && !coach.hasProvider ? (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">{t.coach.noProvider}</p>
@@ -79,7 +92,9 @@ export function CoachScreen() {
 
         <QuickPrompts
           prompts={persona.quickPrompts}
-          disabled={!canSend}
+          // A quick prompt always needs the model; without a service it could
+          // only end in an error under the user's own question.
+          disabled={!canSend || !coach.hasProvider}
           onPick={(prompt) => send.current({ text: prompt.question, id: prompt.id })}
         />
         {/* Usable without a provider: the distress guard answers without the
@@ -99,7 +114,12 @@ export function CoachScreen() {
           {t.coach.seeDigest}
         </TapTarget>
 
-        <CoachThread thread={coach.thread} pending={coach.pending} />
+        {earlier.length > 0 ? (
+          <section className="flex flex-col gap-3">
+            <h2 className="eyebrow">{t.coach.earlier}</h2>
+            <CoachExchanges exchanges={earlier} />
+          </section>
+        ) : null}
       </div>
 
       <ConsentSheet
