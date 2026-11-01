@@ -5,8 +5,8 @@
  * prompt, questions and digest — and the screen shows a picker only once there
  * is something to pick.
  */
-import { NUTRITION_SYSTEM_PROMPT } from '@/lib/coach/prompt'
-import type { QuickPromptId } from '@/lib/coach/types'
+import { nutritionSystemPrompt } from '@/lib/coach/prompt'
+import type { CoachDigest, QuickPromptId } from '@/lib/coach/types'
 import type { CoachPersonaId } from '@/types/models'
 import { t } from '@/i18n/fr'
 
@@ -19,7 +19,8 @@ export interface QuickPrompt {
 export interface CoachPersona {
   id: CoachPersonaId
   label: string
-  systemPrompt: string
+  /** The persona's voice, with what the app knows folded in as background. */
+  systemPrompt: (digest: CoachDigest) => string
   quickPrompts: QuickPrompt[]
 }
 
@@ -29,7 +30,7 @@ export const PERSONAS: Record<CoachPersonaId, CoachPersona> = {
   nutrition: {
     id: 'nutrition',
     label: t.coach.personas.nutrition,
-    systemPrompt: NUTRITION_SYSTEM_PROMPT,
+    systemPrompt: nutritionSystemPrompt,
     quickPrompts: QUICK_IDS.map((id) => ({ id, question: t.coach.quick[id] })),
   },
 }

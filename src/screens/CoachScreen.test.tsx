@@ -8,11 +8,7 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import { toLogicalDate } from '@/lib/date'
 import { t } from '@/i18n/fr'
 
-const ANSWER = JSON.stringify({
-  constat: 'Tes protéines ont bien tenu cette semaine.',
-  suggestion: { titre: 'Un skyr ce soir', detail: 'Il ajoute 15 g sans cuisson.' },
-  question: null,
-})
+const ANSWER = 'Tes protéines ont bien tenu cette semaine. Qu’est-ce qui t’a aidé ?'
 
 function reply(content: string): Response {
   return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 })
@@ -69,10 +65,8 @@ describe('CoachScreen', () => {
     await user.click(screen.getByRole('button', { name: plain(t.coach.quick.week) }))
     await user.click(await screen.findByRole('button', { name: t.coach.consentAccept }))
 
-    expect(
-      await screen.findByText('Tes protéines ont bien tenu cette semaine.'),
-    ).toBeInTheDocument()
-    expect(screen.getByText('Un skyr ce soir')).toBeInTheDocument()
+    // The bubble also holds a screen-reader prefix, so match the words.
+    expect(await screen.findByText(/Tes protéines ont bien tenu cette semaine/)).toBeInTheDocument()
     expect(useSettingsStore.getState().settings.coachConsentAt).toBeDefined()
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })

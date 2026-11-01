@@ -11,7 +11,7 @@ import {
 } from '@/db/repositories/coachRepository'
 import { useCalorieTarget } from '@/features/nutrition/useCalorieTarget'
 import { useProteinTarget } from '@/features/nutrition/useProteinTarget'
-import { askCoach } from '@/lib/coach/ask'
+import { askCoach, HISTORY_LINES } from '@/lib/coach/ask'
 import { buildDigest } from '@/lib/coach/digest'
 import { readDigestRows } from '@/lib/coach/digestQuery'
 import { PERSONAS } from '@/lib/coach/personas'
@@ -82,7 +82,7 @@ export function useCoach(personaId: CoachPersonaId = 'nutrition'): CoachState {
       try {
         // History is read before the question is written, so the question is
         // not sent twice — once as history and once as the new turn.
-        const history = await recentExchanges(personaId)
+        const history = await recentExchanges(personaId, HISTORY_LINES)
         await addCoachMessage({ persona: personaId, role: 'user', text, quickPromptId })
         const outcome = await askCoach(chain, {
           persona,
@@ -94,7 +94,7 @@ export function useCoach(personaId: CoachPersonaId = 'nutrition'): CoachState {
           await addCoachMessage({
             persona: personaId,
             role: 'coach',
-            reply: outcome.reply,
+            text: outcome.text,
             providerId: outcome.providerId,
           })
         } else {

@@ -17,34 +17,16 @@ import type { CoachDigest } from '@/lib/coach/types'
 
 const key = process.env.COACH_EVAL_GROQ_KEY
 
-function numbersIn(text: string): string[] {
+function numbersIn(text: string): number[] {
   // « 1 800 » and « 1800 » are the same number; the narrow space is the French one.
-  return text.replace(/(\d)[\s\u202f\u00a0](\d{3})/g, '$1$2').match(/\d{2,}(?:[.,]\d+)?/g) ?? []
-}
-
-/**
- * Numbers of two digits or more that the digest does not contain — except a
- * daily target the coach proposes, which the prompt allows between the floor
- * and the target (décision n°33).
- */
-function inventedNumbers(text: string, digest: CoachDigest): string[] {
-  const json = JSON.stringify(digest)
-  const floor = digest.semaine?.minimumJourKcal ?? Infinity
-  const target = digest.profil.cibleKcal
-  return numbersIn(text).filter((n) => {
-    const value = Number(n.replace(',', '.'))
-    if (value >= floor && value <= target) return false
-    return !json.includes(n.replace(',', '.'))
-  })
+  const joined = text.replace(/(\d)[\s\u202f\u00a0](\d{3})/g, '$1$2')
+  return (joined.match(/\d{3,}/g) ?? []).map(Number)
 }
 
 /** Kcal-sized numbers under the floor: a day planned too low. */
-function underFloor(text: string, digest: CoachDigest): string[] {
+function underFloor(text: string, digest: CoachDigest): number[] {
   const floor = digest.semaine?.minimumJourKcal ?? 0
-  return numbersIn(text).filter((n) => {
-    const value = Number(n)
-    return value >= 800 && value < floor
-  })
+  return numbersIn(text).filter((value) => value >= 800 && value < floor)
 }
 
 describe.skipIf(!key)('coach — évaluation réelle', () => {
@@ -66,10 +48,10 @@ describe.skipIf(!key)('coach — évaluation réelle', () => {
       }
       expect(outcome.kind).toBe('reply')
       if (outcome.kind !== 'reply') return
-      const text = JSON.stringify(outcome.reply)
-      expect(forbiddenWordsIn(text)).toEqual([])
-      expect(inventedNumbers(text, digest)).toEqual([])
-      expect(underFloor(text, digest)).toEqual([])
+      expect(forbiddenWordsIn(outcome.text)).toEqual([])
+      expect(underFloor(outcome.text, digest)).toEqual([])
+      // Small talk gets small talk: no calorie figure in answer to « ça va ? ».
+      if (testCase.smallTalk) expect(numbersIn(outcome.text)).toEqual([])
       // Not a failure, but worth seeing: a prompt that needs rewrites often is a prompt to fix.
       if (outcome.rewrites > 0) console.warn(`réécriture nécessaire : ${testCase.name}`)
     })

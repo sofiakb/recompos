@@ -1,54 +1,85 @@
 import { describe, expect, it, vi } from 'vitest'
-import { askCoach } from '@/lib/coach/ask'
+import { askCoach, cleanAnswer, HISTORY_LINES } from '@/lib/coach/ask'
 import { buildDigest } from '@/lib/coach/digest'
 import { WEEKS } from '@/lib/coach/fixtures'
 import { PERSONAS } from '@/lib/coach/personas'
 import { LlmError, type ConfiguredProvider } from '@/lib/llm/client'
 import type { CoachMessage } from '@/types/models'
 
-const GOOD = JSON.stringify({
-  constat: 'Tes protéines tiennent bien cette semaine.',
-  suggestion: { titre: 'Un skyr', detail: 'Ajoute un skyr au dessert.' },
-  question: null,
-})
-const GUILTY = JSON.stringify({
-  constat: 'Tu as fait un écart samedi.',
-  suggestion: null,
-  question: null,
-})
+const GOOD = 'Ça va bien, merci ! Et toi, comment se passe ta journée côté repas ?'
+const GUILTY = 'Tu as fait un écart samedi, tu peux le rattraper.'
 
 function reply(content: string, status = 200): Response {
   return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status })
 }
+/** A fresh Response per call: a body can only be read once. */
+const always = (content: string, status = 200) =>
+  vi.fn().mockImplementation(() => Promise.resolve(reply(content, status)))
 function groq(): ConfiguredProvider {
   return { id: 'groq', settings: { apiKey: 'gsk_test', enabled: true } }
 }
-function input(question = 'Bilan de ma semaine', history: CoachMessage[] = []) {
+function input(question = 'Ça va ?', history: CoachMessage[] = []) {
   return { persona: PERSONAS.nutrition, question, digest: buildDigest(WEEKS.regular), history }
 }
 const asFetch = (f: unknown) => f as typeof fetch
 const bodyOf = (fetchImpl: ReturnType<typeof vi.fn>, call: number) =>
   JSON.parse(String(fetchImpl.mock.calls[call][1].body))
+const base = { persona: 'nutrition' as const, timestamp: '', date: '' }
 
 describe('askCoach', () => {
-  it('rend une réponse en un appel', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(reply(GOOD))
+  it('rend la réponse du coach en texte, en un appel', async () => {
+    const fetchImpl = always(GOOD)
     const outcome = await askCoach([groq()], input(), asFetch(fetchImpl))
-    expect(outcome).toMatchObject({ kind: 'reply', providerId: 'groq', rewrites: 0 })
+    expect(outcome).toEqual({ kind: 'reply', text: GOOD, providerId: 'groq', rewrites: 0 })
     expect(fetchImpl).toHaveBeenCalledTimes(1)
   })
 
-  it('envoie le résumé, la persona et les réglages du coach', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(reply(GOOD))
-    await askCoach([groq()], input(), asFetch(fetchImpl))
+  it('envoie la question telle quelle, et le contexte une seule fois, en système', async () => {
+    const fetchImpl = always(GOOD)
+    await askCoach([groq()], input('Ça va ?'), asFetch(fetchImpl))
     const body = bodyOf(fetchImpl, 0)
-    expect(body.messages[0]).toEqual({ role: 'system', content: PERSONAS.nutrition.systemPrompt })
-    expect(body.messages.at(-1).content).toContain('"aujourdhui":"2026-11-01"')
-    expect(body.messages.at(-1).content).toContain('Ma question : Bilan de ma semaine')
-    expect(body.temperature).toBe(0.7)
+    expect(body.messages[0].role).toBe('system')
+    expect(body.messages[0].content).toContain('"aujourdhui":"2026-11-01"')
+    expect(body.messages.at(-1)).toEqual({ role: 'user', content: 'Ça va ?' })
+    expect(JSON.stringify(body.messages.slice(1))).not.toContain('aujourdhui')
+  })
+
+  it('ne force jamais le mode JSON, même si on parle de json', async () => {
+    const fetchImpl = always(GOOD)
+    await askCoach([groq()], input('c’est quoi un fichier json ?'), asFetch(fetchImpl))
+    const body = bodyOf(fetchImpl, 0)
+    expect(body).not.toHaveProperty('response_format')
+    expect(body.temperature).toBe(0.8)
     expect(body.reasoning_effort).toBe('low')
-    expect(body.model).toBe('openai/gpt-oss-120b')
-    expect(body.response_format).toEqual({ type: 'json_object' })
+  })
+
+  it('rejoue la conversation, ancien format compris, sans les réponses fixes', async () => {
+    const fetchImpl = always(GOOD)
+    const history: CoachMessage[] = [
+      { ...base, id: '1', role: 'user', text: 'J’ai pris 6 kg' },
+      { ...base, id: '2', role: 'coach', text: 'Ça arrive. Qu’est-ce qui a changé ?' },
+      { ...base, id: '3', role: 'user', text: 'Les raclettes' },
+      { ...base, id: '4', role: 'coach', text: 'fixe', synthetic: true },
+      {
+        ...base,
+        id: '5',
+        role: 'coach',
+        reply: { constat: 'Ancienne réponse.', suggestion: null, question: 'Et toi ?' },
+      },
+    ]
+    await askCoach([groq()], input('Comment faire ?', history), asFetch(fetchImpl))
+    const messages = bodyOf(fetchImpl, 0).messages.slice(1)
+    expect(messages).toEqual([
+      { role: 'user', content: 'J’ai pris 6 kg' },
+      { role: 'assistant', content: 'Ça arrive. Qu’est-ce qui a changé ?' },
+      { role: 'user', content: 'Les raclettes' },
+      { role: 'assistant', content: 'Ancienne réponse. Et toi ?' },
+      { role: 'user', content: 'Comment faire ?' },
+    ])
+  })
+
+  it('suit un vrai fil : vingt lignes d’historique', () => {
+    expect(HISTORY_LINES).toBe(20)
   })
 
   it("n'appelle rien sur un message de détresse, même sans service configuré", async () => {
@@ -62,31 +93,20 @@ describe('askCoach', () => {
     await expect(askCoach([], input(), asFetch(vi.fn()))).rejects.toMatchObject({ kind: 'auth' })
   })
 
-  it('répare une réponse illisible une fois', async () => {
-    const fetchImpl = vi
-      .fn()
-      .mockResolvedValueOnce(reply('Voici mon avis'))
-      .mockResolvedValueOnce(reply(GOOD))
-    const outcome = await askCoach([groq()], input(), asFetch(fetchImpl))
-    expect(outcome.kind).toBe('reply')
-    expect(fetchImpl).toHaveBeenCalledTimes(2)
-  })
-
-  it('fait réécrire une réponse culpabilisante, en nommant le mot', async () => {
+  it('fait réécrire une réponse culpabilisante, en nommant les mots', async () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(reply(GUILTY))
       .mockResolvedValueOnce(reply(GOOD))
     const outcome = await askCoach([groq()], input(), asFetch(fetchImpl))
-    expect(outcome).toMatchObject({ kind: 'reply', rewrites: 1 })
+    expect(outcome).toMatchObject({ kind: 'reply', text: GOOD, rewrites: 1 })
     const second = bodyOf(fetchImpl, 1)
     expect(second.messages.at(-1).content).toContain('« écart »')
     expect(second.messages.at(-2)).toEqual({ role: 'assistant', content: GUILTY })
   })
 
   it('ne montre jamais une réponse toujours fautive : repli neutre', async () => {
-    // A fresh Response per call: a body can only be read once.
-    const fetchImpl = vi.fn().mockImplementation(() => Promise.resolve(reply(GUILTY)))
+    const fetchImpl = always(GUILTY)
     const outcome = await askCoach([groq()], input(), asFetch(fetchImpl))
     expect(outcome).toEqual({ kind: 'fallback', providerId: 'groq' })
     expect(fetchImpl).toHaveBeenCalledTimes(2)
@@ -112,38 +132,17 @@ describe('askCoach', () => {
       .mockResolvedValueOnce(reply(GOOD))
     const outcome = await askCoach([groq()], input(), asFetch(fetchImpl))
     expect(outcome.kind).toBe('reply')
-    const second = bodyOf(fetchImpl, 1)
-    expect(second.model).toBe('llama-3.3-70b-versatile')
-    expect(second).not.toHaveProperty('reasoning_effort')
+    expect(bodyOf(fetchImpl, 1).model).toBe('llama-3.3-70b-versatile')
   })
 
   it('rejette avec la dernière erreur quand tout échoue', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(reply('', 429))
+    const fetchImpl = always('', 429)
     await expect(askCoach([groq()], input(), asFetch(fetchImpl))).rejects.toBeInstanceOf(LlmError)
   })
+})
 
-  it("rejoue l'historique, sans les réponses synthétiques", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(reply(GOOD))
-    const base = { persona: 'nutrition' as const, timestamp: '', date: '' }
-    const history: CoachMessage[] = [
-      { ...base, id: '1', role: 'user', text: 'q1' },
-      {
-        ...base,
-        id: '2',
-        role: 'coach',
-        reply: { constat: 'c1', suggestion: null, question: null },
-      },
-      { ...base, id: '3', role: 'coach', text: 'fixe', synthetic: true },
-    ]
-    await askCoach([groq()], input('q2', history), asFetch(fetchImpl))
-    const messages = bodyOf(fetchImpl, 0).messages
-    expect(messages).toHaveLength(4)
-    expect(messages[1]).toEqual({ role: 'user', content: 'q1' })
-    expect(messages[2].role).toBe('assistant')
-    expect(JSON.parse(messages[2].content)).toEqual({
-      reponse: 'c1',
-      suggestion: null,
-      question: null,
-    })
+describe('cleanAnswer', () => {
+  it('retire le gras markdown, les titres et les guillemets d’enrobage', () => {
+    expect(cleanAnswer('"## Coucou\nTu peux **essayer** ça."')).toBe('Coucou\nTu peux essayer ça.')
   })
 })

@@ -1,38 +1,36 @@
 import { describe, expect, it } from 'vitest'
-import { coachUserPrompt, NUTRITION_SYSTEM_PROMPT, rewritePrompt } from '@/lib/coach/prompt'
-import { isQuickPromptId, PERSONAS } from '@/lib/coach/personas'
-import { mentionsJson } from '@/lib/llm/client'
+import { buildDigest } from '@/lib/coach/digest'
+import { WEEKS } from '@/lib/coach/fixtures'
 import { forbiddenWordsIn } from '@/lib/coach/guard'
+import { isQuickPromptId, PERSONAS } from '@/lib/coach/personas'
+import { NUTRITION_PERSONA, nutritionSystemPrompt, rewritePrompt } from '@/lib/coach/prompt'
+import { mentionsJson } from '@/lib/llm/client'
 
-describe('prompt du coach', () => {
-  it('dit « JSON », sans quoi le mode JSON est refusé', () => {
-    expect(mentionsJson([{ role: 'system', content: NUTRITION_SYSTEM_PROMPT }])).toBe(true)
+const system = nutritionSystemPrompt(buildDigest(WEEKS.regular))
+
+describe('prompt du coach (décision n°34)', () => {
+  it('ne dit jamais « json », qui allumerait le mode JSON', () => {
+    expect(mentionsJson([{ role: 'system', content: system }])).toBe(false)
   })
 
-  it('porte le résumé et la question dans le message utilisateur', () => {
-    const text = coachUserPrompt('{"jours":[]}', '  Une idée pour ce soir ?  ')
-    expect(text).toContain('{"jours":[]}')
-    expect(text).toContain('Ma question : Une idée pour ce soir ?')
+  it('porte les données de l’app comme contexte, une seule fois', () => {
+    expect(system).toContain('"aujourdhui":"2026-11-01"')
+    expect(system.split('"aujourdhui"')).toHaveLength(2)
+  })
+
+  it('demande une conversation : réagir, questionner, suivre le fil', () => {
+    expect(NUTRITION_PERSONA).toMatch(/réagis d'abord à ce que la personne vient de dire/)
+    expect(NUTRITION_PERSONA).toMatch(/Une question à la fois/)
+    expect(NUTRITION_PERSONA).toMatch(/tu ne répètes jamais/)
+  })
+
+  it('garde le bilan hebdo et ses bornes', () => {
+    expect(NUTRITION_PERSONA).toContain('semaine.minimumJourKcal')
+    expect(NUTRITION_PERSONA).toMatch(/sauter un repas/)
   })
 
   it('nomme les mots à retirer quand il fait réécrire', () => {
     expect(rewritePrompt(['écart', 'il faut'])).toContain('« écart », « il faut »')
-  })
-})
-
-describe('bilan hebdomadaire (décision n°33)', () => {
-  it('raisonne sur la moyenne et borne l’ajustement', () => {
-    expect(NUTRITION_SYSTEM_PROMPT).toContain('semaine.moyenneKcal')
-    expect(NUTRITION_SYSTEM_PROMPT).toContain('semaine.minimumJourKcal')
-  })
-
-  it('garde les interdits : ni repas sauté, ni sport pour brûler', () => {
-    expect(NUTRITION_SYSTEM_PROMPT).toMatch(/sauter un repas/)
-    expect(NUTRITION_SYSTEM_PROMPT).toMatch(/brûler/)
-  })
-
-  it('répond à une question sur son rôle sans bilan chiffré', () => {
-    expect(NUTRITION_SYSTEM_PROMPT).toMatch(/qui tu es ou à quoi tu sers/)
   })
 })
 

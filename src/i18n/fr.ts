@@ -690,9 +690,9 @@ export const fr = {
       protein: 'Comment finir mes protéines ?',
     },
     greeting:
-      'Salut ! Pose-moi une question sur tes repas : je regarde tes 7 derniers jours, sans jugement.',
-    inputLabel: 'Ta question',
-    inputPlaceholder: 'Écris ta question…',
+      'Salut ! Je suis ton coach nutrition. Raconte-moi où tu en es, ce qui coince, ou pose-moi une question : on en parle.',
+    inputLabel: 'Ton message',
+    inputPlaceholder: 'Écris ton message…',
     send: 'Envoyer',
     thinking: 'Le coach réfléchit…',
     you: 'Toi',

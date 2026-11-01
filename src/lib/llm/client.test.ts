@@ -105,6 +105,27 @@ describe('postCompletion, options', () => {
   })
 })
 
+describe('postCompletion, mode JSON forcé', () => {
+  it('le coupe même quand un message dit « json »', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), {
+        status: 200,
+      }),
+    )
+    await postCompletion(
+      'groq',
+      KEY,
+      [{ role: 'user', content: 'c’est quoi du json ?' }],
+      fetchImpl as unknown as typeof fetch,
+      false,
+      'text',
+      { jsonMode: false },
+    )
+    const body = JSON.parse(String(fetchImpl.mock.calls[0][1].body))
+    expect(body).not.toHaveProperty('response_format')
+  })
+})
+
 describe('supportsReasoningEffort', () => {
   it("reconnaît gpt-oss et rien d'autre", () => {
     expect(supportsReasoningEffort('openai/gpt-oss-120b')).toBe(true)

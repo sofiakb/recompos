@@ -16,6 +16,7 @@ function Bubble({ mine, children }: Readonly<{ mine: boolean; children: React.Re
     <div
       className={cn(
         'max-w-[85%] px-3.5 py-2.5 text-[15px] leading-relaxed',
+        'whitespace-pre-line',
         mine
           ? 'self-end rounded-2xl rounded-br-md bg-primary/20'
           : 'lit-surface self-start rounded-2xl rounded-bl-md border border-border/70',

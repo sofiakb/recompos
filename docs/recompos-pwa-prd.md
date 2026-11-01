@@ -65,6 +65,7 @@ une décision d'implémentation.
 | 31 | Coach IA nutrition | **Un coach qui répond à la demande, à partir d'un résumé des 7 derniers jours calculé sur l'appareil, sans jamais culpabiliser.** Décidée le 01/11/2026 | Même chaîne de services et même clé que l'analyse de repas (décisions n°5 et n°16 maintenues). Questions rapides et champ libre court ; aucun message proactif ; consentement avant le premier envoi ; lexique culpabilisant filtré en sortie, détresse interceptée avant tout appel. Voir §6.13 et `docs/superpowers/specs/2026-11-01-coach-ia-nutrition-design.md` |
 | 32 | Cinq onglets | **« Coach » devient le 5ᵉ onglet, en dernier.** Décidée le 01/11/2026, amende la n°18 | L'ordre par fréquence d'usage tient : le coach est consulté de temps en temps, jamais ouvert par réflexe. Un onglet plutôt qu'une feuille, parce qu'un coach sportif viendra s'y ajouter comme seconde persona |
 | 33 | Bilan hebdomadaire franc | **Le coach raisonne sur la moyenne de la semaine et peut proposer un ajustement modéré des jours suivants.** Décidée le 01/11/2026, amende la n°31 | Maigrir passe par le déficit en moyenne, pas par la punition d'un repas. La moyenne des jours terminés et saisis est comparée à la cible ; au-dessus, le coach propose de viser un peu moins sur 2 à 4 jours, jamais sous 85 % de la cible ni sous 1 200 kcal, sans repas sauté ni sport pour « brûler ». Le vocabulaire de faute reste filtré |
+| 34 | Un coach qui discute | **Le coach répond en texte libre, comme dans une messagerie : il réagit à ce qui vient d'être dit, pose des questions, suit le fil, et ne cite des chiffres que s'ils servent.** Décidée le 01/11/2026, amende les n°31 et n°33 | Le format imposé (constat, carte « Une idée », question) produisait la même réponse chiffrée à « Ça va ? » qu'à « Bilan de ma semaine ». Les données de l'app passent une fois, en contexte, au lieu d'être collées à chaque message ; le modèle voit les 20 dernières lignes de la conversation ; le mode JSON est coupé. Garde-fous inchangés |
 ---
 
 ## 3. Principes produit
@@ -973,8 +974,8 @@ savait faire, la dernière à partir le lui rend, quel que soit l'ordre.
 
 **Ce qu'il fait.** Il répond à une question — une des quatre questions rapides (« Une idée pour ce
 soir ? », « Bilan de ma semaine », « J'ai beaucoup mangé, et maintenant ? », « Comment finir mes
-protéines ? ») ou une question libre de 280 caractères — par un message : une réponse directe à la
-question, au plus une suggestion concrète, éventuellement une question. Il raisonne sur la moyenne de
+protéines ? ») ou une question libre de 280 caractères — dans une conversation en texte libre : il réagit
+à ce qui vient d'être dit, pose des questions pour comprendre, suit le fil (décision n°34). Il raisonne sur la moyenne de
 la semaine et peut proposer un ajustement modéré des jours suivants (décision n°33).
 
 **Sa mémoire n'est pas celle du modèle.** À chaque question, l'app recalcule un résumé des 7 derniers
