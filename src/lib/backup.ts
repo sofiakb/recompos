@@ -80,7 +80,6 @@ export async function buildExport(
     photoRows,
     meals,
     favorites,
-    coachMessages,
   ] = await Promise.all([
     database.habitCompletions.toArray(),
     database.dailyLogs.toArray(),
@@ -93,7 +92,6 @@ export async function buildExport(
     database.photos.toArray(),
     database.meals.toArray(),
     database.favorites.toArray(),
-    database.coachMessages.toArray(),
   ])
 
   const photos: SerializedPhoto[] = photoRows.map(({ bytes, ...rest }) => ({
@@ -123,9 +121,6 @@ export async function buildExport(
     // Nothing else in the file can reconstruct these: a favourite is a decision,
     // not a record of something that happened, so losing it loses the decision.
     ...(favorites.length > 0 ? { favorites } : {}),
-    // Seven days of conversation at most. Small, and the only record of what
-    // the user asked — losing it on a restore would be a quiet surprise.
-    ...(coachMessages.length > 0 ? { coachMessages } : {}),
     ...(inlinePhotos && photos.length > 0 ? { photos } : {}),
   }
 
@@ -197,8 +192,6 @@ export function validateBundle(raw: unknown): ValidationResult {
       meals: candidate.meals ?? [],
       // Likewise for anything written before favourites existed.
       favorites: candidate.favorites ?? [],
-      // Absent from any bundle written before the coach existed.
-      coachMessages: candidate.coachMessages ?? [],
     },
   }
 }
@@ -221,7 +214,6 @@ export interface ImportSummary {
   photos: number
   meals: number
   favorites: number
-  coachMessages: number
 }
 
 /**
@@ -254,7 +246,6 @@ export async function applyImport(
     database.meals,
     database.mealPhotos,
     database.favorites,
-    database.coachMessages,
   ]
 
   await database.transaction('rw', tables, async () => {
@@ -273,7 +264,6 @@ export async function applyImport(
       // that pointed at them, and nothing would ever collect them.
       database.mealPhotos.clear(),
       database.favorites.clear(),
-      database.coachMessages.clear(),
     ])
     await Promise.all([
       database.habitCompletions.bulkAdd(bundle.completions),
@@ -288,7 +278,6 @@ export async function applyImport(
       // A restored meal has no photo to point at any more.
       database.meals.bulkAdd((bundle.meals ?? []).map(({ photoId: _gone, ...meal }) => meal)),
       database.favorites.bulkAdd(favoritesOf(bundle)),
-      database.coachMessages.bulkAdd(bundle.coachMessages ?? []),
     ])
   })
 
@@ -302,7 +291,6 @@ export async function applyImport(
     photos: photos.length,
     meals: bundle.meals?.length ?? 0,
     favorites: favoritesOf(bundle).length,
-    coachMessages: bundle.coachMessages?.length ?? 0,
   }
 }
 

@@ -8,7 +8,6 @@
 import Dexie, { type Table } from 'dexie'
 import { DEFAULT_EXERCISES, DEFAULT_TAKEOUT, DEFAULT_ZERO_COOK } from '@/db/seed'
 import type {
-  CoachMessage,
   DailyLog,
   Exercise,
   ExerciseSet,
@@ -38,7 +37,6 @@ export class RecompDb extends Dexie {
   meals!: Table<MealEntry, string>
   mealPhotos!: Table<MealPhoto, string>
   favorites!: Table<FavoriteMeal, string>
-  coachMessages!: Table<CoachMessage, string>
 
   constructor(name = 'recompos') {
     super(name)
@@ -71,11 +69,16 @@ export class RecompDb extends Dexie {
       // — not in whichever screen happened to send the second star.
       favorites: 'id, &key, createdAt',
     })
-    // The coach thread arrives in version 4, again as a delta. `date` is
-    // indexed for the seven-day purge, `persona` for the day a second coach
-    // shares the table.
+    // Versions 4 and 5 bracket the AI coach, shipped on 01/11/2026 and withdrawn
+    // the next day (PoC not validated). Version 4 stays declared because phones
+    // that opened the coach are already on it: IndexedDB refuses to open a base
+    // at a lower version than the one on disk, so dropping it would lock those
+    // users out of their own data. Version 5 deletes the table it added.
     this.version(4).stores({
       coachMessages: 'id, persona, date, timestamp',
+    })
+    this.version(5).stores({
+      coachMessages: null,
     })
   }
 }

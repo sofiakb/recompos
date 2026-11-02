@@ -122,7 +122,6 @@ export function TodayScreen() {
             label={t.today.consistencyTitle}
             value={t.today.consistencySummary(floor.score7.percent)}
           />
-          <SummaryRow to="/coach" label={t.coach.entryToday} value={t.coach.entryTodayValue} />
         </section>
 
         <Button size="lg" variant="secondary" block onClick={() => void onStartWorkout()}>

@@ -20,13 +20,7 @@ describe('BottomNav', () => {
     )
     // Read from the catalogue, not spelled out: this test is about the order,
     // and the rename is asserted on its own below.
-    expect(labels()).toEqual([
-      t.nav.today,
-      t.nav.nutrition,
-      t.nav.workouts,
-      t.nav.trends,
-      t.nav.coach,
-    ])
+    expect(labels()).toEqual([t.nav.today, t.nav.nutrition, t.nav.workouts, t.nav.trends])
   })
 
   it('keeps the trends route under its new name', () => {
@@ -93,12 +87,6 @@ describe('BottomNav, collapsed while reading down', () => {
 
     // Clipped out of sight, not out of the document: a collapsed bar that
     // unmounted its links would strand the keyboard and the screen reader.
-    expect(labels()).toEqual([
-      t.nav.today,
-      t.nav.nutrition,
-      t.nav.workouts,
-      t.nav.trends,
-      t.nav.coach,
-    ])
+    expect(labels()).toEqual([t.nav.today, t.nav.nutrition, t.nav.workouts, t.nav.trends])
   })
 })
